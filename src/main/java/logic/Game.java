@@ -32,11 +32,16 @@ public class Game {
     // ==================== 核心主流程 ====================
 
     public void startGame() {
-        System.out.println("🎮 Monopoly Deal 游戏开始！");
-        System.out.println("目标：率先收集 3 组完整财产集。");
+        players.clear();
+        drawCards = new DrawPileAndDiscardPile();
         currentPlayerIndex = 0;
         isWin = false;
         isDiscard = false;
+        addPlayer();
+        Player currentPlayer = getCurrentPlayer();
+        currentPlayer.setOnTurn(true);
+        currentPlayer.setUseCardTimes(0);
+        System.out.println("Monopoly Deal GUI game started.");
     }
 
     /**
@@ -160,6 +165,28 @@ public class Game {
 
         currentPlayerIndex = (currentPlayerIndex + 1) % players.size();
         System.out.println("➡️ 回合结束，切换到下一位玩家。");
+    }
+
+    public void guiEndTurn() {
+        Player currentPlayer = getCurrentPlayer();
+
+        if (currentPlayer.checkIfWin()) {
+            isWin = true;
+            return;
+        }
+
+        if (currentPlayer.getHandCards().size() > 7) {
+            isDiscard = true;
+            return;
+        }
+
+        currentPlayer.setOnTurn(false);
+        currentPlayer.setUseCardTimes(0);
+
+        currentPlayerIndex = (currentPlayerIndex + 1) % players.size();
+
+        Player nextPlayer = getCurrentPlayer();
+        startTurn(nextPlayer);
     }
 
     /**

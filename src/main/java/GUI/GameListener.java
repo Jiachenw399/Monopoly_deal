@@ -3,6 +3,8 @@ package GUI;
 import javafx.scene.Scene;
 import model.Card;
 import model.Player;
+import model.PropertiesCards;
+import model.PropertyColor;
 
 public class GameListener {
     private MainMenu menu;
@@ -28,24 +30,41 @@ public class GameListener {
                 return;
             }
 
+            PropertyColor selectedColor = gameScreen.getClickedWildColorButton(x, y);
+
+            if (selectedColor != null) {
+                PropertiesCards selectedWildCard = gameScreen.getSelectedWildCard();
+
+                if (selectedWildCard != null) {
+                    selectedWildCard.setCurrentColor(selectedColor);
+                }
+
+                gameScreen.setSelectedWildCard(null);
+                return;
+            }
+
+            PropertiesCards clickedWildCard = gameScreen.getClickedWildCard(x, y);
+
+            if (clickedWildCard != null) {
+                gameScreen.setSelectedWildCard(clickedWildCard);
+                return;
+            }
+
             if (gameScreen.isEndTurnClicked(x, y)) {
-                Player currentPlayer = game.getCurrentPlayer();
-
-                if (!game.isDiscard()) {
-                    game.startDiscard();
-                }
-
-                if (!game.isDiscard()) {
-                    game.endTurn(currentPlayer);
-                    game.startTurn(game.getCurrentPlayer());
-                }
-
+                game.guiEndTurn();
                 return;
             }
 
             if (gameScreen.isBackMenuClicked(x, y)) {
                 gameScreen.setShow(false);
                 menu.setShow(true);
+                return;
+            }
+
+            int viewedPlayerIndex = gameScreen.getClickedPlayerViewButtonIndex(x, y);
+
+            if (viewedPlayerIndex != -1) {
+                gameScreen.setViewedPlayerIndex(viewedPlayerIndex);
                 return;
             }
 

@@ -33,6 +33,7 @@ public class DrawPileAndDiscardPile {
     public void shuffle(){
         if(DrawPile.isEmpty()){
             DrawPile.addAll(DiscardPile);
+            DiscardPile.clear();
             shuffleDrawCards();
         }
     }
