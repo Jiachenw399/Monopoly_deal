@@ -5,11 +5,10 @@ import javafx.scene.input.KeyCode;
 import logic.Game;
 
 public class MenuListener {
-
-    private MainMenu menu;
-    private Game game;
-    private GameScreen gameScreen;
-    private RuleScreen ruleScreen;
+    private final MainMenu menu;
+    private final Game game;
+    private final GameScreen gameScreen;
+    private final RuleScreen ruleScreen;
 
     public MenuListener(MainMenu menu, Game game, GameScreen gameScreen, RuleScreen ruleScreen) {
         this.menu = menu;
@@ -19,32 +18,50 @@ public class MenuListener {
     }
 
     public void addListener(Scene scene) {
-        scene.setOnKeyPressed(event -> {
-            KeyCode code = event.getCode();
+        scene.setOnKeyPressed(event -> handleKeyPressed(event.getCode()));
+    }
 
-            if (code == KeyCode.N) {
-                menu.setShow(false);
-                ruleScreen.setShow(true);
-            }
+    private void handleKeyPressed(KeyCode code) {
+        switch (code) {
+            case N:
+                showRuleScreen();
+                break;
 
-            if (code == KeyCode.A) {
-                menu.setShow(false);
-                ruleScreen.setShow(false);
-                gameScreen.setShow(true);
+            case A:
+                startGame();
+                break;
 
-                game.startGame();
-                game.startTurn(game.getCurrentPlayer());
-            }
-
-            if (code == KeyCode.X) {
+            case X:
                 System.exit(0);
-            }
+                break;
 
-            if (code == KeyCode.ESCAPE) {
-                ruleScreen.setShow(false);
-                gameScreen.setShow(false);
-                menu.setShow(true);
-            }
-        });
+            case ESCAPE:
+                returnToMenu();
+                break;
+
+            default:
+                break;
+        }
+    }
+
+    private void showRuleScreen() {
+        menu.setShow(false);
+        gameScreen.setShow(false);
+        ruleScreen.setShow(true);
+    }
+
+    private void startGame() {
+        menu.setShow(false);
+        ruleScreen.setShow(false);
+        gameScreen.setShow(true);
+
+        game.startGame();
+        game.startTurn(game.getCurrentPlayer());
+    }
+
+    private void returnToMenu() {
+        ruleScreen.setShow(false);
+        gameScreen.setShow(false);
+        menu.setShow(true);
     }
 }

@@ -2,20 +2,23 @@ package model;
 
 public class PropertiesCards extends Card {
     private PropertyColor currentColor;
-    private PropertiesCardsType type;
+    private final PropertiesCardsType type;
     private boolean hasHouse;
     private boolean hasHotel;
 
     public PropertiesCards(PropertiesCardsType type) {
         this.type = type;
+        this.currentColor = getDefaultColor(type);
         this.hasHouse = false;
         this.hasHotel = false;
+    }
 
+    private PropertyColor getDefaultColor(PropertiesCardsType type) {
         if (type.getColors().size() == 1) {
-            this.currentColor = type.getColors().get(0);
-        } else {
-            this.currentColor = null;
+            return type.getColors().get(0);
         }
+
+        return null;
     }
 
     public PropertiesCardsType getType() {
@@ -28,10 +31,6 @@ public class PropertiesCards extends Card {
 
     public void setCurrentColor(PropertyColor currentColor) {
         this.currentColor = currentColor;
-    }
-
-    public void setType(PropertiesCardsType type) {
-        this.type = type;
     }
 
     @Override

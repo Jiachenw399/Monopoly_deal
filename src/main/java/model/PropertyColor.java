@@ -14,8 +14,8 @@ public enum PropertyColor {
 
     private final int amountToCompleteSet;
 
-    PropertyColor(int i) {
-        this.amountToCompleteSet = i;
+    PropertyColor(int amountToCompleteSet) {
+        this.amountToCompleteSet = amountToCompleteSet;
     }
 
     public int getAmountToCompleteSet() {

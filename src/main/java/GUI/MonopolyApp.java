@@ -4,66 +4,93 @@ import javafx.animation.AnimationTimer;
 import javafx.application.Application;
 import javafx.scene.Group;
 import javafx.scene.Scene;
+import javafx.scene.canvas.Canvas;
 import javafx.stage.Stage;
 import logic.Game;
 
 public class MonopolyApp extends Application {
+    private MainMenu menu;
+    private Game game;
+    private GameScreen gameScreen;
+    private RuleScreen ruleScreen;
 
     @Override
     public void start(Stage primaryStage) {
-        MainMenu menu = new MainMenu();
-        Game game = new Game();
-        GameScreen gameScreen = new GameScreen(game);
-        RuleScreen ruleScreen = new RuleScreen();
+        initializeScreens();
 
+        Group root = createRoot();
+        Scene scene = new Scene(root);
+
+        registerListeners(scene);
+        setupStage(primaryStage, scene);
+        startRenderLoop();
+
+        root.requestFocus();
+    }
+
+    private void initializeScreens() {
+        menu = new MainMenu();
+        game = new Game();
+        gameScreen = new GameScreen(game);
+        ruleScreen = new RuleScreen();
+    }
+
+    private Group createRoot() {
         Group root = new Group();
+
         root.getChildren().addAll(
                 menu.getCanvas(),
                 gameScreen.getCanvas(),
                 ruleScreen.getCanvas()
         );
 
-        Scene scene = new Scene(root);
+        return root;
+    }
 
+    private void registerListeners(Scene scene) {
         MenuListener menuListener = new MenuListener(menu, game, gameScreen, ruleScreen);
         menuListener.addListener(scene);
 
         GameListener gameListener = new GameListener(menu, gameScreen, game);
         gameListener.addListener(scene);
+    }
 
+    private void setupStage(Stage primaryStage, Scene scene) {
         primaryStage.setScene(scene);
         primaryStage.setTitle("Monopoly Deal");
         primaryStage.show();
+    }
 
+    private void startRenderLoop() {
         new AnimationTimer() {
             @Override
             public void handle(long now) {
-                if (menu.isShow()) {
-                    menu.paint();
-                    menu.getCanvas().setVisible(true);
-                } else {
-                    menu.clear();
-                    menu.getCanvas().setVisible(false);
-                }
-
-                if (gameScreen.isShow()) {
-                    gameScreen.paint();
-                    gameScreen.getCanvas().setVisible(true);
-                } else {
-                    gameScreen.clear();
-                    gameScreen.getCanvas().setVisible(false);
-                }
-
-                if (ruleScreen.isShow()) {
-                    ruleScreen.paint();
-                    ruleScreen.getCanvas().setVisible(true);
-                } else {
-                    ruleScreen.clear();
-                    ruleScreen.getCanvas().setVisible(false);
-                }
+                renderMenu();
+                renderGameScreen();
+                renderRuleScreen();
             }
         }.start();
+    }
 
-        root.requestFocus();
+    private void renderMenu() {
+        renderCanvas(menu.isShow(), menu.getCanvas(), menu::paint, menu::clear);
+    }
+
+    private void renderGameScreen() {
+        renderCanvas(gameScreen.isShow(), gameScreen.getCanvas(), gameScreen::paint, gameScreen::clear);
+    }
+
+    private void renderRuleScreen() {
+        renderCanvas(ruleScreen.isShow(), ruleScreen.getCanvas(), ruleScreen::paint, ruleScreen::clear);
+    }
+
+    private void renderCanvas(boolean shouldShow, Canvas canvas, Runnable paintAction, Runnable clearAction) {
+        if (shouldShow) {
+            paintAction.run();
+            canvas.setVisible(true);
+        } else {
+            clearAction.run();
+            canvas.setVisible(false);
+        }
     }
 }

@@ -1,17 +1,17 @@
 package GUI;
 
 import javafx.scene.Scene;
+import model.ActionCardType;
+import model.ActionCards;
 import model.Card;
 import model.Player;
 import model.PropertiesCards;
 import model.PropertyColor;
-import model.ActionCards;
-import model.ActionCardType;
 
 public class GameListener {
-    private MainMenu menu;
-    private GameScreen gameScreen;
-    private logic.Game game;
+    private final MainMenu menu;
+    private final GameScreen gameScreen;
+    private final logic.Game game;
 
     public GameListener(MainMenu menu, GameScreen gameScreen, logic.Game game) {
         this.menu = menu;
@@ -20,159 +20,216 @@ public class GameListener {
     }
 
     public void addListener(Scene scene) {
-        scene.setOnMouseClicked(event -> {
-            if (!gameScreen.isShow()) {
-                return;
+        scene.setOnMouseClicked(event -> handleMouseClick(event.getX(), event.getY()));
+    }
+
+    private void handleMouseClick(double x, double y) {
+        if (!gameScreen.isShow()) {
+            return;
+        }
+
+        if (handleSelectionModeClick(x, y)) {
+            return;
+        }
+
+        if (game.isWin()) {
+            return;
+        }
+
+        if (handleWildCardClick(x, y)) {
+            return;
+        }
+
+        if (handleButtonClick(x, y)) {
+            return;
+        }
+
+        handleHandCardClick(x, y);
+    }
+
+    private boolean handleSelectionModeClick(double x, double y) {
+        if (handleSlyDealSelection(x, y)) {
+            return true;
+        }
+
+        if (handleDebtCollectorSelection(x, y)) {
+            return true;
+        }
+
+        return handleTwoColorRentSelection(x, y);
+    }
+
+    private boolean handleSlyDealSelection(double x, double y) {
+        if (!gameScreen.isSlyDealSelecting()) {
+            return false;
+        }
+
+        if (gameScreen.isSlyDealCancelClicked(x, y)) {
+            gameScreen.cancelSlyDealSelection();
+            return true;
+        }
+
+        GameScreen.SlyDealChoice choice = gameScreen.getClickedSlyDealChoice(x, y);
+
+        if (choice != null) {
+            game.finishSlyDeal(
+                    gameScreen.getPendingSlyDealCard(),
+                    choice.getTargetPlayer(),
+                    choice.getSelectedCard()
+            );
+
+            gameScreen.cancelSlyDealSelection();
+        }
+
+        return true;
+    }
+
+    private boolean handleDebtCollectorSelection(double x, double y) {
+        if (!gameScreen.isDebtCollectorSelecting()) {
+            return false;
+        }
+
+        if (gameScreen.isDebtCollectorCancelClicked(x, y)) {
+            gameScreen.cancelDebtCollectorSelection();
+            return true;
+        }
+
+        Player targetPlayer = gameScreen.getClickedDebtCollectorTarget(x, y);
+
+        if (targetPlayer != null) {
+            game.finishDebtCollector(
+                    gameScreen.getPendingDebtCollectorCard(),
+                    targetPlayer
+            );
+
+            gameScreen.cancelDebtCollectorSelection();
+        }
+
+        return true;
+    }
+
+    private boolean handleTwoColorRentSelection(double x, double y) {
+        if (!gameScreen.isTwoColorRentSelecting()) {
+            return false;
+        }
+
+        if (gameScreen.isTwoColorRentCancelClicked(x, y)) {
+            gameScreen.cancelTwoColorRentSelection();
+            return true;
+        }
+
+        PropertyColor selectedRentColor = gameScreen.getClickedTwoColorRentColor(x, y);
+
+        if (selectedRentColor != null) {
+            game.finishTwoColorRent(
+                    gameScreen.getPendingTwoColorRentCard(),
+                    selectedRentColor
+            );
+
+            gameScreen.cancelTwoColorRentSelection();
+        }
+
+        return true;
+    }
+
+    private boolean handleWildCardClick(double x, double y) {
+        PropertyColor selectedColor = gameScreen.getClickedWildColorButton(x, y);
+
+        if (selectedColor != null) {
+            PropertiesCards selectedWildCard = gameScreen.getSelectedWildCard();
+
+            if (selectedWildCard != null) {
+                selectedWildCard.setCurrentColor(selectedColor);
             }
 
-            double x = event.getX();
-            double y = event.getY();
+            gameScreen.setSelectedWildCard(null);
+            return true;
+        }
 
-            if (gameScreen.isSlyDealSelecting()) {
-                if (gameScreen.isSlyDealCancelClicked(x, y)) {
-                    gameScreen.cancelSlyDealSelection();
-                    return;
-                }
+        PropertiesCards clickedWildCard = gameScreen.getClickedWildCard(x, y);
 
-                GameScreen.SlyDealChoice choice = gameScreen.getClickedSlyDealChoice(x, y);
+        if (clickedWildCard != null) {
+            gameScreen.setSelectedWildCard(clickedWildCard);
+            return true;
+        }
 
-                if (choice != null) {
-                    game.finishSlyDeal(
-                            gameScreen.getPendingSlyDealCard(),
-                            choice.getTargetPlayer(),
-                            choice.getSelectedCard()
-                    );
+        return false;
+    }
 
-                    gameScreen.cancelSlyDealSelection();
-                }
+    private boolean handleButtonClick(double x, double y) {
+        if (gameScreen.isEndTurnClicked(x, y)) {
+            game.guiEndTurn();
+            return true;
+        }
 
-                return;
-            }
+        if (gameScreen.isBackMenuClicked(x, y)) {
+            gameScreen.setShow(false);
+            menu.setShow(true);
+            return true;
+        }
 
-            if (gameScreen.isDebtCollectorSelecting()) {
-                if (gameScreen.isDebtCollectorCancelClicked(x, y)) {
-                    gameScreen.cancelDebtCollectorSelection();
-                    return;
-                }
+        int viewedPlayerIndex = gameScreen.getClickedPlayerViewButtonIndex(x, y);
 
-                Player targetPlayer = gameScreen.getClickedDebtCollectorTarget(x, y);
+        if (viewedPlayerIndex != -1) {
+            gameScreen.setViewedPlayerIndex(viewedPlayerIndex);
+            return true;
+        }
 
-                if (targetPlayer != null) {
-                    game.finishDebtCollector(
-                            gameScreen.getPendingDebtCollectorCard(),
-                            targetPlayer
-                    );
+        return false;
+    }
 
-                    gameScreen.cancelDebtCollectorSelection();
-                }
+    private void handleHandCardClick(double x, double y) {
+        int handIndex = gameScreen.getClickedHandCardIndex(x, y);
 
-                return;
-            }
+        if (handIndex == -1) {
+            return;
+        }
 
-            if (gameScreen.isTwoColorRentSelecting()) {
-                if (gameScreen.isTwoColorRentCancelClicked(x, y)) {
-                    gameScreen.cancelTwoColorRentSelection();
-                    return;
-                }
+        Player currentPlayer = game.getCurrentPlayer();
 
-                PropertyColor selectedRentColor = gameScreen.getClickedTwoColorRentColor(x, y);
+        if (handIndex >= currentPlayer.getHandCards().size()) {
+            return;
+        }
 
-                if (selectedRentColor != null) {
-                    game.finishTwoColorRent(
-                            gameScreen.getPendingTwoColorRentCard(),
-                            selectedRentColor
-                    );
+        Card selectedCard = currentPlayer.getHandCards().get(handIndex);
 
-                    gameScreen.cancelTwoColorRentSelection();
-                }
+        if (game.isDiscard()) {
+            game.discard(selectedCard);
+            return;
+        }
 
-                return;
-            }
+        if (handleActionCardClick(selectedCard)) {
+            return;
+        }
 
-            if (game.isWin()) {
-                return;
-            }
+        game.playCard(selectedCard);
 
-            PropertyColor selectedColor = gameScreen.getClickedWildColorButton(x, y);
+        if (currentPlayer.checkIfWin()) {
+            game.setWin(true);
+        }
+    }
 
-            if (selectedColor != null) {
-                PropertiesCards selectedWildCard = gameScreen.getSelectedWildCard();
+    private boolean handleActionCardClick(Card selectedCard) {
+        if (!(selectedCard instanceof ActionCards actionCard)) {
+            return false;
+        }
 
-                if (selectedWildCard != null) {
-                    selectedWildCard.setCurrentColor(selectedColor);
-                }
+        if (actionCard.getActionCardType() == ActionCardType.SLY_DEAL) {
+            gameScreen.startSlyDealSelection(actionCard);
+            return true;
+        }
 
-                gameScreen.setSelectedWildCard(null);
-                return;
-            }
+        if (actionCard.getActionCardType() == ActionCardType.DEBT_COLLECTOR) {
+            gameScreen.startDebtCollectorSelection(actionCard);
+            return true;
+        }
 
-            PropertiesCards clickedWildCard = gameScreen.getClickedWildCard(x, y);
+        if (isTwoColorRentCard(actionCard)) {
+            gameScreen.startTwoColorRentSelection(actionCard);
+            return true;
+        }
 
-            if (clickedWildCard != null) {
-                gameScreen.setSelectedWildCard(clickedWildCard);
-                return;
-            }
-
-            if (gameScreen.isEndTurnClicked(x, y)) {
-                game.guiEndTurn();
-                return;
-            }
-
-            if (gameScreen.isBackMenuClicked(x, y)) {
-                gameScreen.setShow(false);
-                menu.setShow(true);
-                return;
-            }
-
-            int viewedPlayerIndex = gameScreen.getClickedPlayerViewButtonIndex(x, y);
-
-            if (viewedPlayerIndex != -1) {
-                gameScreen.setViewedPlayerIndex(viewedPlayerIndex);
-                return;
-            }
-
-            int handIndex = gameScreen.getClickedHandCardIndex(x, y);
-
-            if (handIndex == -1) {
-                return;
-            }
-
-            Player currentPlayer = game.getCurrentPlayer();
-
-            if (handIndex >= currentPlayer.getHandCards().size()) {
-                return;
-            }
-
-            Card selectedCard = currentPlayer.getHandCards().get(handIndex);
-
-            if (game.isDiscard()) {
-                game.discard(selectedCard);
-                return;
-            }
-
-            if (selectedCard instanceof ActionCards actionCard) {
-                if (actionCard.getActionCardType() == ActionCardType.SLY_DEAL) {
-                    gameScreen.startSlyDealSelection(actionCard);
-                    return;
-                }
-
-                if (actionCard.getActionCardType() == ActionCardType.DEBT_COLLECTOR) {
-                    gameScreen.startDebtCollectorSelection(actionCard);
-                    return;
-                }
-
-                if (isTwoColorRentCard(actionCard)) {
-                    gameScreen.startTwoColorRentSelection(actionCard);
-                    return;
-                }
-            }
-
-            game.playCard(selectedCard);
-
-            if (currentPlayer.checkIfWin()) {
-                game.setWin(true);
-            }
-        });
+        return false;
     }
 
     private boolean isTwoColorRentCard(ActionCards card) {

@@ -36,7 +36,6 @@ public class GameTest {
         Game game = new Game();
         game.startGame();
         Player firstPlayer = game.getCurrentPlayer();
-        game.endTurn(firstPlayer);
         Player secondPlayer = game.getCurrentPlayer();
 
         assertNotSame(firstPlayer, secondPlayer);

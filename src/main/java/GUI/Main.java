@@ -7,4 +7,3 @@ public class Main {
         Application.launch(MonopolyApp.class, args);
     }
 }
-

@@ -1,18 +1,14 @@
 package model;
 
 public class ActionCards extends Card {
-    private ActionCardType actionCardType;
+    private final ActionCardType actionCardType;
 
     public ActionCards(ActionCardType actionCardType) {
         this.actionCardType = actionCardType;
-        value = actionCardType.getTypeValue();
+        setValue(actionCardType.getTypeValue());
     }
 
     public ActionCardType getActionCardType() {
         return actionCardType;
-    }
-
-    public void setActionCardType(ActionCardType actionCardType) {
-        this.actionCardType = actionCardType;
     }
 }
