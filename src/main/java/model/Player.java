@@ -299,7 +299,7 @@ public class Player {
                 return null;
         }
     }
-    
+
     private boolean hasPropertyColor(PropertyColor color) {
         for (PropertiesCards card : PropertyCards) {
             if (card.getCurrentColor() == color) {
@@ -308,6 +308,36 @@ public class Player {
         }
     
         return false;
+    }
+
+    public boolean hasActionCard(ActionCardType type) {
+        return findActionCard(type) != null;
+    }
+
+    public boolean discardActionCardFromHand(ActionCardType type) {
+        ActionCards card = findActionCard(type);
+
+        if (card == null) {
+            return false;
+        }
+
+        HandCards.remove(card);
+        drawCardsAndDiscardPile.getDiscardPile().add(card);
+        return true;
+    }
+
+    public ActionCards findActionCard(ActionCardType type) {
+        for (Card card : HandCards) {
+            if (card instanceof ActionCards actionCard && actionCard.getActionCardType() == type) {
+                return actionCard;
+            }
+        }
+
+        return null;
+    }
+
+    public void collectRentFrom(Player target, PropertyColor color, boolean doubleRent) {
+        chargeRentFromOnePlayer(target, color, doubleRent);
     }
     
     private void chargeRentFromOnePlayer(Player target, PropertyColor color, boolean doubleRent) {
@@ -319,7 +349,7 @@ public class Player {
     
         receivePayment(rent, target);
     }
-    
+
     private void chargeRentFromAllPlayers(PropertyColor color, boolean doubleRent) {
         for (Player enemy : Enemy) {
             chargeRentFromOnePlayer(enemy, color, doubleRent);

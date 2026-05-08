@@ -1128,6 +1128,7 @@ public class GameScreen {
     public boolean isTwoColorDoubleRentClicked(double mouseX, double mouseY) {
         return isTwoColorRentSelecting()
                 && game.hasDoubleTheRentCard(game.getCurrentPlayer())
+                && game.getCurrentPlayer().getUseCardTimes() <= 1
                 && mouseX >= 370 && mouseX <= 650
                 && mouseY >= 410 && mouseY <= 445;
     }
@@ -1255,7 +1256,8 @@ public class GameScreen {
     }
 
     private void drawDoubleRentOption(GraphicsContext gc, double x, double y, boolean selected) {
-        if (!game.hasDoubleTheRentCard(game.getCurrentPlayer())) {
+        if (!game.hasDoubleTheRentCard(game.getCurrentPlayer())
+                || game.getCurrentPlayer().getUseCardTimes() > 1) {
             return;
         }
 
@@ -1548,6 +1550,10 @@ public class GameScreen {
         }
 
         drawButton(gc, 510, 555, 120, 40, "CLEAR");
+
+        if (game.canCurrentPaymentUseJustSayNo()) {
+            drawButton(gc, 650, 555, 220, 40, "USE JUST SAY NO");
+        }
     }
 
     private void drawPaymentBankCards(GraphicsContext gc, Player payer) {
@@ -1728,7 +1734,7 @@ public class GameScreen {
             return false;
         }
 
-        return mouseX >= 360 && mouseX <= 510 && mouseY >= 540 && mouseY <= 580;
+        return mouseX >= 330 && mouseX <= 490 && mouseY >= 555 && mouseY <= 595;
     }
 
     public boolean isPaymentClearClicked(double mouseX, double mouseY) {
@@ -1736,7 +1742,15 @@ public class GameScreen {
             return false;
         }
 
-        return mouseX >= 530 && mouseX <= 650 && mouseY >= 540 && mouseY <= 580;
+        return mouseX >= 510 && mouseX <= 630 && mouseY >= 555 && mouseY <= 595;
+    }
+
+    public boolean isPaymentJustSayNoClicked(double mouseX, double mouseY) {
+        if (!game.isPaymentSelecting() || !game.canCurrentPaymentUseJustSayNo()) {
+            return false;
+        }
+
+        return mouseX >= 650 && mouseX <= 870 && mouseY >= 555 && mouseY <= 595;
     }
 
     public void clearPaymentSelection() {
@@ -1828,6 +1842,7 @@ public class GameScreen {
     public boolean isMultipleColorDoubleRentClicked(double mouseX, double mouseY) {
         return isMultipleColorRentSelecting()
                 && game.hasDoubleTheRentCard(game.getCurrentPlayer())
+                && game.getCurrentPlayer().getUseCardTimes() <= 1
                 && mouseX >= 370 && mouseX <= 650
                 && mouseY >= 450 && mouseY <= 485;
     }

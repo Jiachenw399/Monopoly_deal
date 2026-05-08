@@ -123,6 +123,12 @@ public class GameListener {
             return false;
         }
 
+        if (gameScreen.isPaymentJustSayNoClicked(x, y)) {
+            game.currentPaymentUseJustSayNo();
+            gameScreen.clearPaymentSelection();
+            return true;
+        }
+
         if (gameScreen.isPaymentClearClicked(x, y)) {
             gameScreen.clearPaymentSelection();
             return true;

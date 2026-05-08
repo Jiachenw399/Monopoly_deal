@@ -370,6 +370,10 @@ public class Game {
 
         boolean canUseDoubleRent = useDoubleRent && hasDoubleTheRentCard(currentPlayer);
 
+        if (canUseDoubleRent && currentPlayer.getUseCardTimes() > 1) {
+            return;
+        }
+
         moveActionCardToDiscard(currentPlayer, rentCard);
         discardDoubleTheRentIfUsed(currentPlayer, canUseDoubleRent);
 
@@ -388,6 +392,11 @@ public class Game {
         startNextPaymentRequest();
 
         increaseUseCardTimes(currentPlayer);
+
+        if (canUseDoubleRent) {
+            increaseUseCardTimes(currentPlayer);
+        }
+
         checkCurrentPlayerWin();
     }
 
@@ -399,6 +408,10 @@ public class Game {
         }
 
         boolean canUseDoubleRent = useDoubleRent && hasDoubleTheRentCard(currentPlayer);
+
+        if (canUseDoubleRent && currentPlayer.getUseCardTimes() > 1) {
+            return;
+        }
 
         moveActionCardToDiscard(currentPlayer, rentCard);
         discardDoubleTheRentIfUsed(currentPlayer, canUseDoubleRent);
@@ -413,6 +426,11 @@ public class Game {
         startNextPaymentRequest();
 
         increaseUseCardTimes(currentPlayer);
+
+        if (canUseDoubleRent) {
+            increaseUseCardTimes(currentPlayer);
+        }
+
         checkCurrentPlayerWin();
     }
 
@@ -516,6 +534,21 @@ public class Game {
         return currentPaymentRequest;
     }
 
+    public boolean canCurrentPaymentUseJustSayNo() {
+        return currentPaymentRequest != null
+                && currentPaymentRequest.getPayer().hasActionCard(ActionCardType.JUST_SAY_NO);
+    }
+
+    public void currentPaymentUseJustSayNo() {
+        if (!canCurrentPaymentUseJustSayNo()) {
+            return;
+        }
+
+        currentPaymentRequest.getPayer().discardActionCardFromHand(ActionCardType.JUST_SAY_NO);
+        currentPaymentRequest = null;
+        startNextPaymentRequest();
+    }
+
     public void finishCurrentPayment(ArrayList<Card> selectedCards) {
         if (currentPaymentRequest == null || selectedCards == null || selectedCards.isEmpty()) {
             return;
@@ -607,6 +640,10 @@ public class Game {
         }
 
         if (!canPlayCard(currentPlayer, card)) {
+            return false;
+        }
+
+        if (!currentPlayer.canUseRentColor(selectedColor)) {
             return false;
         }
 
