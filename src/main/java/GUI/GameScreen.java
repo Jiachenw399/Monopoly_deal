@@ -24,6 +24,18 @@ public class GameScreen {
     private double slyGap = 15;
     private ActionCards pendingTwoColorRentCard = null;
 
+    private ActionCards pendingMultipleColorRentCard = null;
+    private Player selectedMultipleColorRentTarget = null;
+    private PropertyColor selectedMultipleColorRentColor = null;
+
+    private boolean useDoubleRentForTwoColorRent = false;
+    private boolean useDoubleRentForMultipleColorRent = false;
+
+    private double multiRentPanelX = 230;
+    private double multiRentPanelY = 120;
+    private double multiRentButtonWidth = 165;
+    private double multiRentButtonHeight = 42;
+
     private ActionCards pendingDealBreakerCard = null;
     private double dealBreakerPanelX = 180;
     private double dealBreakerPanelY = 135;
@@ -93,6 +105,7 @@ public class GameScreen {
         drawTwoColorRentSelection();
         drawDealBreakerSelection();
         drawPaymentSelection();
+        drawMultipleColorRentSelection();
     }
 
     public void drawBackground() {
@@ -1104,7 +1117,23 @@ public class GameScreen {
 
     public void startTwoColorRentSelection(ActionCards card) {
         pendingTwoColorRentCard = card;
+        useDoubleRentForTwoColorRent = false;
         selectedWildCard = null;
+    }
+
+    public boolean shouldUseDoubleRentForTwoColorRent() {
+        return useDoubleRentForTwoColorRent;
+    }
+
+    public boolean isTwoColorDoubleRentClicked(double mouseX, double mouseY) {
+        return isTwoColorRentSelecting()
+                && game.hasDoubleTheRentCard(game.getCurrentPlayer())
+                && mouseX >= 370 && mouseX <= 650
+                && mouseY >= 410 && mouseY <= 445;
+    }
+
+    public void toggleTwoColorDoubleRent() {
+        useDoubleRentForTwoColorRent = !useDoubleRentForTwoColorRent;
     }
 
     public void cancelTwoColorRentSelection() {
@@ -1218,7 +1247,37 @@ public class GameScreen {
                     Game.SCREEN_WIDTH / 2, 340);
         }
 
+        drawDoubleRentOption(gc, 370, 410, useDoubleRentForTwoColorRent);
+
         drawButton(gc, 720, 505, 140, 40, "CANCEL");
+
+        gc.setTextBaseline(VPos.TOP);
+    }
+
+    private void drawDoubleRentOption(GraphicsContext gc, double x, double y, boolean selected) {
+        if (!game.hasDoubleTheRentCard(game.getCurrentPlayer())) {
+            return;
+        }
+
+        gc.setFill(Color.LIGHTYELLOW);
+        gc.fillRoundRect(x, y, 280, 35, 10, 10);
+
+        gc.setStroke(Color.WHITE);
+        gc.strokeRoundRect(x, y, 280, 35, 10, 10);
+
+        gc.setFill(Color.WHITE);
+        gc.strokeRect(x + 12, y + 8, 18, 18);
+
+        if (selected) {
+            gc.setFill(Color.LIGHTGREEN);
+            gc.fillText("✓", x + 21, y + 8);
+        }
+
+        gc.setFill(Color.BLACK);
+        gc.setFont(Font.font("Arial", 14));
+        gc.setTextAlign(TextAlignment.LEFT);
+        gc.setTextBaseline(VPos.CENTER);
+        gc.fillText("Use DOUBLE THE RENT  ×2", x + 42, y + 17.5);
 
         gc.setTextBaseline(VPos.TOP);
     }
@@ -1752,5 +1811,319 @@ public class GameScreen {
         }
 
         return null;
+    }
+
+    public void startMultipleColorRentSelection(ActionCards card) {
+        pendingMultipleColorRentCard = card;
+        selectedMultipleColorRentTarget = null;
+        selectedMultipleColorRentColor = null;
+        useDoubleRentForMultipleColorRent = false;
+        selectedWildCard = null;
+    }
+
+    public boolean shouldUseDoubleRentForMultipleColorRent() {
+        return useDoubleRentForMultipleColorRent;
+    }
+
+    public boolean isMultipleColorDoubleRentClicked(double mouseX, double mouseY) {
+        return isMultipleColorRentSelecting()
+                && game.hasDoubleTheRentCard(game.getCurrentPlayer())
+                && mouseX >= 370 && mouseX <= 650
+                && mouseY >= 450 && mouseY <= 485;
+    }
+
+    public void toggleMultipleColorDoubleRent() {
+        useDoubleRentForMultipleColorRent = !useDoubleRentForMultipleColorRent;
+    }
+
+    public void cancelMultipleColorRentSelection() {
+        pendingMultipleColorRentCard = null;
+        selectedMultipleColorRentTarget = null;
+        selectedMultipleColorRentColor = null;
+    }
+
+    public boolean isMultipleColorRentSelecting() {
+        return pendingMultipleColorRentCard != null;
+    }
+
+    public ActionCards getPendingMultipleColorRentCard() {
+        return pendingMultipleColorRentCard;
+    }
+
+    public Player getSelectedMultipleColorRentTarget() {
+        return selectedMultipleColorRentTarget;
+    }
+
+    public void setSelectedMultipleColorRentTarget(Player selectedMultipleColorRentTarget) {
+        this.selectedMultipleColorRentTarget = selectedMultipleColorRentTarget;
+    }
+
+    public PropertyColor getSelectedMultipleColorRentColor() {
+        return selectedMultipleColorRentColor;
+    }
+
+    public void setSelectedMultipleColorRentColor(PropertyColor selectedMultipleColorRentColor) {
+        this.selectedMultipleColorRentColor = selectedMultipleColorRentColor;
+    }
+
+    public boolean canConfirmMultipleColorRent() {
+        return selectedMultipleColorRentTarget != null && selectedMultipleColorRentColor != null;
+    }
+
+    public boolean isMultipleColorRentCancelClicked(double mouseX, double mouseY) {
+        return isMultipleColorRentSelecting()
+                && mouseX >= 690 && mouseX <= 830
+                && mouseY >= 535 && mouseY <= 575;
+    }
+
+    public boolean isMultipleColorRentConfirmClicked(double mouseX, double mouseY) {
+        return isMultipleColorRentSelecting()
+                && mouseX >= 500 && mouseX <= 660
+                && mouseY >= 535 && mouseY <= 575;
+    }
+
+    public Player getClickedMultipleColorRentTarget(double mouseX, double mouseY) {
+        if (!isMultipleColorRentSelecting()) {
+            return null;
+        }
+
+        double x = multiRentPanelX;
+        double y = multiRentPanelY + 80;
+        double gap = 16;
+
+        int displayIndex = 0;
+
+        for (int i = 0; i < game.getPlayers().size(); i++) {
+            if (i == game.getCurrentPlayerIndex()) {
+                continue;
+            }
+
+            double buttonY = y + displayIndex * (multiRentButtonHeight + gap);
+
+            if (mouseX >= x && mouseX <= x + multiRentButtonWidth
+                    && mouseY >= buttonY && mouseY <= buttonY + multiRentButtonHeight) {
+                return game.getPlayers().get(i);
+            }
+
+            displayIndex++;
+        }
+
+        return null;
+    }
+
+    public PropertyColor getClickedMultipleColorRentColor(double mouseX, double mouseY) {
+        if (!isMultipleColorRentSelecting()) {
+            return null;
+        }
+
+        Player currentPlayer = game.getCurrentPlayer();
+
+        double x = multiRentPanelX + 300;
+        double y = multiRentPanelY + 80;
+        double gapX = 12;
+        double gapY = 12;
+        int buttonsPerRow = 2;
+
+        int displayIndex = 0;
+
+        for (PropertyColor color : PropertyColor.values()) {
+            if (!currentPlayer.canUseRentColor(color)) {
+                continue;
+            }
+
+            int row = displayIndex / buttonsPerRow;
+            int col = displayIndex % buttonsPerRow;
+
+            double buttonX = x + col * (multiRentButtonWidth + gapX);
+            double buttonY = y + row * (multiRentButtonHeight + gapY);
+
+            if (mouseX >= buttonX && mouseX <= buttonX + multiRentButtonWidth
+                    && mouseY >= buttonY && mouseY <= buttonY + multiRentButtonHeight) {
+                return color;
+            }
+
+            displayIndex++;
+        }
+
+        return null;
+    }
+
+    private void drawMultipleColorRentSelection() {
+        if (!isMultipleColorRentSelecting()) {
+            return;
+        }
+
+        GraphicsContext gc = canvas.getGraphicsContext2D();
+
+        gc.setFill(Color.rgb(0, 0, 0, 0.76));
+        gc.fillRect(0, 0, Game.SCREEN_WIDTH, Game.SCREEN_HEIGHT);
+
+        gc.setFill(Color.WHITE);
+        gc.setFont(Font.font("Arial", 26));
+        gc.setTextAlign(TextAlignment.CENTER);
+        gc.setTextBaseline(VPos.TOP);
+        gc.fillText("MULTI-COLOR RENT: Choose target and color", Game.SCREEN_WIDTH / 2, 35);
+
+        gc.setFont(Font.font("Arial", 16));
+        gc.fillText("This card charges rent from one selected player only.",
+                Game.SCREEN_WIDTH / 2, 70);
+
+        drawMultipleColorRentTargets(gc);
+        drawMultipleColorRentColors(gc);
+        drawMultipleColorRentStatus(gc);
+
+        drawDoubleRentOption(gc, 370, 450, useDoubleRentForMultipleColorRent);
+
+        if (canConfirmMultipleColorRent()) {
+            drawButton(gc, 500, 535, 160, 40, "CONFIRM");
+        } else {
+            drawDisabledButton(gc, 500, 535, 160, 40, "CONFIRM");
+        }
+
+        drawButton(gc, 690, 535, 140, 40, "CANCEL");
+    }
+
+    private void drawMultipleColorRentTargets(GraphicsContext gc) {
+        double x = multiRentPanelX;
+        double y = multiRentPanelY + 80;
+        double gap = 16;
+
+        gc.setFill(Color.WHITE);
+        gc.setFont(Font.font("Arial", 19));
+        gc.setTextAlign(TextAlignment.LEFT);
+        gc.fillText("Choose Target Player", x, multiRentPanelY + 35);
+
+        int displayIndex = 0;
+
+        for (int i = 0; i < game.getPlayers().size(); i++) {
+            if (i == game.getCurrentPlayerIndex()) {
+                continue;
+            }
+
+            Player player = game.getPlayers().get(i);
+            double buttonY = y + displayIndex * (multiRentButtonHeight + gap);
+
+            if (player == selectedMultipleColorRentTarget) {
+                gc.setFill(Color.LIGHTGREEN);
+            } else {
+                gc.setFill(Color.LIGHTGRAY);
+            }
+
+            gc.fillRoundRect(x, buttonY, multiRentButtonWidth, multiRentButtonHeight, 10, 10);
+            gc.setStroke(Color.BLACK);
+            gc.strokeRoundRect(x, buttonY, multiRentButtonWidth, multiRentButtonHeight, 10, 10);
+
+            gc.setFill(Color.BLACK);
+            gc.setFont(Font.font("Arial", 15));
+            gc.setTextAlign(TextAlignment.CENTER);
+            gc.setTextBaseline(VPos.CENTER);
+            gc.fillText("Player " + (i + 1), x + multiRentButtonWidth / 2, buttonY + multiRentButtonHeight / 2);
+
+            displayIndex++;
+        }
+
+        gc.setTextBaseline(VPos.TOP);
+    }
+
+    private void drawMultipleColorRentColors(GraphicsContext gc) {
+        Player currentPlayer = game.getCurrentPlayer();
+
+        double x = multiRentPanelX + 300;
+        double y = multiRentPanelY + 80;
+        double gapX = 12;
+        double gapY = 12;
+        int buttonsPerRow = 2;
+
+        gc.setFill(Color.WHITE);
+        gc.setFont(Font.font("Arial", 19));
+        gc.setTextAlign(TextAlignment.LEFT);
+        gc.setTextBaseline(VPos.TOP);
+        gc.fillText("Choose Rent Color", x, multiRentPanelY + 35);
+
+        int displayIndex = 0;
+
+        for (PropertyColor color : PropertyColor.values()) {
+            if (!currentPlayer.canUseRentColor(color)) {
+                continue;
+            }
+
+            int row = displayIndex / buttonsPerRow;
+            int col = displayIndex % buttonsPerRow;
+
+            double buttonX = x + col * (multiRentButtonWidth + gapX);
+            double buttonY = y + row * (multiRentButtonHeight + gapY);
+
+            if (color == selectedMultipleColorRentColor) {
+                gc.setFill(Color.LIGHTGREEN);
+            } else {
+                gc.setFill(Color.LIGHTYELLOW);
+            }
+
+            gc.fillRoundRect(buttonX, buttonY, multiRentButtonWidth, multiRentButtonHeight, 10, 10);
+            gc.setStroke(Color.BLACK);
+            gc.strokeRoundRect(buttonX, buttonY, multiRentButtonWidth, multiRentButtonHeight, 10, 10);
+
+            gc.setFill(Color.BLACK);
+            gc.setFont(Font.font("Arial", 13));
+            gc.setTextAlign(TextAlignment.CENTER);
+            gc.setTextBaseline(VPos.CENTER);
+            gc.fillText(color.name(), buttonX + multiRentButtonWidth / 2, buttonY + multiRentButtonHeight / 2);
+
+            displayIndex++;
+        }
+
+        if (displayIndex == 0) {
+            gc.setFill(Color.LIGHTYELLOW);
+            gc.setFont(Font.font("Arial", 17));
+            gc.setTextAlign(TextAlignment.LEFT);
+            gc.setTextBaseline(VPos.TOP);
+            gc.fillText("You have no property color to charge rent.", x, y);
+        }
+
+        gc.setTextBaseline(VPos.TOP);
+    }
+
+    private void drawMultipleColorRentStatus(GraphicsContext gc) {
+        gc.setFill(Color.WHITE);
+        gc.setFont(Font.font("Arial", 16));
+        gc.setTextAlign(TextAlignment.CENTER);
+        gc.setTextBaseline(VPos.TOP);
+
+        String targetText = selectedMultipleColorRentTarget == null
+                ? "Target: not selected"
+                : "Target: Player " + (game.getPlayers().indexOf(selectedMultipleColorRentTarget) + 1);
+
+        String colorText = selectedMultipleColorRentColor == null
+                ? "Color: not selected"
+                : "Color: " + selectedMultipleColorRentColor.name();
+
+        gc.fillText(targetText + "     " + colorText, Game.SCREEN_WIDTH / 2, 485);
+
+        if (selectedMultipleColorRentColor != null) {
+            int rent = calculatePreviewRent(game.getCurrentPlayer(), selectedMultipleColorRentColor);
+            gc.setFill(Color.LIGHTGREEN);
+            gc.fillText("Rent Amount: " + rent + "M", Game.SCREEN_WIDTH / 2, 510);
+        }
+    }
+
+    private int calculatePreviewRent(Player player, PropertyColor color) {
+        int propertyCount = 0;
+        int rent = 0;
+
+        for (PropertiesCards card : player.getPropertyCards()) {
+            if (card.getCurrentColor() == color) {
+                propertyCount++;
+
+                if (card.hasHouse()) {
+                    rent += 3;
+                }
+
+                if (card.hasHotel()) {
+                    rent += 4;
+                }
+            }
+        }
+
+        return rent + propertyCount;
     }
 }

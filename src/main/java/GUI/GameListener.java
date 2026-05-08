@@ -52,6 +52,10 @@ public class GameListener {
             return true;
         }
 
+        if (handleMultipleColorRentSelection(x, y)) {
+            return true;
+        }
+
         if (handleSlyDealSelection(x, y)) {
             return true;
         }
@@ -65,6 +69,53 @@ public class GameListener {
         }
 
         return handleTwoColorRentSelection(x, y);
+    }
+
+    private boolean handleMultipleColorRentSelection(double x, double y) {
+        if (!gameScreen.isMultipleColorRentSelecting()) {
+            return false;
+        }
+
+        if (gameScreen.isMultipleColorRentCancelClicked(x, y)) {
+            gameScreen.cancelMultipleColorRentSelection();
+            return true;
+        }
+
+        Player targetPlayer = gameScreen.getClickedMultipleColorRentTarget(x, y);
+
+        if (targetPlayer != null) {
+            gameScreen.setSelectedMultipleColorRentTarget(targetPlayer);
+            return true;
+        }
+
+        if (gameScreen.isMultipleColorDoubleRentClicked(x, y)) {
+            gameScreen.toggleMultipleColorDoubleRent();
+            return true;
+        }
+
+        PropertyColor selectedColor = gameScreen.getClickedMultipleColorRentColor(x, y);
+
+        if (selectedColor != null) {
+            gameScreen.setSelectedMultipleColorRentColor(selectedColor);
+            return true;
+        }
+
+        if (gameScreen.isMultipleColorRentConfirmClicked(x, y)) {
+            if (gameScreen.canConfirmMultipleColorRent()) {
+                game.finishMultipleColorRent(
+                        gameScreen.getPendingMultipleColorRentCard(),
+                        gameScreen.getSelectedMultipleColorRentTarget(),
+                        gameScreen.getSelectedMultipleColorRentColor(),
+                        gameScreen.shouldUseDoubleRentForMultipleColorRent()
+                );
+
+                gameScreen.cancelMultipleColorRentSelection();
+            }
+
+            return true;
+        }
+
+        return true;
     }
 
     private boolean handlePaymentSelection(double x, double y) {
@@ -168,6 +219,11 @@ public class GameListener {
             return false;
         }
 
+        if (gameScreen.isTwoColorDoubleRentClicked(x, y)) {
+            gameScreen.toggleTwoColorDoubleRent();
+            return true;
+        }
+
         if (gameScreen.isTwoColorRentCancelClicked(x, y)) {
             gameScreen.cancelTwoColorRentSelection();
             return true;
@@ -178,7 +234,8 @@ public class GameListener {
         if (selectedRentColor != null) {
             game.finishTwoColorRent(
                     gameScreen.getPendingTwoColorRentCard(),
-                    selectedRentColor
+                    selectedRentColor,
+                    gameScreen.shouldUseDoubleRentForTwoColorRent()
             );
 
             gameScreen.cancelTwoColorRentSelection();
@@ -293,6 +350,12 @@ public class GameListener {
             gameScreen.startDealBreakerSelection(actionCard);
             return true;
         }
+
+        if (actionCard.getActionCardType() == ActionCardType.RENT_WITH_MULTIPLE_COLOR) {
+            gameScreen.startMultipleColorRentSelection(actionCard);
+            return true;
+        }
+
 
         return false;
     }

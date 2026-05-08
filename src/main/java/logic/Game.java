@@ -214,6 +214,7 @@ public class Game {
                  RENT_WITH_BROWN_AND_LIGHT_BLUE,
                  RENT_WITH_BLACK_AND_LIGHT_GREEN,
                  RENT_WITH_DARK_BLUE_AND_DARK_GREEN,
+                 RENT_WITH_MULTIPLE_COLOR,
                  DOUBLE_THE_RENT,
                  JUST_SAY_NO -> false;
             default -> true;
@@ -360,16 +361,23 @@ public class Game {
         return canPlayCard(currentPlayer, card);
     }
 
-    public void finishTwoColorRent(ActionCards rentCard, PropertyColor selectedColor) {
+    public void finishTwoColorRent(ActionCards rentCard, PropertyColor selectedColor, boolean useDoubleRent) {
         Player currentPlayer = getCurrentPlayer();
 
         if (!canFinishTwoColorRent(currentPlayer, rentCard, selectedColor)) {
             return;
         }
 
+        boolean canUseDoubleRent = useDoubleRent && hasDoubleTheRentCard(currentPlayer);
+
         moveActionCardToDiscard(currentPlayer, rentCard);
+        discardDoubleTheRentIfUsed(currentPlayer, canUseDoubleRent);
 
         int rent = calculateRentForPlayer(currentPlayer, selectedColor);
+
+        if (canUseDoubleRent) {
+            rent *= 2;
+        }
 
         for (Player player : players) {
             if (player != currentPlayer) {
@@ -381,6 +389,77 @@ public class Game {
 
         increaseUseCardTimes(currentPlayer);
         checkCurrentPlayerWin();
+    }
+
+    public void finishMultipleColorRent(ActionCards rentCard, Player targetPlayer, PropertyColor selectedColor, boolean useDoubleRent) {
+        Player currentPlayer = getCurrentPlayer();
+
+        if (!canFinishMultipleColorRent(currentPlayer, rentCard, targetPlayer, selectedColor)) {
+            return;
+        }
+
+        boolean canUseDoubleRent = useDoubleRent && hasDoubleTheRentCard(currentPlayer);
+
+        moveActionCardToDiscard(currentPlayer, rentCard);
+        discardDoubleTheRentIfUsed(currentPlayer, canUseDoubleRent);
+
+        int rent = calculateRentForPlayer(currentPlayer, selectedColor);
+
+        if (canUseDoubleRent) {
+            rent *= 2;
+        }
+
+        addPaymentRequest(currentPlayer, targetPlayer, rent);
+        startNextPaymentRequest();
+
+        increaseUseCardTimes(currentPlayer);
+        checkCurrentPlayerWin();
+    }
+
+    private boolean canFinishMultipleColorRent(Player currentPlayer, ActionCards card, Player targetPlayer, PropertyColor selectedColor) {
+        if (card == null || targetPlayer == null || selectedColor == null) {
+            return false;
+        }
+
+        if (card.getActionCardType() != ActionCardType.RENT_WITH_MULTIPLE_COLOR) {
+            return false;
+        }
+
+        if (targetPlayer == currentPlayer) {
+            return false;
+        }
+
+        if (!canPlayCard(currentPlayer, card)) {
+            return false;
+        }
+
+        return currentPlayer.canUseRentColor(selectedColor);
+    }
+
+    public boolean hasDoubleTheRentCard(Player player) {
+        for (Card card : player.getHandCards()) {
+            if (card instanceof ActionCards actionCard
+                    && actionCard.getActionCardType() == ActionCardType.DOUBLE_THE_RENT) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private void discardDoubleTheRentIfUsed(Player player, boolean useDoubleRent) {
+        if (!useDoubleRent) {
+            return;
+        }
+
+        for (Card card : new ArrayList<>(player.getHandCards())) {
+            if (card instanceof ActionCards actionCard
+                    && actionCard.getActionCardType() == ActionCardType.DOUBLE_THE_RENT) {
+                player.getHandCards().remove(actionCard);
+                drawCards.getDiscardPile().add(actionCard);
+                return;
+            }
+        }
     }
 
     private int calculateRentForPlayer(Player player, PropertyColor color) {
