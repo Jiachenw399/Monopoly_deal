@@ -21,6 +21,9 @@ public class Game {
     private int currentPlayerIndex;
     private boolean isDiscard;
 
+    private ArrayList<PaymentRequest> paymentRequests = new ArrayList<>();
+    private PaymentRequest currentPaymentRequest = null;
+
     public Game() {
         players = new ArrayList<>();
         drawCards = new DrawPileAndDiscardPile();
@@ -203,6 +206,8 @@ public class Game {
 
         return switch (type) {
             case SLY_DEAL,
+                 DEAL_BREAKER,
+                 BIRTHDAY,
                  DEBT_COLLECTOR,
                  RENT_WITH_RED_AND_YELLOW,
                  RENT_WITH_ORANGE_AND_PINK,
@@ -213,6 +218,31 @@ public class Game {
                  JUST_SAY_NO -> false;
             default -> true;
         };
+    }
+
+    public void finishBirthday(ActionCards birthdayCard) {
+        Player currentPlayer = getCurrentPlayer();
+
+        if (birthdayCard == null || birthdayCard.getActionCardType() != ActionCardType.BIRTHDAY) {
+            return;
+        }
+
+        if (!canPlayCard(currentPlayer, birthdayCard)) {
+            return;
+        }
+
+        moveActionCardToDiscard(currentPlayer, birthdayCard);
+
+        for (Player player : players) {
+            if (player != currentPlayer) {
+                addPaymentRequest(currentPlayer, player, 2);
+            }
+        }
+
+        startNextPaymentRequest();
+
+        increaseUseCardTimes(currentPlayer);
+        checkCurrentPlayerWin();
     }
 
     public void finishSlyDeal(ActionCards slyDealCard, Player targetPlayer, PropertiesCards stolenCard) {
@@ -251,6 +281,54 @@ public class Game {
                 && targetPlayer.canLosePropertyToSlyDeal(stolenCard);
     }
 
+    public void finishDealBreaker(ActionCards dealBreakerCard, Player targetPlayer, ArrayList<PropertiesCards> selectedSet) {
+        Player currentPlayer = getCurrentPlayer();
+
+        if (!canFinishDealBreaker(currentPlayer, dealBreakerCard, targetPlayer, selectedSet)) {
+            return;
+        }
+
+        moveActionCardToDiscard(currentPlayer, dealBreakerCard);
+        targetPlayer.getPropertyCards().removeAll(selectedSet);
+        currentPlayer.getPropertyCards().addAll(selectedSet);
+
+        increaseUseCardTimes(currentPlayer);
+        checkCurrentPlayerWin();
+    }
+
+    private boolean canFinishDealBreaker(Player currentPlayer, ActionCards card, Player targetPlayer, ArrayList<PropertiesCards> selectedSet) {
+        if (card == null || targetPlayer == null || selectedSet == null || selectedSet.isEmpty()) {
+            return false;
+        }
+
+        if (card.getActionCardType() != ActionCardType.DEAL_BREAKER) {
+            return false;
+        }
+
+        if (targetPlayer == currentPlayer) {
+            return false;
+        }
+
+        if (!canPlayCard(currentPlayer, card)) {
+            return false;
+        }
+
+        for (PropertiesCards propertyCard : selectedSet) {
+            if (!targetPlayer.getPropertyCards().contains(propertyCard)) {
+                return false;
+            }
+        }
+
+        PropertyColor color = selectedSet.get(0).getCurrentColor();
+
+        if (color == null) {
+            return false;
+        }
+
+        return selectedSet.size() >= color.getAmountToCompleteSet();
+    }
+
+
     public void finishDebtCollector(ActionCards debtCollectorCard, Player targetPlayer) {
         Player currentPlayer = getCurrentPlayer();
 
@@ -259,7 +337,8 @@ public class Game {
         }
 
         moveActionCardToDiscard(currentPlayer, debtCollectorCard);
-        currentPlayer.takeMoney(5, targetPlayer);
+        addPaymentRequest(currentPlayer, targetPlayer, 5);
+        startNextPaymentRequest();
 
         increaseUseCardTimes(currentPlayer);
         checkCurrentPlayerWin();
@@ -288,8 +367,159 @@ public class Game {
             return;
         }
 
-        currentPlayer.playSelectedTwoColorRent(rentCard, selectedColor);
+        moveActionCardToDiscard(currentPlayer, rentCard);
+
+        int rent = calculateRentForPlayer(currentPlayer, selectedColor);
+
+        for (Player player : players) {
+            if (player != currentPlayer) {
+                addPaymentRequest(currentPlayer, player, rent);
+            }
+        }
+
+        startNextPaymentRequest();
+
+        increaseUseCardTimes(currentPlayer);
         checkCurrentPlayerWin();
+    }
+
+    private int calculateRentForPlayer(Player player, PropertyColor color) {
+        int propertyCount = 0;
+        int rent = 0;
+
+        for (PropertiesCards card : player.getPropertyCards()) {
+            if (card.getCurrentColor() == color) {
+                propertyCount++;
+
+                if (card.hasHouse()) {
+                    rent += 3;
+                }
+
+                if (card.hasHotel()) {
+                    rent += 4;
+                }
+            }
+        }
+
+        rent += propertyCount;
+        return rent;
+    }
+
+    private void addPaymentRequest(Player receiver, Player payer, int amount) {
+        if (receiver == null || payer == null || amount <= 0) {
+            return;
+        }
+
+        if (getTotalAssetsValue(payer) <= 0) {
+            return;
+        }
+
+        paymentRequests.add(new PaymentRequest(receiver, payer, amount));
+    }
+
+    private void startNextPaymentRequest() {
+        if (currentPaymentRequest != null) {
+            return;
+        }
+
+        if (paymentRequests.isEmpty()) {
+            return;
+        }
+
+        currentPaymentRequest = paymentRequests.remove(0);
+    }
+
+    public boolean isPaymentSelecting() {
+        return currentPaymentRequest != null;
+    }
+
+    public PaymentRequest getCurrentPaymentRequest() {
+        return currentPaymentRequest;
+    }
+
+    public void finishCurrentPayment(ArrayList<Card> selectedCards) {
+        if (currentPaymentRequest == null || selectedCards == null || selectedCards.isEmpty()) {
+            return;
+        }
+
+        Player receiver = currentPaymentRequest.getReceiver();
+        Player payer = currentPaymentRequest.getPayer();
+
+        if (!isValidPaymentSelection(payer, selectedCards, currentPaymentRequest.getAmount())) {
+            return;
+        }
+
+        for (Card card : selectedCards) {
+            if (payer.getBankCards().remove(card)) {
+                receiver.getBankCards().add(card);
+            } else if (card instanceof PropertiesCards propertyCard && payer.getPropertyCards().remove(propertyCard)) {
+                receiver.getPropertyCards().add(propertyCard);
+            }
+        }
+
+        currentPaymentRequest = null;
+        startNextPaymentRequest();
+
+        checkCurrentPlayerWin();
+    }
+
+    private boolean isValidPaymentSelection(Player payer, ArrayList<Card> selectedCards, int amount) {
+        int selectedTotal = getCardsValue(selectedCards);
+        int totalAssets = getTotalAssetsValue(payer);
+
+        if (totalAssets <= amount) {
+            return selectedTotal == totalAssets;
+        }
+
+        return selectedTotal >= amount;
+    }
+
+    public int getTotalAssetsValue(Player player) {
+        int total = 0;
+
+        for (Card card : player.getBankCards()) {
+            total += card.getValue();
+        }
+
+        for (PropertiesCards card : player.getPropertyCards()) {
+            total += card.getValue();
+        }
+
+        return total;
+    }
+
+    public int getCardsValue(ArrayList<Card> cards) {
+        int total = 0;
+
+        for (Card card : cards) {
+            total += card.getValue();
+        }
+
+        return total;
+    }
+
+    public static class PaymentRequest {
+        private Player receiver;
+        private Player payer;
+        private int amount;
+
+        public PaymentRequest(Player receiver, Player payer, int amount) {
+            this.receiver = receiver;
+            this.payer = payer;
+            this.amount = amount;
+        }
+
+        public Player getReceiver() {
+            return receiver;
+        }
+
+        public Player getPayer() {
+            return payer;
+        }
+
+        public int getAmount() {
+            return amount;
+        }
     }
 
     private boolean canFinishTwoColorRent(Player currentPlayer, ActionCards card, PropertyColor selectedColor) {

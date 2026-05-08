@@ -24,6 +24,14 @@ public class GameScreen {
     private double slyGap = 15;
     private ActionCards pendingTwoColorRentCard = null;
 
+    private ActionCards pendingDealBreakerCard = null;
+    private double dealBreakerPanelX = 180;
+    private double dealBreakerPanelY = 135;
+    private double dealBreakerCardWidth = 130;
+    private double dealBreakerCardHeight = 120;
+    private double dealBreakerGap = 20;
+    private ArrayList<Card> selectedPaymentCards = new ArrayList<>();
+
     private double rentPanelX = 330;
     private double rentPanelY = 190;
     private double rentButtonWidth = 170;
@@ -46,7 +54,9 @@ public class GameScreen {
     private double cardWidth = 90;
     private double cardHeight = 125;
     private double gap = 12;
-    private double handStartX = 35;
+    private double handStartX = 20;
+    private double handAreaX = 20;
+    private double handAreaWidth = 740;
     private double handStartY = Game.SCREEN_HEIGHT - 150;
 
     public GameScreen(Game game) {
@@ -81,6 +91,8 @@ public class GameScreen {
         drawSlyDealSelection();
         drawDebtCollectorSelection();
         drawTwoColorRentSelection();
+        drawDealBreakerSelection();
+        drawPaymentSelection();
     }
 
     public void drawBackground() {
@@ -197,9 +209,11 @@ public class GameScreen {
 
         double x = 520;
         double y = 255;
-        double w = 110;
+        double w = 115;
         double h = 28;
-        double gap = 6;
+        double gapX = 10;
+        double gapY = 8;
+        int buttonsPerRow = 2;
 
         gc.setFill(Color.WHITE);
         gc.setFont(Font.font("Arial", 16));
@@ -209,19 +223,23 @@ public class GameScreen {
         for (int i = 0; i < selectedWildCard.getType().getColors().size(); i++) {
             PropertyColor color = selectedWildCard.getType().getColors().get(i);
 
-            double buttonY = y + i * (h + gap);
+            int row = i / buttonsPerRow;
+            int col = i % buttonsPerRow;
+
+            double buttonX = x + col * (w + gapX);
+            double buttonY = y + row * (h + gapY);
 
             gc.setFill(Color.LIGHTYELLOW);
-            gc.fillRoundRect(x, buttonY, w, h, 8, 8);
+            gc.fillRoundRect(buttonX, buttonY, w, h, 8, 8);
 
             gc.setStroke(Color.BLACK);
-            gc.strokeRoundRect(x, buttonY, w, h, 8, 8);
+            gc.strokeRoundRect(buttonX, buttonY, w, h, 8, 8);
 
             gc.setFill(Color.BLACK);
             gc.setFont(Font.font("Arial", 11));
             gc.setTextAlign(TextAlignment.CENTER);
             gc.setTextBaseline(VPos.CENTER);
-            gc.fillText(color.name(), x + w / 2, buttonY + h / 2);
+            gc.fillText(color.name(), buttonX + w / 2, buttonY + h / 2);
         }
 
         gc.setTextBaseline(VPos.TOP);
@@ -248,6 +266,7 @@ public class GameScreen {
 
         return null;
     }
+
     public PropertyColor getClickedWildColorButton(double mouseX, double mouseY) {
         if (selectedWildCard == null) {
             return null;
@@ -255,14 +274,20 @@ public class GameScreen {
 
         double x = 520;
         double y = 255;
-        double w = 110;
+        double w = 115;
         double h = 28;
-        double gap = 6;
+        double gapX = 10;
+        double gapY = 8;
+        int buttonsPerRow = 2;
 
         for (int i = 0; i < selectedWildCard.getType().getColors().size(); i++) {
-            double buttonY = y + i * (h + gap);
+            int row = i / buttonsPerRow;
+            int col = i % buttonsPerRow;
 
-            if (mouseX >= x && mouseX <= x + w
+            double buttonX = x + col * (w + gapX);
+            double buttonY = y + row * (h + gapY);
+
+            if (mouseX >= buttonX && mouseX <= buttonX + w
                     && mouseY >= buttonY && mouseY <= buttonY + h) {
                 return selectedWildCard.getType().getColors().get(i);
             }
@@ -277,13 +302,29 @@ public class GameScreen {
         Player currentPlayer = game.getCurrentPlayer();
         ArrayList<Card> handCards = currentPlayer.getHandCards();
 
+        double titleY = Game.SCREEN_HEIGHT - 180;
+
         gc.setFill(Color.WHITE);
         gc.setFont(Font.font("Arial", 18));
-        gc.fillText("Hand Cards", 20, Game.SCREEN_HEIGHT - 180);
+        gc.setTextAlign(TextAlignment.LEFT);
+        gc.setTextBaseline(VPos.TOP);
+        gc.fillText("Hand Cards", handAreaX, titleY);
+
+        double startY = handStartY;
+        double availableWidth = handAreaWidth;
+        double currentGap = gap;
+
+        if (handCards.size() > 1) {
+            double totalWidth = handCards.size() * cardWidth + (handCards.size() - 1) * gap;
+
+            if (totalWidth > availableWidth) {
+                currentGap = (availableWidth - handCards.size() * cardWidth) / (handCards.size() - 1);
+            }
+        }
 
         for (int i = 0; i < handCards.size(); i++) {
-            double x = handStartX + i * (cardWidth + gap);
-            double y = handStartY;
+            double x = handStartX + i * (cardWidth + currentGap);
+            double y = startY;
 
             Card card = handCards.get(i);
             drawHandCard(gc, card, x, y, i + 1);
@@ -684,12 +725,25 @@ public class GameScreen {
 
     public int getClickedHandCardIndex(double mouseX, double mouseY) {
         Player currentPlayer = game.getCurrentPlayer();
+        ArrayList<Card> handCards = currentPlayer.getHandCards();
 
-        for (int i = 0; i < currentPlayer.getHandCards().size(); i++) {
-            double x = handStartX + i * (cardWidth + gap);
+        double availableWidth = handAreaWidth;
+        double currentGap = gap;
+
+        if (handCards.size() > 1) {
+            double totalWidth = handCards.size() * cardWidth + (handCards.size() - 1) * gap;
+
+            if (totalWidth > availableWidth) {
+                currentGap = (availableWidth - handCards.size() * cardWidth) / (handCards.size() - 1);
+            }
+        }
+
+        for (int i = 0; i < handCards.size(); i++) {
+            double x = handStartX + i * (cardWidth + currentGap);
             double y = handStartY;
 
-            if (mouseX >= x && mouseX <= x + cardWidth && mouseY >= y && mouseY <= y + cardHeight) {
+            if (mouseX >= x && mouseX <= x + cardWidth
+                    && mouseY >= y && mouseY <= y + cardHeight) {
                 return i;
             }
         }
@@ -1215,5 +1269,488 @@ public class GameScreen {
         }
 
         return false;
+    }
+
+    public void startDealBreakerSelection(ActionCards card) {
+        pendingDealBreakerCard = card;
+        selectedWildCard = null;
+    }
+
+    public void cancelDealBreakerSelection() {
+        pendingDealBreakerCard = null;
+    }
+
+    public boolean isDealBreakerSelecting() {
+        return pendingDealBreakerCard != null;
+    }
+
+    public ActionCards getPendingDealBreakerCard() {
+        return pendingDealBreakerCard;
+    }
+
+    public boolean isDealBreakerCancelClicked(double mouseX, double mouseY) {
+        return isDealBreakerSelecting()
+                && mouseX >= 720 && mouseX <= 860
+                && mouseY >= 505 && mouseY <= 545;
+    }
+
+    public DealBreakerChoice getClickedDealBreakerChoice(double mouseX, double mouseY) {
+        if (!isDealBreakerSelecting()) {
+            return null;
+        }
+
+        int displayIndex = 0;
+
+        for (int playerIndex = 0; playerIndex < game.getPlayers().size(); playerIndex++) {
+            if (playerIndex == game.getCurrentPlayerIndex()) {
+                continue;
+            }
+
+            Player targetPlayer = game.getPlayers().get(playerIndex);
+
+            for (PropertyColor color : PropertyColor.values()) {
+                ArrayList<PropertiesCards> completeSet = getCompleteSetByColor(targetPlayer, color);
+
+                if (completeSet.isEmpty()) {
+                    continue;
+                }
+
+                double x = dealBreakerPanelX + (displayIndex % 5) * (dealBreakerCardWidth + dealBreakerGap);
+                double y = dealBreakerPanelY + (displayIndex / 5) * (dealBreakerCardHeight + 35);
+
+                if (mouseX >= x && mouseX <= x + dealBreakerCardWidth
+                        && mouseY >= y && mouseY <= y + dealBreakerCardHeight) {
+                    return new DealBreakerChoice(targetPlayer, completeSet);
+                }
+
+                displayIndex++;
+            }
+        }
+
+        return null;
+    }
+
+    private void drawDealBreakerSelection() {
+        if (!isDealBreakerSelecting()) {
+            return;
+        }
+
+        GraphicsContext gc = canvas.getGraphicsContext2D();
+
+        gc.setFill(Color.rgb(0, 0, 0, 0.75));
+        gc.fillRect(0, 0, Game.SCREEN_WIDTH, Game.SCREEN_HEIGHT);
+
+        gc.setFill(Color.WHITE);
+        gc.setFont(Font.font("Arial", 26));
+        gc.setTextAlign(TextAlignment.CENTER);
+        gc.setTextBaseline(VPos.TOP);
+        gc.fillText("DEAL BREAKER: Choose one completed set to steal", Game.SCREEN_WIDTH / 2, 35);
+
+        gc.setFont(Font.font("Arial", 16));
+        gc.fillText("Only completed property sets can be stolen.", Game.SCREEN_WIDTH / 2, 70);
+
+        int displayIndex = 0;
+
+        for (int playerIndex = 0; playerIndex < game.getPlayers().size(); playerIndex++) {
+            if (playerIndex == game.getCurrentPlayerIndex()) {
+                continue;
+            }
+
+            Player targetPlayer = game.getPlayers().get(playerIndex);
+
+            for (PropertyColor color : PropertyColor.values()) {
+                ArrayList<PropertiesCards> completeSet = getCompleteSetByColor(targetPlayer, color);
+
+                if (completeSet.isEmpty()) {
+                    continue;
+                }
+
+                double x = dealBreakerPanelX + (displayIndex % 5) * (dealBreakerCardWidth + dealBreakerGap);
+                double y = dealBreakerPanelY + (displayIndex / 5) * (dealBreakerCardHeight + 35);
+
+                gc.setFill(Color.LIGHTGREEN);
+                gc.fillRoundRect(x, y, dealBreakerCardWidth, dealBreakerCardHeight, 15, 15);
+
+                gc.setStroke(Color.WHITE);
+                gc.strokeRoundRect(x, y, dealBreakerCardWidth, dealBreakerCardHeight, 15, 15);
+
+                gc.setFill(Color.BLACK);
+                gc.setFont(Font.font("Arial", 13));
+                gc.setTextAlign(TextAlignment.CENTER);
+                gc.setTextBaseline(VPos.TOP);
+
+                gc.fillText("Player " + (playerIndex + 1), x + dealBreakerCardWidth / 2, y + 10);
+                gc.fillText(color.name(), x + dealBreakerCardWidth / 2, y + 35);
+                gc.fillText(completeSet.size() + "/" + color.getAmountToCompleteSet() + " Completed",
+                        x + dealBreakerCardWidth / 2, y + 60);
+
+                gc.setFont(Font.font("Arial", 11));
+                gc.fillText("Click to steal set", x + dealBreakerCardWidth / 2, y + 90);
+
+                displayIndex++;
+            }
+        }
+
+        if (displayIndex == 0) {
+            gc.setFill(Color.LIGHTYELLOW);
+            gc.setFont(Font.font("Arial", 22));
+            gc.setTextAlign(TextAlignment.CENTER);
+            gc.fillText("No player has a completed property set.", Game.SCREEN_WIDTH / 2, 260);
+            gc.fillText("This Deal Breaker card cannot be used now.", Game.SCREEN_WIDTH / 2, 295);
+        }
+
+        drawButton(gc, 720, 505, 140, 40, "CANCEL");
+    }
+
+    private ArrayList<PropertiesCards> getCompleteSetByColor(Player player, PropertyColor color) {
+        ArrayList<PropertiesCards> result = new ArrayList<>();
+
+        for (PropertiesCards card : player.getPropertyCards()) {
+            if (card.getCurrentColor() == color) {
+                result.add(card);
+            }
+        }
+
+        if (result.size() >= color.getAmountToCompleteSet()) {
+            return result;
+        }
+
+        return new ArrayList<>();
+    }
+
+    public static class DealBreakerChoice {
+        private Player targetPlayer;
+        private ArrayList<PropertiesCards> selectedSet;
+
+        public DealBreakerChoice(Player targetPlayer, ArrayList<PropertiesCards> selectedSet) {
+            this.targetPlayer = targetPlayer;
+            this.selectedSet = selectedSet;
+        }
+
+        public Player getTargetPlayer() {
+            return targetPlayer;
+        }
+
+        public ArrayList<PropertiesCards> getSelectedSet() {
+            return selectedSet;
+        }
+    }
+
+    private void drawPaymentSelection() {
+        if (!game.isPaymentSelecting()) {
+            return;
+        }
+
+        Game.PaymentRequest request = game.getCurrentPaymentRequest();
+        Player payer = request.getPayer();
+        Player receiver = request.getReceiver();
+
+        GraphicsContext gc = canvas.getGraphicsContext2D();
+
+        gc.setFill(Color.rgb(0, 0, 0, 0.78));
+        gc.fillRect(0, 0, Game.SCREEN_WIDTH, Game.SCREEN_HEIGHT);
+
+        int payerIndex = game.getPlayers().indexOf(payer) + 1;
+        int receiverIndex = game.getPlayers().indexOf(receiver) + 1;
+
+        gc.setFill(Color.WHITE);
+        gc.setFont(Font.font("Arial", 26));
+        gc.setTextAlign(TextAlignment.CENTER);
+        gc.setTextBaseline(VPos.TOP);
+        gc.fillText("PAYMENT REQUIRED", Game.SCREEN_WIDTH / 2, 25);
+
+        gc.setFont(Font.font("Arial", 18));
+        gc.setFill(Color.LIGHTYELLOW);
+        gc.fillText("Now Player " + payerIndex + " must pay Player " + receiverIndex,
+                Game.SCREEN_WIDTH / 2, 60);
+
+        int requiredAmount = Math.min(request.getAmount(), game.getTotalAssetsValue(payer));
+        int selectedTotal = game.getCardsValue(selectedPaymentCards);
+
+        gc.setFill(Color.WHITE);
+        gc.setFont(Font.font("Arial", 16));
+        gc.fillText("Required: " + requiredAmount + "M    Selected: " + selectedTotal + "M",
+                Game.SCREEN_WIDTH / 2, 90);
+
+        if (game.getTotalAssetsValue(payer) < request.getAmount()) {
+            gc.setFill(Color.LIGHTYELLOW);
+            gc.fillText("Not enough assets. Player " + payerIndex + " must pay all available assets.",
+                    Game.SCREEN_WIDTH / 2, 115);
+        }
+
+        drawPaymentBankCards(gc, payer);
+        drawPaymentPropertyCards(gc, payer);
+        drawPaymentReceiverPreview(gc, receiver);
+
+        if (selectedTotal >= requiredAmount) {
+            drawButton(gc, 330, 555, 160, 40, "CONFIRM PAY");
+        } else {
+            drawDisabledButton(gc, 330, 555, 160, 40, "CONFIRM PAY");
+        }
+
+        drawButton(gc, 510, 555, 120, 40, "CLEAR");
+    }
+
+    private void drawPaymentBankCards(GraphicsContext gc, Player payer) {
+        gc.setFill(Color.WHITE);
+        gc.setFont(Font.font("Arial", 19));
+        gc.setTextAlign(TextAlignment.LEFT);
+        gc.fillText("Bank Cards", 60, 145);
+
+        for (int i = 0; i < payer.getBankCards().size(); i++) {
+            Card card = payer.getBankCards().get(i);
+
+            double x = 60 + (i % 7) * 90;
+            double y = 180 + (i / 7) * 105;
+
+            drawPaymentCard(gc, card, x, y, "Money", card.getValue() + "M", Color.GOLD);
+        }
+    }
+
+    private void drawPaymentPropertyCards(GraphicsContext gc, Player payer) {
+        gc.setFill(Color.WHITE);
+        gc.setFont(Font.font("Arial", 19));
+        gc.setTextAlign(TextAlignment.LEFT);
+        gc.fillText("Property Cards", 60, 330);
+
+        for (int i = 0; i < payer.getPropertyCards().size(); i++) {
+            PropertiesCards card = payer.getPropertyCards().get(i);
+
+            double x = 60 + (i % 7) * 90;
+            double y = 365 + (i / 7) * 105;
+
+            String text = card.getCurrentColor() == null ? "NO COLOR" : card.getCurrentColor().name();
+            drawPaymentCard(gc, card, x, y, "Property", text, Color.LIGHTBLUE);
+        }
+    }
+
+    private void drawPaymentReceiverPreview(GraphicsContext gc, Player receiver) {
+        double boxX = 735;
+        double boxY = 145;
+        double boxW = 270;
+        double boxH = 365;
+
+        int receiverIndex = game.getPlayers().indexOf(receiver) + 1;
+
+        gc.setFill(Color.rgb(245, 245, 245));
+        gc.fillRoundRect(boxX, boxY, boxW, boxH, 15, 15);
+
+        gc.setStroke(Color.WHITE);
+        gc.strokeRoundRect(boxX, boxY, boxW, boxH, 15, 15);
+
+        gc.setFill(Color.BLACK);
+        gc.setFont(Font.font("Arial", 17));
+        gc.setTextAlign(TextAlignment.LEFT);
+        gc.setTextBaseline(VPos.TOP);
+
+        gc.fillText("If paid to Player " + receiverIndex + ":", boxX + 15, boxY + 15);
+
+        gc.setFont(Font.font("Arial", 13));
+        gc.fillText("Selected property cards will be added", boxX + 15, boxY + 45);
+        gc.fillText("to this player's property area.", boxX + 15, boxY + 63);
+
+        double startY = boxY + 100;
+        double lineGap = 24;
+
+        int row = 0;
+
+        for (PropertyColor color : PropertyColor.values()) {
+            int originalCount = getPropertyCountByColor(receiver, color);
+            int addedCount = getSelectedPaymentPropertyCountByColor(color);
+            int newCount = originalCount + addedCount;
+            int need = color.getAmountToCompleteSet();
+
+            if (originalCount == 0 && addedCount == 0) {
+                continue;
+            }
+
+            if (newCount >= need) {
+                gc.setFill(Color.GREEN);
+            } else if (addedCount > 0) {
+                gc.setFill(Color.ORANGE);
+            } else {
+                gc.setFill(Color.BLACK);
+            }
+
+            String text = getShortColorName(color)
+                    + ": "
+                    + originalCount
+                    + " + "
+                    + addedCount
+                    + " = "
+                    + newCount
+                    + "/"
+                    + need;
+
+            gc.fillText(text, boxX + 15, startY + row * lineGap);
+
+            if (newCount >= need && originalCount < need) {
+                gc.fillText("NEW SET", boxX + 175, startY + row * lineGap);
+            } else if (newCount >= need) {
+                gc.fillText("COMPLETE", boxX + 175, startY + row * lineGap);
+            }
+
+            row++;
+        }
+
+        if (row == 0) {
+            gc.setFill(Color.GRAY);
+            gc.fillText("No selected property effect yet.", boxX + 15, startY);
+        }
+    }
+
+    private int getPropertyCountByColor(Player player, PropertyColor color) {
+        int count = 0;
+
+        for (PropertiesCards card : player.getPropertyCards()) {
+            if (card.getCurrentColor() == color) {
+                count++;
+            }
+        }
+
+        return count;
+    }
+
+    private int getSelectedPaymentPropertyCountByColor(PropertyColor color) {
+        int count = 0;
+
+        for (Card card : selectedPaymentCards) {
+            if (card instanceof PropertiesCards propertyCard) {
+                if (propertyCard.getCurrentColor() == color) {
+                    count++;
+                }
+            }
+        }
+
+        return count;
+    }
+
+    private void drawPaymentCard(GraphicsContext gc, Card card, double x, double y, String type, String text, Color color) {
+        if (selectedPaymentCards.contains(card)) {
+            gc.setFill(Color.YELLOW);
+            gc.fillRoundRect(x - 5, y - 5, 78, 103, 14, 14);
+        }
+
+        gc.setFill(color);
+        gc.fillRoundRect(x, y, 68, 93, 12, 12);
+
+        gc.setStroke(Color.WHITE);
+        gc.strokeRoundRect(x, y, 68, 93, 12, 12);
+
+        gc.setFill(Color.BLACK);
+        gc.setFont(Font.font("Arial", 11));
+        gc.setTextAlign(TextAlignment.CENTER);
+        gc.setTextBaseline(VPos.TOP);
+
+        gc.fillText(type, x + 34, y + 10);
+        gc.fillText(card.getValue() + "M", x + 34, y + 30);
+
+        gc.setFont(Font.font("Arial", 9));
+        drawWrappedText(gc, text, x + 5, y + 52, 58, 11);
+    }
+
+    private void drawDisabledButton(GraphicsContext gc, double x, double y, double w, double h, String text) {
+        gc.setFill(Color.GRAY);
+        gc.fillRoundRect(x, y, w, h, 12, 12);
+
+        gc.setStroke(Color.BLACK);
+        gc.strokeRoundRect(x, y, w, h, 12, 12);
+
+        gc.setFill(Color.DARKGRAY);
+        gc.setFont(Font.font("Arial", 15));
+        gc.setTextAlign(TextAlignment.CENTER);
+        gc.setTextBaseline(VPos.CENTER);
+        gc.fillText(text, x + w / 2, y + h / 2);
+        gc.setTextBaseline(VPos.TOP);
+    }
+
+    public boolean isPaymentConfirmClicked(double mouseX, double mouseY) {
+        if (!game.isPaymentSelecting()) {
+            return false;
+        }
+
+        return mouseX >= 360 && mouseX <= 510 && mouseY >= 540 && mouseY <= 580;
+    }
+
+    public boolean isPaymentClearClicked(double mouseX, double mouseY) {
+        if (!game.isPaymentSelecting()) {
+            return false;
+        }
+
+        return mouseX >= 530 && mouseX <= 650 && mouseY >= 540 && mouseY <= 580;
+    }
+
+    public void clearPaymentSelection() {
+        selectedPaymentCards.clear();
+    }
+
+    public ArrayList<Card> getSelectedPaymentCards() {
+        return new ArrayList<>(selectedPaymentCards);
+    }
+
+    public boolean canConfirmPayment() {
+        if (!game.isPaymentSelecting()) {
+            return false;
+        }
+
+        Game.PaymentRequest request = game.getCurrentPaymentRequest();
+
+        int requiredAmount = Math.min(request.getAmount(), game.getTotalAssetsValue(request.getPayer()));
+        int selectedTotal = game.getCardsValue(selectedPaymentCards);
+
+        return selectedTotal >= requiredAmount;
+    }
+
+    public boolean handlePaymentCardClick(double mouseX, double mouseY) {
+        if (!game.isPaymentSelecting()) {
+            return false;
+        }
+
+        Game.PaymentRequest request = game.getCurrentPaymentRequest();
+        Player payer = request.getPayer();
+
+        Card clickedCard = getClickedPaymentBankCard(mouseX, mouseY, payer);
+
+        if (clickedCard == null) {
+            clickedCard = getClickedPaymentPropertyCard(mouseX, mouseY, payer);
+        }
+
+        if (clickedCard == null) {
+            return false;
+        }
+
+        if (selectedPaymentCards.contains(clickedCard)) {
+            selectedPaymentCards.remove(clickedCard);
+        } else {
+            selectedPaymentCards.add(clickedCard);
+        }
+
+        return true;
+    }
+
+    private Card getClickedPaymentBankCard(double mouseX, double mouseY, Player payer) {
+        for (int i = 0; i < payer.getBankCards().size(); i++) {
+            double x = 60 + (i % 7) * 90;
+            double y = 180 + (i / 7) * 105;
+
+            if (mouseX >= x && mouseX <= x + 68 && mouseY >= y && mouseY <= y + 93) {
+                return payer.getBankCards().get(i);
+            }
+        }
+
+        return null;
+    }
+
+    private Card getClickedPaymentPropertyCard(double mouseX, double mouseY, Player payer) {
+        for (int i = 0; i < payer.getPropertyCards().size(); i++) {
+            double x = 60 + (i % 7) * 90;
+            double y = 365 + (i / 7) * 105;
+
+            if (mouseX >= x && mouseX <= x + 68 && mouseY >= y && mouseY <= y + 93) {
+                return payer.getPropertyCards().get(i);
+            }
+        }
+
+        return null;
     }
 }

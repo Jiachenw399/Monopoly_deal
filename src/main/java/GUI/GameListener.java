@@ -48,7 +48,15 @@ public class GameListener {
     }
 
     private boolean handleSelectionModeClick(double x, double y) {
+        if (handlePaymentSelection(x, y)) {
+            return true;
+        }
+
         if (handleSlyDealSelection(x, y)) {
+            return true;
+        }
+
+        if (handleDealBreakerSelection(x, y)) {
             return true;
         }
 
@@ -57,6 +65,53 @@ public class GameListener {
         }
 
         return handleTwoColorRentSelection(x, y);
+    }
+
+    private boolean handlePaymentSelection(double x, double y) {
+        if (!game.isPaymentSelecting()) {
+            return false;
+        }
+
+        if (gameScreen.isPaymentClearClicked(x, y)) {
+            gameScreen.clearPaymentSelection();
+            return true;
+        }
+
+        if (gameScreen.isPaymentConfirmClicked(x, y)) {
+            if (gameScreen.canConfirmPayment()) {
+                game.finishCurrentPayment(gameScreen.getSelectedPaymentCards());
+                gameScreen.clearPaymentSelection();
+            }
+
+            return true;
+        }
+
+        return gameScreen.handlePaymentCardClick(x, y);
+    }
+
+    private boolean handleDealBreakerSelection(double x, double y) {
+        if (!gameScreen.isDealBreakerSelecting()) {
+            return false;
+        }
+
+        if (gameScreen.isDealBreakerCancelClicked(x, y)) {
+            gameScreen.cancelDealBreakerSelection();
+            return true;
+        }
+
+        GameScreen.DealBreakerChoice choice = gameScreen.getClickedDealBreakerChoice(x, y);
+
+        if (choice != null) {
+            game.finishDealBreaker(
+                    gameScreen.getPendingDealBreakerCard(),
+                    choice.getTargetPlayer(),
+                    choice.getSelectedSet()
+            );
+
+            gameScreen.cancelDealBreakerSelection();
+        }
+
+        return true;
     }
 
     private boolean handleSlyDealSelection(double x, double y) {
@@ -226,6 +281,16 @@ public class GameListener {
 
         if (isTwoColorRentCard(actionCard)) {
             gameScreen.startTwoColorRentSelection(actionCard);
+            return true;
+        }
+
+        if (actionCard.getActionCardType() == ActionCardType.BIRTHDAY) {
+            game.finishBirthday(actionCard);
+            return true;
+        }
+
+        if (actionCard.getActionCardType() == ActionCardType.DEAL_BREAKER) {
+            gameScreen.startDealBreakerSelection(actionCard);
             return true;
         }
 
