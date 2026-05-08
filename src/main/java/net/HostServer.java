@@ -11,7 +11,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
-import java.util.stream.Collectors;
 
 /**
  * 房主版联机（最简框架）：\n
@@ -175,7 +174,14 @@ public final class HostServer {
 
     private void broadcastLobby() {
         String n = String.join(",", Arrays.stream(nicknames).map(s -> s == null ? "" : s).toList());
-        String r = Arrays.stream(ready).mapToObj(Boolean::toString).collect(Collectors.joining(","));
+        StringBuilder rb = new StringBuilder();
+        for (int i = 0; i < ready.length; i++) {
+            if (i > 0) {
+                rb.append(',');
+            }
+            rb.append(ready[i]);
+        }
+        String r = rb.toString();
         Protocol.Message msg = new Protocol.Message(Protocol.LOBBY, new String[] {n, r});
         for (int s = 1; s <= 3; s++) {
             send(s, msg);
