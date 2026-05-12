@@ -33,7 +33,7 @@ public class GameClient {
                 Scanner scanner = new Scanner(System.in)
         ) {
             System.out.println("Connected to server: " + host + ":" + PORT);
-            System.out.println("Server says: " + in.readLine());
+            startServerListener(in);
             System.out.println("Type HELLO, END_TURN, or QUIT.");
 
             while (true) {
@@ -45,10 +45,30 @@ public class GameClient {
                 }
 
                 out.println(new NetworkMessage(input.toUpperCase(), "").encode());
-                System.out.println("Server says: " + in.readLine());
             }
         } catch (IOException e) {
             System.out.println("Client error: " + e.getMessage());
         }
+    }
+
+    private void startServerListener(BufferedReader in) {
+        Thread listenerThread = new Thread(() -> {
+            try {
+                String line;
+
+                while ((line = in.readLine()) != null) {
+                    NetworkMessage message = NetworkMessage.decode(line);
+                    System.out.println();
+                    System.out.println("Server says: " + message.getType() + " " + message.getBody());
+                    System.out.print("> ");
+                }
+            } catch (IOException e) {
+                System.out.println();
+                System.out.println("Disconnected from server.");
+            }
+        });
+
+        listenerThread.setDaemon(true);
+        listenerThread.start();
     }
 }
