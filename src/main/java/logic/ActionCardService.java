@@ -417,4 +417,15 @@ public class ActionCardService {
 
         return null;
     }
+    public boolean finishPassGo(Player currentPlayer, ActionCards passGoCard) {
+        if (!canFinishActionCard(currentPlayer, passGoCard, ActionCardType.PASS_GO)) {
+            return false;
+        }
+
+        moveActionCardToDiscard(currentPlayer, passGoCard);
+        currentPlayer.takeCard(2);
+        increaseUseCardTimes(currentPlayer);
+
+        return true;
+    }
 }

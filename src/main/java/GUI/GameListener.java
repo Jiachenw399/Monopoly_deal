@@ -406,7 +406,10 @@ public class GameListener {
                 gameScreen.startTwoColorRentSelection(actionCard);
                 yield true;
             }
-            case PASS_GO -> false;
+            case PASS_GO -> {
+                game.finishPassGo(actionCard);
+                yield true;
+            }
             default -> false;
         };
     }

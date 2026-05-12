@@ -247,4 +247,11 @@ public class Game {
 
         public int getAmount() {return amount;}
     }
+    public void finishPassGo(ActionCards passGoCard) {
+        boolean success = actionCardService.finishPassGo(getCurrentPlayer(), passGoCard);
+
+        if (success) {
+            checkCurrentPlayerWin();
+        }
+    }
 }

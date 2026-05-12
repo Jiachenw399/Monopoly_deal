@@ -49,36 +49,11 @@ public class CardPlayService {
             return true;
         }
 
-        if (card instanceof ActionCards actionCard) {
-            if (!canPlayActionCardDirectly(actionCard)) {
-                return false;
-            }
-
-            currentPlayer.putActionCard(actionCard);
-            return true;
+        if (card instanceof ActionCards) {
+            return false;
         }
 
         return false;
-    }
-
-    private boolean canPlayActionCardDirectly(ActionCards card) {
-        ActionCardType type = card.getActionCardType();
-
-        return switch (type) {
-            case SLY_DEAL,
-                 DEAL_BREAKER,
-                 BIRTHDAY,
-                 DEBT_COLLECTOR,
-                 RENT_WITH_RED_AND_YELLOW,
-                 RENT_WITH_ORANGE_AND_PINK,
-                 RENT_WITH_BROWN_AND_LIGHT_BLUE,
-                 RENT_WITH_BLACK_AND_LIGHT_GREEN,
-                 RENT_WITH_DARK_BLUE_AND_DARK_GREEN,
-                 RENT_WITH_MULTIPLE_COLOR,
-                 DOUBLE_THE_RENT,
-                 JUST_SAY_NO -> false;
-            default -> true;
-        };
     }
 
     private void increaseUseCardTimes(Player player) {
