@@ -41,13 +41,15 @@ public class GameScreen {
     private double smallCardWidth = 60;
     private double smallCardHeight = 85;
     private double propertyGap = 75;
-    private double cardWidth = 90;
-    private double cardHeight = 125;
-    private double gap = 12;
+    private double cardWidth = 82;
+    private double cardHeight = 112;
+    private double gap = 10;
     private double handStartX = 20;
     private double handAreaX = 20;
     private double handAreaWidth = 740;
     private double handStartY = Game.SCREEN_HEIGHT - 150;
+
+    private ActionCards pendingBuildingCard = null;
 
     public GameScreen(Game game) {
         this.game = game;
@@ -74,7 +76,6 @@ public class GameScreen {
     public void paint() {
         drawBackground();
         drawCurrentPlayer();
-        drawDeckInfo();
         drawBankCards();
         drawPropertyCards();
         drawHandCards();
@@ -88,6 +89,7 @@ public class GameScreen {
         dealBreakerPanel.draw(canvas.getGraphicsContext2D());
         drawPaymentSelection();
         drawMultipleColorRentSelection();
+        drawBuildingSelection();
     }
 
     public void drawBackground() {
@@ -117,55 +119,72 @@ public class GameScreen {
                 "Sets " + completedSets + "/3",
                 Color.rgb(167, 243, 208));
 
+        drawDeckInfoBesideSets(gc);
+
         if (game.isDiscard()) {
             gc.setFill(ScreenDrawHelper.DANGER);
             gc.setFont(Font.font("Arial", 15));
-            gc.fillText("Discard Phase: discard " + (currentPlayer.getHandCards().size() - 7) + " card(s)", 370, 67);
-        } else {
-            gc.setFill(ScreenDrawHelper.MUTED_TEXT);
-            gc.setFont(Font.font("Arial", 15));
-            gc.fillText("Click a hand card to play it, or press END TURN.", 370, 67);
+            gc.fillText("Discard Phase: discard " + (currentPlayer.getHandCards().size() - 7) + " card(s)", 520, 67);
         }
     }
 
-    private void drawDeckInfo() {
-        GraphicsContext gc = canvas.getGraphicsContext2D();
+    private void drawDeckInfoBesideSets(GraphicsContext gc) {
+        int remainingCards = game.getDrawCards().getDrawPile().size();
 
-        ScreenDrawHelper.drawPanel(gc, 770, 16, 240, 70);
+        double deckX = 375;
+        double deckY = 42;
+        double cardWidth = 34;
+        double cardHeight = 44;
 
-        gc.setTextAlign(TextAlignment.LEFT);
-        gc.setTextBaseline(VPos.TOP);
-        gc.setFont(Font.font("Arial", 15));
+        int thickness = Math.max(1, Math.min(6, remainingCards / 15 + 1));
+
+        for (int i = thickness - 1; i >= 0; i--) {
+            double offset = i * 2.2;
+
+            gc.setFill(Color.rgb(240, 245, 255));
+            gc.fillRoundRect(deckX - offset, deckY + offset, cardWidth, cardHeight, 6, 6);
+
+            gc.setStroke(Color.rgb(70, 85, 110));
+            gc.strokeRoundRect(deckX - offset, deckY + offset, cardWidth, cardHeight, 6, 6);
+        }
+
+        gc.setFill(ScreenDrawHelper.ACCENT);
+        gc.setFont(Font.font("Arial", 13));
+        gc.setTextAlign(TextAlignment.CENTER);
+        gc.setTextBaseline(VPos.CENTER);
+        gc.fillText(String.valueOf(remainingCards), deckX + cardWidth / 2, deckY + cardHeight / 2);
 
         gc.setFill(ScreenDrawHelper.MUTED_TEXT);
-        gc.fillText("Draw Pile", 792, 29);
-        gc.fillText("Discard Pile", 792, 55);
-
-        gc.setFill(ScreenDrawHelper.TEXT);
-        gc.setFont(Font.font("Arial", 17));
-        gc.fillText(String.valueOf(game.getDrawCards().getDrawPile().size()), 920, 27);
-        gc.fillText(String.valueOf(game.getDrawCards().getDiscardPile().size()), 920, 53);
+        gc.setFont(Font.font("Arial", 13));
+        gc.setTextAlign(TextAlignment.LEFT);
+        gc.setTextBaseline(VPos.TOP);
+        gc.fillText("Draw Pile", deckX + 48, deckY + 3);
+        gc.fillText(remainingCards + " left", deckX + 48, deckY + 23);
     }
 
     private void drawBankCards() {
         GraphicsContext gc = canvas.getGraphicsContext2D();
         Player currentPlayer = game.getCurrentPlayer();
 
-        ScreenDrawHelper.drawPanel(gc, 16, 118, 735, 122);
+        ScreenDrawHelper.drawPanel(gc, 16, 118, 735, 128);
         ScreenDrawHelper.drawSectionTitle(gc, "Bank Area", 32, 132);
-
-        double x = 32;
-        double y = 160;
 
         int total = PlayerInfoHelper.getBankTotal(currentPlayer);
 
         gc.setFont(Font.font("Arial", 15));
         gc.setFill(ScreenDrawHelper.ACCENT);
-        gc.fillText("Total Money: " + total + "M", 135, 134);
+        gc.fillText("Total Money: " + total + "M", 190, 134);
+
+        double startX = 32;
+        double startY = 160;
+        double cardGap = 75;
 
         int index = 0;
         for (Card card : currentPlayer.getBankCards()) {
-            ScreenDrawHelper.drawSmallCard(gc, x + index * 65, y, "Money", card.getValue() + "M", Color.GOLD);
+            double x = startX + index * cardGap;
+            double y = startY;
+
+            ScreenDrawHelper.drawSmallCard(gc, x, y, "Money", card.getValue() + "M", Color.GOLD);
             index++;
         }
     }
@@ -174,13 +193,17 @@ public class GameScreen {
         GraphicsContext gc = canvas.getGraphicsContext2D();
         Player currentPlayer = game.getCurrentPlayer();
 
-        ScreenDrawHelper.drawPanel(gc, 16, 250, 735, 128);
-        ScreenDrawHelper.drawSectionTitle(gc, "Property Area", 32, 264);
+        ScreenDrawHelper.drawPanel(gc, 16, 260, 735, 128);
+        ScreenDrawHelper.drawSectionTitle(gc, "Property Area", 32, 274);
+
+        double startX = 32;
+        double startY = 302;
+        double cardGap = 75;
 
         int index = 0;
         for (PropertiesCards card : currentPlayer.getPropertyCards()) {
-            double x = propertyStartX + index * propertyGap;
-            double y = propertyStartY;
+            double x = startX + index * cardGap;
+            double y = startY;
 
             String colorText = card.getCurrentColor() == null ? "NO COLOR" : card.getCurrentColor().name();
 
@@ -193,6 +216,8 @@ public class GameScreen {
 
             ScreenDrawHelper.drawSmallCard(gc, x, y, "Property", colorText, Color.LIGHTBLUE);
 
+            drawPropertyBuildingLabel(gc, card, x, y);
+
             if (card.isWildCard()) {
                 gc.setFill(Color.RED);
                 gc.setFont(Font.font("Arial", 10));
@@ -204,6 +229,29 @@ public class GameScreen {
         }
 
         drawWildColorButtons();
+    }
+
+    private void drawPropertyBuildingLabel(GraphicsContext gc, PropertiesCards card, double x, double y) {
+        PropertyColor color = card.getCurrentColor();
+
+        if (color == null) {
+            return;
+        }
+
+        if (PlayerInfoHelper.hasHotel(game.getCurrentPlayer(), color)) {
+            gc.setFill(Color.DARKBLUE);
+            gc.setFont(Font.font("Arial", 10));
+            gc.setTextAlign(TextAlignment.CENTER);
+            gc.fillText("HOTEL", x + smallCardWidth / 2, y + smallCardHeight - 6);
+            return;
+        }
+
+        if (PlayerInfoHelper.hasHouse(game.getCurrentPlayer(), color)) {
+            gc.setFill(Color.DARKGREEN);
+            gc.setFont(Font.font("Arial", 10));
+            gc.setTextAlign(TextAlignment.CENTER);
+            gc.fillText("HOUSE", x + smallCardWidth / 2, y + smallCardHeight - 6);
+        }
     }
 
     private void drawWildColorButtons() {
@@ -315,7 +363,7 @@ public class GameScreen {
         gc.setFont(Font.font("Arial", 18));
         gc.setTextAlign(TextAlignment.LEFT);
         gc.setTextBaseline(VPos.TOP);
-        gc.fillText("Hand Cards", handAreaX, titleY);
+        gc.fillText("Hand Cards", 32, titleY);
 
         double startY = handStartY;
         double availableWidth = handAreaWidth;
@@ -1273,5 +1321,162 @@ public class GameScreen {
         }
 
         return rent + propertyCount;
+    }
+
+    public void startBuildingSelection(ActionCards card) {
+        pendingBuildingCard = card;
+        selectedWildCard = null;
+    }
+
+    public void cancelBuildingSelection() {
+        pendingBuildingCard = null;
+    }
+
+    public boolean isBuildingSelecting() {
+        return pendingBuildingCard != null;
+    }
+
+    public ActionCards getPendingBuildingCard() {
+        return pendingBuildingCard;
+    }
+
+    public boolean isBuildingCancelClicked(double mouseX, double mouseY) {
+        return isBuildingSelecting()
+                && mouseX >= 720 && mouseX <= 860
+                && mouseY >= 505 && mouseY <= 545;
+    }
+
+    public PropertyColor getClickedBuildingColor(double mouseX, double mouseY) {
+        if (!isBuildingSelecting()) {
+            return null;
+        }
+
+        ArrayList<PropertyColor> colors = getAvailableBuildingColors();
+
+        double startX = 260;
+        double startY = 160;
+        double width = 160;
+        double height = 45;
+        double gapX = 20;
+        double gapY = 18;
+        int buttonsPerRow = 3;
+
+        for (int i = 0; i < colors.size(); i++) {
+            int row = i / buttonsPerRow;
+            int col = i % buttonsPerRow;
+
+            double x = startX + col * (width + gapX);
+            double y = startY + row * (height + gapY);
+
+            if (mouseX >= x && mouseX <= x + width
+                    && mouseY >= y && mouseY <= y + height) {
+                return colors.get(i);
+            }
+        }
+
+        return null;
+    }
+
+    private ArrayList<PropertyColor> getAvailableBuildingColors() {
+        ArrayList<PropertyColor> result = new ArrayList<>();
+        Player currentPlayer = game.getCurrentPlayer();
+
+        if (pendingBuildingCard == null) {
+            return result;
+        }
+
+        for (PropertyColor color : PropertyColor.values()) {
+            int count = PlayerInfoHelper.getPropertyCountByCurrentColor(currentPlayer, color);
+            boolean complete = count >= color.getAmountToCompleteSet();
+
+            if (!complete) {
+                continue;
+            }
+
+            if (pendingBuildingCard.getActionCardType() == ActionCardType.HOUSE) {
+                if (!PlayerInfoHelper.hasHouse(currentPlayer, color)) {
+                    result.add(color);
+                }
+            } else if (pendingBuildingCard.getActionCardType() == ActionCardType.HOTEL) {
+                if (PlayerInfoHelper.hasHouse(currentPlayer, color)
+                        && !PlayerInfoHelper.hasHotel(currentPlayer, color)) {
+                    result.add(color);
+                }
+            }
+        }
+
+        return result;
+    }
+
+    private void drawBuildingSelection() {
+        if (!isBuildingSelecting()) {
+            return;
+        }
+
+        GraphicsContext gc = canvas.getGraphicsContext2D();
+
+        gc.setFill(Color.rgb(0, 0, 0, 0.76));
+        gc.fillRect(0, 0, Game.SCREEN_WIDTH, Game.SCREEN_HEIGHT);
+
+        String title = pendingBuildingCard.getActionCardType() == ActionCardType.HOUSE
+                ? "HOUSE: Choose a completed set"
+                : "HOTEL: Choose a completed set with a house";
+
+        gc.setFill(Color.WHITE);
+        gc.setFont(Font.font("Arial", 26));
+        gc.setTextAlign(TextAlignment.CENTER);
+        gc.setTextBaseline(VPos.TOP);
+        gc.fillText(title, Game.SCREEN_WIDTH / 2, 55);
+
+        gc.setFont(Font.font("Arial", 16));
+        gc.fillText("House adds +3M rent. Hotel adds another +4M rent.",
+                Game.SCREEN_WIDTH / 2, 92);
+
+        drawBuildingColorButtons(gc);
+        ScreenDrawHelper.drawButton(gc, 720, 505, 140, 40, "CANCEL");
+    }
+
+    private void drawBuildingColorButtons(GraphicsContext gc) {
+        ArrayList<PropertyColor> colors = getAvailableBuildingColors();
+
+        if (colors.isEmpty()) {
+            gc.setFill(Color.LIGHTYELLOW);
+            gc.setFont(Font.font("Arial", 20));
+            gc.setTextAlign(TextAlignment.CENTER);
+            gc.fillText("No available property set for this card.", Game.SCREEN_WIDTH / 2, 250);
+            return;
+        }
+
+        double startX = 260;
+        double startY = 160;
+        double width = 160;
+        double height = 45;
+        double gapX = 20;
+        double gapY = 18;
+        int buttonsPerRow = 3;
+
+        for (int i = 0; i < colors.size(); i++) {
+            PropertyColor color = colors.get(i);
+
+            int row = i / buttonsPerRow;
+            int col = i % buttonsPerRow;
+
+            double x = startX + col * (width + gapX);
+            double y = startY + row * (height + gapY);
+
+            gc.setFill(Color.LIGHTGREEN);
+            gc.fillRoundRect(x, y, width, height, 12, 12);
+
+            gc.setStroke(Color.WHITE);
+            gc.strokeRoundRect(x, y, width, height, 12, 12);
+
+            gc.setFill(Color.BLACK);
+            gc.setFont(Font.font("Arial", 14));
+            gc.setTextAlign(TextAlignment.CENTER);
+            gc.setTextBaseline(VPos.CENTER);
+            gc.fillText(color.name(), x + width / 2, y + height / 2);
+        }
+
+        gc.setTextBaseline(VPos.TOP);
     }
 }

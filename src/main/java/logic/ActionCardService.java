@@ -320,4 +320,101 @@ public class ActionCardService {
     private void increaseUseCardTimes(Player player) {
         player.setUseCardTimes(player.getUseCardTimes() + 1);
     }
+
+    public boolean finishHouse(Player currentPlayer, ActionCards houseCard, PropertyColor selectedColor) {
+        if (!canFinishHouse(currentPlayer, houseCard, selectedColor)) {
+            return false;
+        }
+
+        moveActionCardToDiscard(currentPlayer, houseCard);
+
+        PropertiesCards property = findFirstPropertyByColor(currentPlayer, selectedColor);
+        property.setHasHouse(true);
+
+        increaseUseCardTimes(currentPlayer);
+        return true;
+    }
+
+    public boolean finishHotel(Player currentPlayer, ActionCards hotelCard, PropertyColor selectedColor) {
+        if (!canFinishHotel(currentPlayer, hotelCard, selectedColor)) {
+            return false;
+        }
+
+        moveActionCardToDiscard(currentPlayer, hotelCard);
+
+        PropertiesCards property = findFirstPropertyByColor(currentPlayer, selectedColor);
+        property.setHasHotel(true);
+
+        increaseUseCardTimes(currentPlayer);
+        return true;
+    }
+
+    private boolean canFinishHouse(Player currentPlayer, ActionCards card, PropertyColor selectedColor) {
+        if (!canFinishActionCard(currentPlayer, card, ActionCardType.HOUSE)) {
+            return false;
+        }
+
+        if (selectedColor == null) {
+            return false;
+        }
+
+        return isCompleteSet(currentPlayer, selectedColor)
+                && !hasHouse(currentPlayer, selectedColor);
+    }
+
+    private boolean canFinishHotel(Player currentPlayer, ActionCards card, PropertyColor selectedColor) {
+        if (!canFinishActionCard(currentPlayer, card, ActionCardType.HOTEL)) {
+            return false;
+        }
+
+        if (selectedColor == null) {
+            return false;
+        }
+
+        return isCompleteSet(currentPlayer, selectedColor)
+                && hasHouse(currentPlayer, selectedColor)
+                && !hasHotel(currentPlayer, selectedColor);
+    }
+
+    private boolean isCompleteSet(Player player, PropertyColor color) {
+        int count = 0;
+
+        for (PropertiesCards card : player.getPropertyCards()) {
+            if (card.getCurrentColor() == color) {
+                count++;
+            }
+        }
+
+        return count >= color.getAmountToCompleteSet();
+    }
+
+    private boolean hasHouse(Player player, PropertyColor color) {
+        for (PropertiesCards card : player.getPropertyCards()) {
+            if (card.getCurrentColor() == color && card.hasHouse()) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private boolean hasHotel(Player player, PropertyColor color) {
+        for (PropertiesCards card : player.getPropertyCards()) {
+            if (card.getCurrentColor() == color && card.hasHotel()) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private PropertiesCards findFirstPropertyByColor(Player player, PropertyColor color) {
+        for (PropertiesCards card : player.getPropertyCards()) {
+            if (card.getCurrentColor() == color) {
+                return card;
+            }
+        }
+
+        return null;
+    }
 }

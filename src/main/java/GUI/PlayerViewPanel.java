@@ -12,15 +12,15 @@ import model.PropertyColor;
 
 public class PlayerViewPanel {
     private static final double BUTTON_X = 760;
-    private static final double BUTTON_Y = 90;
+    private static final double BUTTON_Y = 55;
     private static final double BUTTON_WIDTH = 100;
     private static final double BUTTON_HEIGHT = 35;
     private static final double BUTTON_GAP = 10;
 
     private static final double BOX_X = 865;
-    private static final double BOX_Y = 85;
+    private static final double BOX_Y = 45;
     private static final double BOX_WIDTH = 160;
-    private static final double BOX_HEIGHT = 430;
+    private static final double BOX_HEIGHT = 470;
 
     public static void drawPlayerViewButtons(GraphicsContext gc, Game game, int viewedPlayerIndex) {
         for (int i = 0; i < game.getPlayers().size(); i++) {
@@ -82,7 +82,7 @@ public class PlayerViewPanel {
 
     private static void drawBasicPlayerInfo(GraphicsContext gc, Player viewedPlayer, int viewedPlayerIndex) {
         double textX = BOX_X + 10;
-        double textY = BOX_Y + 10;
+        double textY = BOX_Y + 8;
 
         gc.setFill(Color.rgb(30, 35, 48));
         gc.setFont(Font.font("Arial", 15));
@@ -147,7 +147,7 @@ public class PlayerViewPanel {
         double leftX = BOX_X + 10;
         double rightX = BOX_X + 85;
         double startY = BOX_Y + 220;
-        double lineGap = 30;
+        double lineGap = 34;
 
         PropertyColor[] colors = PropertyColor.values();
 
@@ -175,12 +175,18 @@ public class PlayerViewPanel {
         }
 
         gc.setFont(Font.font("Arial", 10));
+        gc.setTextAlign(TextAlignment.LEFT);
+        gc.setTextBaseline(VPos.TOP);
         gc.fillText(PlayerInfoHelper.getShortColorName(color) + ": " + current + "/" + need, x, y);
 
         if (PlayerInfoHelper.hasHotel(viewedPlayer, color)) {
-            ScreenIconHelper.drawHotelIcon(gc, x + 45, y - 2);
+            gc.setFill(Color.rgb(30, 70, 150));
+            gc.setFont(Font.font("Arial", 9));
+            gc.fillText("HOTEL", x, y + 13);
         } else if (PlayerInfoHelper.hasHouse(viewedPlayer, color)) {
-            ScreenIconHelper.drawHouseIcon(gc, x + 45, y - 2);
+            gc.setFill(Color.rgb(36, 120, 70));
+            gc.setFont(Font.font("Arial", 9));
+            gc.fillText("HOUSE", x, y + 13);
         }
     }
 }

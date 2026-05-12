@@ -169,6 +169,22 @@ public class Game {
         }
     }
 
+    public void finishHouse(ActionCards houseCard, PropertyColor selectedColor) {
+        boolean success = actionCardService.finishHouse(getCurrentPlayer(), houseCard, selectedColor);
+
+        if (success) {
+            checkCurrentPlayerWin();
+        }
+    }
+
+    public void finishHotel(ActionCards hotelCard, PropertyColor selectedColor) {
+        boolean success = actionCardService.finishHotel(getCurrentPlayer(), hotelCard, selectedColor);
+
+        if (success) {
+            checkCurrentPlayerWin();
+        }
+    }
+
     public boolean hasDoubleTheRentCard(Player player) {return actionCardService.hasDoubleTheRentCard(player);}
 
     public boolean isPaymentSelecting() {return paymentManager.isPaymentSelecting();}

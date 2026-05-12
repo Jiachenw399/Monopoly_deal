@@ -68,6 +68,10 @@ public class GameListener {
             return true;
         }
 
+        if (handleBuildingSelection(x, y)) {
+            return true;
+        }
+
         return handleTwoColorRentSelection(x, y);
     }
 
@@ -274,6 +278,33 @@ public class GameListener {
         return false;
     }
 
+    private boolean handleBuildingSelection(double x, double y) {
+        if (!gameScreen.isBuildingSelecting()) {
+            return false;
+        }
+
+        if (gameScreen.isBuildingCancelClicked(x, y)) {
+            gameScreen.cancelBuildingSelection();
+            return true;
+        }
+
+        PropertyColor selectedColor = gameScreen.getClickedBuildingColor(x, y);
+
+        if (selectedColor != null) {
+            ActionCards card = gameScreen.getPendingBuildingCard();
+
+            if (card.getActionCardType() == ActionCardType.HOUSE) {
+                game.finishHouse(card, selectedColor);
+            } else if (card.getActionCardType() == ActionCardType.HOTEL) {
+                game.finishHotel(card, selectedColor);
+            }
+
+            gameScreen.cancelBuildingSelection();
+        }
+
+        return true;
+    }
+
     private boolean handleButtonClick(double x, double y) {
         if (gameScreen.isEndTurnClicked(x, y)) {
             game.guiEndTurn();
@@ -316,6 +347,10 @@ public class GameListener {
             return;
         }
 
+        if (currentPlayer.getUseCardTimes() >= 3) {
+            return;
+        }
+
         if (handleActionCardClick(selectedCard)) {
             return;
         }
@@ -343,7 +378,10 @@ public class GameListener {
                 gameScreen.startMultipleColorRentSelection(actionCard);
                 yield true;
             }
-            case HOUSE -> false;
+            case HOUSE -> {
+                gameScreen.startBuildingSelection(actionCard);
+                yield true;
+            }
             case FORCED_DEAL -> false;
             case BIRTHDAY -> {
                 game.finishBirthday(actionCard);
@@ -355,7 +393,10 @@ public class GameListener {
                 yield true;
             }
             case DOUBLE_THE_RENT -> false;
-            case HOTEL -> false;
+            case HOTEL -> {
+                gameScreen.startBuildingSelection(actionCard);
+                yield true;
+            }
             case DEAL_BREAKER -> {
                 gameScreen.startDealBreakerSelection(actionCard);
                 yield true;
