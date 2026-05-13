@@ -1,5 +1,8 @@
 package network;
 
+import logic.Game;
+import model.Player;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -12,10 +15,13 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class GameServer {
     private static final int PORT = 5555;
+    private static final int MIN_PLAYERS = 2;
     private static final int MAX_PLAYERS = 4;
 
     private final AtomicInteger nextPlayerId = new AtomicInteger(1);
     private final List<ClientHandler> clients = new ArrayList<>();
+    private boolean gameStarted = false;
+    private Game game;
 
     public static void main(String[] args) {
         new GameServer().start();
@@ -69,12 +75,95 @@ public class GameServer {
         System.out.println("Player " + clientHandler.getPlayerId() + " disconnected. Players: " + clients.size());
     }
 
+    private synchronized int getPlayerCount() {
+        return clients.size();
+    }
+
+    private synchronized String getPlayerListText() {
+        StringBuilder builder = new StringBuilder();
+
+        for (int i = 0; i < clients.size(); i++) {
+            if (i > 0) {
+                builder.append(",");
+            }
+
+            builder.append("PLAYER ").append(clients.get(i).getPlayerId());
+        }
+
+        return builder.toString();
+    }
+
     private synchronized void broadcast(NetworkMessage message) {
         String encodedMessage = message.encode();
 
         for (ClientHandler client : clients) {
             client.send(encodedMessage);
         }
+    }
+
+    private synchronized boolean tryStartGame(ClientHandler starter) {
+        if (gameStarted) {
+            starter.send(new NetworkMessage("SERVER", "Game has already started").encode());
+            return false;
+        }
+
+        if (clients.size() < MIN_PLAYERS) {
+            starter.send(new NetworkMessage("SERVER", "Need at least " + MIN_PLAYERS + " players to start").encode());
+            return false;
+        }
+
+        gameStarted = true;
+        game = new Game();
+        game.startGame();
+        return true;
+    }
+
+    private synchronized boolean isGameStarted() {
+        return gameStarted && game != null;
+    }
+
+    private synchronized void endTurnIfGameStarted(ClientHandler requester) {
+        if (!isGameStarted()) {
+            requester.send(new NetworkMessage("SERVER", "Game has not started yet").encode());
+            return;
+        }
+
+        int expectedPlayerId = game.getCurrentPlayerIndex() + 1;
+
+        if (requester.getPlayerId() != expectedPlayerId) {
+            requester.send(new NetworkMessage("SERVER", "It is Player " + expectedPlayerId + "'s turn").encode());
+            return;
+        }
+
+        game.guiEndTurn();
+        broadcast(new NetworkMessage("GAME_STATE", buildGameStateText()));
+    }
+
+    private synchronized String buildGameStateText() {
+        if (game == null) {
+            return "NO_GAME";
+        }
+
+        StringBuilder builder = new StringBuilder();
+        builder.append("currentPlayer=").append(game.getCurrentPlayerIndex() + 1);
+        builder.append(";discardPhase=").append(game.isDiscard());
+        builder.append(";players=");
+
+        for (int i = 0; i < game.getPlayers().size(); i++) {
+            Player player = game.getPlayers().get(i);
+
+            if (i > 0) {
+                builder.append(",");
+            }
+
+            builder.append("P").append(i + 1);
+            builder.append("(hand=").append(player.getHandCards().size());
+            builder.append(",bank=").append(player.getBankCards().size());
+            builder.append(",properties=").append(player.getPropertyCards().size());
+            builder.append(")");
+        }
+
+        return builder.toString();
     }
 
     private class ClientHandler extends Thread {
@@ -101,6 +190,7 @@ public class GameServer {
                 out = writer;
                 send(new NetworkMessage("WELCOME", "PLAYER " + playerId).encode());
                 broadcast(new NetworkMessage("BROADCAST", "Player " + playerId + " joined the game"));
+                broadcast(new NetworkMessage("PLAYER_LIST", getPlayerListText()));
 
                 String line;
 
@@ -114,14 +204,25 @@ public class GameServer {
             } finally {
                 removeClient(this);
                 broadcast(new NetworkMessage("BROADCAST", "Player " + playerId + " left the game"));
+                broadcast(new NetworkMessage("PLAYER_LIST", getPlayerListText()));
             }
         }
 
         private void handleMessage(NetworkMessage message) {
             if ("HELLO".equals(message.getType())) {
                 broadcast(new NetworkMessage("BROADCAST", "Player " + playerId + " says hello"));
+            } else if ("PLAYERS".equals(message.getType())) {
+                send(new NetworkMessage("PLAYER_LIST", getPlayerListText()).encode());
+            } else if ("START_GAME".equals(message.getType())) {
+                if (tryStartGame(this)) {
+                    broadcast(new NetworkMessage(
+                            "GAME_STARTED",
+                            "Started with " + getPlayerCount() + " players: " + getPlayerListText()
+                    ));
+                    broadcast(new NetworkMessage("GAME_STATE", buildGameStateText()));
+                }
             } else if ("END_TURN".equals(message.getType())) {
-                broadcast(new NetworkMessage("BROADCAST", "Player " + playerId + " wants to end turn"));
+                endTurnIfGameStarted(this);
             } else {
                 send(new NetworkMessage("SERVER", "Unknown message: " + message.getType()).encode());
             }

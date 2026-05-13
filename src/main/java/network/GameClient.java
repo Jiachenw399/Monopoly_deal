@@ -34,7 +34,7 @@ public class GameClient {
         ) {
             System.out.println("Connected to server: " + host + ":" + PORT);
             startServerListener(in);
-            System.out.println("Type HELLO, END_TURN, or QUIT.");
+            System.out.println("Type HELLO, PLAYERS, START_GAME, END_TURN, or QUIT.");
 
             while (true) {
                 System.out.print("> ");
