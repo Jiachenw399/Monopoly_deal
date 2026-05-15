@@ -13,6 +13,7 @@ import model.*;
 
 public class GameScreen {
     private int viewedPlayerIndex = 0;
+    private int lastTurnPlayerIndex = -1;
     private Canvas canvas;
     private Game game;
     private boolean isShow;
@@ -74,6 +75,7 @@ public class GameScreen {
     }
 
     public void paint() {
+        syncViewedPlayerWithCurrentTurn();
         drawBackground();
         drawCurrentPlayer();
         drawBankCards();
@@ -90,6 +92,14 @@ public class GameScreen {
         drawPaymentSelection();
         drawMultipleColorRentSelection();
         drawBuildingSelection();
+    }
+    private void syncViewedPlayerWithCurrentTurn() {
+        int currentTurnPlayerIndex = game.getCurrentPlayerIndex();
+
+        if (currentTurnPlayerIndex != lastTurnPlayerIndex) {
+            viewedPlayerIndex = currentTurnPlayerIndex;
+            lastTurnPlayerIndex = currentTurnPlayerIndex;
+        }
     }
 
     public void drawBackground() {
@@ -436,6 +446,10 @@ public class GameScreen {
     }
     public void setViewedPlayerIndex(int viewedPlayerIndex) {
         this.viewedPlayerIndex = viewedPlayerIndex;
+    }
+    public void resetViewedPlayerToCurrentPlayer() {
+        viewedPlayerIndex = game.getCurrentPlayerIndex();
+        lastTurnPlayerIndex = game.getCurrentPlayerIndex();
     }
 
 
