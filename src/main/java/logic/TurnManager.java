@@ -74,10 +74,6 @@ public class TurnManager {
     }
 
     private int getDrawNumberAtTurnStart(Player player) {
-        if (player.getHandCards().size() >= 7) {
-            return 0;
-        }
-
         if (player.getHandCards().isEmpty()) {
             return 5;
         }
