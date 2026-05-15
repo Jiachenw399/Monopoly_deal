@@ -65,8 +65,11 @@ public class SlyDealPanel {
                     continue;
                 }
 
-                double x = panelX + (displayIndex % 7) * (cardWidth + gap);
-                double y = panelY + ((double) displayIndex / 7) * (cardHeight + 35);
+                int col = displayIndex % 7;
+                int row = displayIndex / 7;
+
+                double x = panelX + col * (cardWidth + gap);
+                double y = panelY + row * (cardHeight + 35);
 
                 if (mouseX >= x && mouseX <= x + cardWidth
                         && mouseY >= y && mouseY <= y + cardHeight) {
@@ -123,8 +126,11 @@ public class SlyDealPanel {
                     continue;
                 }
 
-                double x = panelX + (displayIndex % 7) * (cardWidth + gap);
-                double y = panelY + ((double) displayIndex / 7) * (cardHeight + 35);
+                int col = displayIndex % 7;
+                int row = displayIndex / 7;
+
+                double x = panelX + col * (cardWidth + gap);
+                double y = panelY + row * (cardHeight + 35);
 
                 drawChoiceCard(gc, playerIndex, card, x, y);
                 displayIndex++;
