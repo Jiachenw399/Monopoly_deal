@@ -492,4 +492,6 @@ public class Player {
     public void setUseCardTimes(int useCardTimes) {
         UseCardTimes = useCardTimes;
     }
+
+    public DrawPileAndDiscardPile getDrawCardsAndDiscardPile() {return drawCardsAndDiscardPile;}
 }

@@ -34,10 +34,10 @@ public class MainMenu {
         ScreenDrawHelper.drawPageBackground(gc, Game.SCREEN_WIDTH, Game.SCREEN_HEIGHT);
 
         gc.setFill(Color.rgb(255, 184, 77, 0.08));
-        gc.fillRoundRect(220, 80, 595, 430, 36, 36);
+        gc.fillRoundRect(220, 80, 595, 480, 36, 36);
 
         gc.setStroke(Color.rgb(255, 255, 255, 0.15));
-        gc.strokeRoundRect(220, 80, 595, 430, 36, 36);
+        gc.strokeRoundRect(220, 80, 595, 480, 36, 36);
     }
 
     private void drawMenuText(GraphicsContext gc) {
@@ -54,9 +54,10 @@ public class MainMenu {
     }
 
     private void drawMenuCards(GraphicsContext gc) {
-        drawMenuOption(gc, 365, 235, "A", "Start New Game");
-        drawMenuOption(gc, 365, 310, "N", "View Game Rules");
-        drawMenuOption(gc, 365, 385, "X", "Exit Game");
+        drawMenuOption(gc, 365, 235, "A", "Game With four People");
+        drawMenuOption(gc, 365, 310, "B", "Game With AI And Player");
+        drawMenuOption(gc, 365, 385, "N", "View Game Rules");
+        drawMenuOption(gc, 365, 460, "X", "Exit Game");
     }
 
     private void drawMenuOption(GraphicsContext gc, double x, double y, String key, String text) {

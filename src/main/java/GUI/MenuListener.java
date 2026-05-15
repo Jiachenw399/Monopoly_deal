@@ -31,6 +31,8 @@ public class MenuListener {
                 startGame();
                 break;
 
+            case B:
+                startGameWithAI();
             case X:
                 System.exit(0);
                 break;
@@ -57,6 +59,14 @@ public class MenuListener {
 
         game.startGame();
         gameScreen.resetViewedPlayerToCurrentPlayer();
+    }
+
+    public void startGameWithAI() {
+        menu.setShow(false);
+        ruleScreen.setShow(false);
+        gameScreen.setShow(true);
+
+        //此处还需要补充代码
     }
 
     private void returnToMenu() {
