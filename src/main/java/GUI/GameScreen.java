@@ -8,6 +8,8 @@ import javafx.scene.text.Font;
 import javafx.scene.text.TextAlignment;
 import logic.Game;
 import java.util.ArrayList;
+
+import logic.RentCalculator;
 import model.*;
 
 
@@ -51,9 +53,11 @@ public class GameScreen {
     private double handStartY = Game.SCREEN_HEIGHT - 150;
 
     private ActionCards pendingBuildingCard = null;
+    private RentCalculator rentCalculator;
 
     public GameScreen(Game game) {
         this.game = game;
+        this.rentCalculator = new RentCalculator();
         canvas = new Canvas(Game.SCREEN_WIDTH, Game.SCREEN_HEIGHT);
         slyDealPanel = new SlyDealPanel(game);
         debtCollectorPanel = new DebtCollectorPanel(game);
@@ -1334,24 +1338,13 @@ public class GameScreen {
     }
 
     private int calculatePreviewRent(Player player, PropertyColor color) {
-        int propertyCount = 0;
-        int rent = 0;
+        int rent = rentCalculator.calculateRent(player, color);
 
-        for (PropertiesCards card : player.getPropertyCards()) {
-            if (card.getCurrentColor() == color) {
-                propertyCount++;
-
-                if (card.hasHouse()) {
-                    rent += 3;
-                }
-
-                if (card.hasHotel()) {
-                    rent += 4;
-                }
-            }
+        if (useDoubleRentForMultipleColorRent) {
+            rent *= 2;
         }
 
-        return rent + propertyCount;
+        return rent;
     }
 
     public void startBuildingSelection(ActionCards card) {

@@ -307,11 +307,13 @@ public class GameListener {
 
     private boolean handleButtonClick(double x, double y) {
         if (gameScreen.isEndTurnClicked(x, y)) {
+            gameScreen.setSelectedWildCard(null);
             game.guiEndTurn();
             return true;
         }
 
         if (gameScreen.isBackMenuClicked(x, y)) {
+            gameScreen.setSelectedWildCard(null);
             gameScreen.setShow(false);
             menu.setShow(true);
             return true;
@@ -320,6 +322,7 @@ public class GameListener {
         int viewedPlayerIndex = gameScreen.getClickedPlayerViewButtonIndex(x, y);
 
         if (viewedPlayerIndex != -1) {
+            gameScreen.setSelectedWildCard(null);
             gameScreen.setViewedPlayerIndex(viewedPlayerIndex);
             return true;
         }
