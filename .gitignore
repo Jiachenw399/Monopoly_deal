@@ -1,0 +1,21 @@
+# Compiled output
+target/
+out/
+*.class
+
+# Maven wrapper (empty/unused)
+mvnw
+mvnw.cmd
+.mvn/
+
+# IDE
+.idea/
+*.iml
+.vscode/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Java upgrade logs
+.github/java-upgrade/
