@@ -7,6 +7,7 @@ import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.TextAlignment;
 import logic.Game;
+import logic.PlayerInfoHelper;
 import model.ActionCards;
 import model.Card;
 import model.MoneyCards;

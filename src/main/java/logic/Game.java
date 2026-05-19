@@ -18,7 +18,7 @@ public class Game {
 
     private final ArrayList<Player> players;
     private final RentCalculator rentCalculator;
-    private final CardPlayService cardPlayService;
+    private final MoneyCardAndPropertyCardPlayService cardPlayService;
     private final GameSetupService gameSetupService;
     private final int playerCount;
 
@@ -37,7 +37,7 @@ public class Game {
         this.playerCount = normalizePlayerCount(playerCount);
         players = new ArrayList<>();
         rentCalculator = new RentCalculator();
-        cardPlayService = new CardPlayService();
+        cardPlayService = new MoneyCardAndPropertyCardPlayService();
         gameSetupService = new GameSetupService();
 
         initializeGameObjects();

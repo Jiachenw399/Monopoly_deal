@@ -6,10 +6,9 @@ import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.TextAlignment;
 import logic.Game;
+import logic.PlayerInfoHelper;
 import model.ActionCardType;
 import model.ActionCards;
-import model.Player;
-import model.PropertiesCards;
 import model.PropertyColor;
 
 import java.util.ArrayList;

@@ -25,7 +25,6 @@ public class TurnManager {
     }
 
     public void startTurn(Player currentPlayer) {
-        currentPlayer.setOnTurn(true);
         currentPlayer.setUseCardTimes(0);
 
         int drawNumber = getDrawNumberAtTurnStart(currentPlayer);
@@ -50,8 +49,7 @@ public class TurnManager {
             return false;
         }
 
-        currentPlayer.getHandCards().remove(card);
-        drawCards.getDiscardPile().add(card);
+        currentPlayer.discardCardFromHand(card);
 
         if (currentPlayer.getHandCards().size() <= 7) {
             isDiscard = false;
@@ -82,13 +80,13 @@ public class TurnManager {
     }
 
     private boolean canDiscard(Player currentPlayer, Card card) {
-        return isDiscard && currentPlayer.getHandCards().contains(card);
+        return isDiscard
+                && card != null
+                && currentPlayer.getHandCards().contains(card);
     }
 
     private void moveToNextPlayer() {
         Player currentPlayer = getCurrentPlayer();
-
-        currentPlayer.setOnTurn(false);
         currentPlayer.setUseCardTimes(0);
 
         currentPlayerIndex = (currentPlayerIndex + 1) % players.size();

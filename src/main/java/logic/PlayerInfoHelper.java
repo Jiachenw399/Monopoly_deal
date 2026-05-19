@@ -1,4 +1,4 @@
-package GUI;
+package logic;
 
 import model.Card;
 import model.Player;
@@ -8,8 +8,15 @@ import model.PropertyColor;
 import java.util.ArrayList;
 
 public class PlayerInfoHelper {
+    private PlayerInfoHelper() {
+    }
+
     public static int getBankTotal(Player player) {
         int total = 0;
+
+        if (player == null) {
+            return total;
+        }
 
         for (Card card : player.getBankCards()) {
             total += card.getValue();
@@ -20,6 +27,10 @@ public class PlayerInfoHelper {
 
     public static int getCompletedSetCount(Player player) {
         int completedSets = 0;
+
+        if (player == null) {
+            return completedSets;
+        }
 
         for (PropertyColor color : PropertyColor.values()) {
             int current = getPropertyCountByCurrentColor(player, color);
@@ -34,6 +45,10 @@ public class PlayerInfoHelper {
 
     public static int getPropertyCountByCurrentColor(Player player, PropertyColor color) {
         int count = 0;
+
+        if (player == null || color == null) {
+            return count;
+        }
 
         for (PropertiesCards card : player.getPropertyCards()) {
             if (card.getCurrentColor() == color) {
@@ -53,6 +68,10 @@ public class PlayerInfoHelper {
     }
 
     public static boolean hasHouse(Player player, PropertyColor color) {
+        if (player == null || color == null) {
+            return false;
+        }
+
         for (PropertiesCards card : player.getPropertyCards()) {
             if (card.getCurrentColor() == color && card.hasHouse()) {
                 return true;
@@ -63,6 +82,10 @@ public class PlayerInfoHelper {
     }
 
     public static boolean hasHotel(Player player, PropertyColor color) {
+        if (player == null || color == null) {
+            return false;
+        }
+
         for (PropertiesCards card : player.getPropertyCards()) {
             if (card.getCurrentColor() == color && card.hasHotel()) {
                 return true;
@@ -74,6 +97,10 @@ public class PlayerInfoHelper {
 
     public static ArrayList<PropertiesCards> getCompleteSetByColor(Player player, PropertyColor color) {
         ArrayList<PropertiesCards> result = new ArrayList<>();
+
+        if (player == null || color == null) {
+            return result;
+        }
 
         for (PropertiesCards card : player.getPropertyCards()) {
             if (card.getCurrentColor() == color) {
@@ -89,6 +116,10 @@ public class PlayerInfoHelper {
     }
 
     public static boolean canBeStolenBySlyDeal(Player targetPlayer, PropertiesCards card) {
+        if (targetPlayer == null || card == null) {
+            return false;
+        }
+
         PropertyColor color = card.getCurrentColor();
 
         if (color == null) {
@@ -97,20 +128,5 @@ public class PlayerInfoHelper {
 
         int count = getPropertyCountByCurrentColor(targetPlayer, color);
         return count < color.getAmountToCompleteSet();
-    }
-
-    public static String getShortColorName(PropertyColor color) {
-        return switch (color) {
-            case DARK_BLUE -> "D.BLUE";
-            case ORANGE -> "ORANGE";
-            case BLACK -> "BLACK";
-            case RED -> "RED";
-            case DARK_GREEN -> "D.GREEN";
-            case BROWN -> "BROWN";
-            case PINK -> "PINK";
-            case LIGHT_BLUE -> "L.BLUE";
-            case LIGHT_GREEN -> "L.GREEN";
-            case YELLOW -> "YELLOW";
-        };
     }
 }

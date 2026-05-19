@@ -28,7 +28,7 @@ public class PaymentManager {
             return;
         }
 
-        currentPaymentRequest = paymentRequests.remove(0);
+        currentPaymentRequest = paymentRequests.removeFirst();
     }
 
     public void currentPaymentUseJustSayNo() {
@@ -74,11 +74,7 @@ public class PaymentManager {
     }
 
     public int getTotalAssetsValue(Player player) {
-        int total = 0;
-
-        for (Card card : player.getBankCards()) {
-            total += card.getValue();
-        }
+        int total = PlayerInfoHelper.getBankTotal(player);
 
         for (PropertiesCards card : player.getPropertyCards()) {
             total += card.getValue();

@@ -6,6 +6,7 @@ import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.TextAlignment;
 import logic.Game;
+import logic.PlayerInfoHelper;
 import model.ActionCards;
 import model.Player;
 import model.PropertyColor;
@@ -58,7 +59,7 @@ public class BuildingSelectionPanel {
         int displayIndex = 0;
 
         for (PropertyColor color : PropertyColor.values()) {
-            if (!canAddBuildingToColor(currentPlayer, color)) {
+            if (canAddBuildingToColor(currentPlayer, color)) {
                 continue;
             }
 
@@ -116,7 +117,7 @@ public class BuildingSelectionPanel {
         gc.setTextBaseline(VPos.CENTER);
 
         for (PropertyColor color : PropertyColor.values()) {
-            if (!canAddBuildingToColor(currentPlayer, color)) {
+            if (canAddBuildingToColor(currentPlayer, color)) {
                 continue;
             }
 
@@ -158,19 +159,19 @@ public class BuildingSelectionPanel {
         int count = PlayerInfoHelper.getPropertyCountByCurrentColor(player, color);
 
         if (count < color.getAmountToCompleteSet()) {
-            return false;
+            return true;
         }
 
         if (isHouseCard()) {
-            return !PlayerInfoHelper.hasHouse(player, color);
+            return PlayerInfoHelper.hasHouse(player, color);
         }
 
         if (isHotelCard()) {
-            return PlayerInfoHelper.hasHouse(player, color)
-                    && !PlayerInfoHelper.hasHotel(player, color);
+            return !PlayerInfoHelper.hasHouse(player, color)
+                    || PlayerInfoHelper.hasHotel(player, color);
         }
 
-        return false;
+        return true;
     }
 
     private boolean isHouseCard() {

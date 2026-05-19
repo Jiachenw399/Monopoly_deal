@@ -6,6 +6,7 @@ import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.TextAlignment;
 import logic.Game;
+import logic.PlayerInfoHelper;
 import model.Card;
 import model.Player;
 import model.PropertiesCards;
@@ -164,7 +165,7 @@ public class PaymentSelectionPanel {
                 gc.setFill(Color.BLACK);
             }
 
-            String text = PlayerInfoHelper.getShortColorName(color)
+            String text = PropertiesCards.getShortColorName(color)
                     + ": "
                     + originalCount
                     + " + "

@@ -1,8 +1,6 @@
 package logic;
 
-import GUI.PlayerInfoHelper;
 import model.Player;
-import model.PropertiesCards;
 import model.PropertyColor;
 
 public class RentCalculator {
@@ -24,54 +22,24 @@ public class RentCalculator {
     }
 
     private int countPropertiesByColor(Player player, PropertyColor color) {
-        int count = 0;
-
-        for (PropertiesCards card : player.getPropertyCards()) {
-            if (card.getCurrentColor() == color) {
-                count++;
-            }
-        }
-
-        return count;
+        return PlayerInfoHelper.getPropertyCountByCurrentColor(player, color);
     }
 
     private int calculateBaseRent(PropertyColor color, int propertyCount) {
         int safeCount = Math.min(propertyCount, color.getAmountToCompleteSet());
 
-        switch (color) {
-            case BROWN:
-                return calculateBrownRent(safeCount);
-
-            case LIGHT_BLUE:
-                return calculateLightBlueRent(safeCount);
-
-            case PINK:
-                return calculatePinkRent(safeCount);
-
-            case ORANGE:
-                return calculateOrangeRent(safeCount);
-
-            case RED:
-                return calculateRedRent(safeCount);
-
-            case YELLOW:
-                return calculateYellowRent(safeCount);
-
-            case BLACK:
-                return calculateBlackRent(safeCount);
-
-            case LIGHT_GREEN:
-                return calculateLightGreenRent(safeCount);
-
-            case DARK_GREEN:
-                return calculateDarkGreenRent(safeCount);
-
-            case DARK_BLUE:
-                return calculateDarkBlueRent(safeCount);
-
-            default:
-                return 0;
-        }
+        return switch (color) {
+            case BROWN -> calculateBrownRent(safeCount);
+            case LIGHT_BLUE -> calculateLightBlueRent(safeCount);
+            case PINK -> calculatePinkRent(safeCount);
+            case ORANGE -> calculateOrangeRent(safeCount);
+            case RED -> calculateRedRent(safeCount);
+            case YELLOW -> calculateYellowRent(safeCount);
+            case BLACK -> calculateBlackRent(safeCount);
+            case LIGHT_GREEN -> calculateLightGreenRent(safeCount);
+            case DARK_GREEN -> calculateDarkGreenRent(safeCount);
+            case DARK_BLUE -> calculateDarkBlueRent(safeCount);
+        };
     }
 
     private int calculateBrownRent(int count) {

@@ -238,7 +238,7 @@ public class ActionCardService {
             }
         }
 
-        PropertyColor color = selectedSet.get(0).getCurrentColor();
+        PropertyColor color = selectedSet.getFirst().getCurrentColor();
 
         if (color == null) {
             return false;
@@ -309,7 +309,7 @@ public class ActionCardService {
     }
 
     private boolean canPlayCard(Player currentPlayer, Card card) {
-        if (!currentPlayer.isOnTurn()) {
+        if (currentPlayer == null || card == null) {
             return false;
         }
 
@@ -347,19 +347,15 @@ public class ActionCardService {
             return;
         }
 
-        for (Card card : new ArrayList<>(player.getHandCards())) {
-            if (card instanceof ActionCards actionCard
-                    && actionCard.getActionCardType() == ActionCardType.DOUBLE_THE_RENT) {
-                player.getHandCards().remove(actionCard);
-                drawCards.getDiscardPile().add(actionCard);
-                return;
-            }
+        ActionCards doubleRentCard = player.findActionCard(ActionCardType.DOUBLE_THE_RENT);
+
+        if (doubleRentCard != null) {
+            player.moveCardFromHandToDiscard(doubleRentCard);
         }
     }
 
     private void moveActionCardToDiscard(Player currentPlayer, ActionCards card) {
-        currentPlayer.getHandCards().remove(card);
-        drawCards.getDiscardPile().add(card);
+        currentPlayer.moveCardFromHandToDiscard(card);
     }
 
     private void increaseUseCardTimes(Player player) {
@@ -374,7 +370,9 @@ public class ActionCardService {
         moveActionCardToDiscard(currentPlayer, houseCard);
 
         PropertiesCards property = findFirstPropertyByColor(currentPlayer, selectedColor);
-        property.setHasHouse(true);
+        if (property != null) {
+            property.setHasHouse(true);
+        }
 
         increaseUseCardTimes(currentPlayer);
         return true;
@@ -388,7 +386,9 @@ public class ActionCardService {
         moveActionCardToDiscard(currentPlayer, hotelCard);
 
         PropertiesCards property = findFirstPropertyByColor(currentPlayer, selectedColor);
-        property.setHasHotel(true);
+        if (property != null) {
+            property.setHasHotel(true);
+        }
 
         increaseUseCardTimes(currentPlayer);
         return true;
@@ -422,35 +422,17 @@ public class ActionCardService {
     }
 
     private boolean isCompleteSet(Player player, PropertyColor color) {
-        int count = 0;
-
-        for (PropertiesCards card : player.getPropertyCards()) {
-            if (card.getCurrentColor() == color) {
-                count++;
-            }
-        }
+        int count = PlayerInfoHelper.getPropertyCountByCurrentColor(player, color);
 
         return count >= color.getAmountToCompleteSet();
     }
 
     private boolean hasHouse(Player player, PropertyColor color) {
-        for (PropertiesCards card : player.getPropertyCards()) {
-            if (card.getCurrentColor() == color && card.hasHouse()) {
-                return true;
-            }
-        }
-
-        return false;
+        return PlayerInfoHelper.hasHouse(player, color);
     }
 
     private boolean hasHotel(Player player, PropertyColor color) {
-        for (PropertiesCards card : player.getPropertyCards()) {
-            if (card.getCurrentColor() == color && card.hasHotel()) {
-                return true;
-            }
-        }
-
-        return false;
+        return PlayerInfoHelper.hasHotel(player, color);
     }
 
     private PropertiesCards findFirstPropertyByColor(Player player, PropertyColor color) {

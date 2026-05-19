@@ -33,8 +33,19 @@ public class PropertiesCards extends Card {
         return type;
     }
 
-    public String getPropertyName() {
-        return propertyName;
+    public static String getShortColorName(PropertyColor color) {
+        return switch (color) {
+            case DARK_BLUE -> "D.BLUE";
+            case ORANGE -> "ORANGE";
+            case BLACK -> "BLACK";
+            case RED -> "RED";
+            case DARK_GREEN -> "D.GREEN";
+            case BROWN -> "BROWN";
+            case PINK -> "PINK";
+            case LIGHT_BLUE -> "L.BLUE";
+            case LIGHT_GREEN -> "L.GREEN";
+            case YELLOW -> "YELLOW";
+        };
     }
 
     public String getImageFileName() {
