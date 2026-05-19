@@ -6,6 +6,7 @@ import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.TextAlignment;
 import logic.Game;
+import logic.PlayerInfoHelper;
 import model.ActionCards;
 import model.Player;
 import model.PropertiesCards;
@@ -94,7 +95,7 @@ public class DealBreakerPanel {
         drawOverlay(gc);
         drawTitle(gc);
         drawCompletedSets(gc);
-        ScreenDrawHelper.drawButton(gc, 720, 505, 140, 40, "CANCEL");
+        ScreenDrawHelper.drawButton(gc, 720, 505, 140, 40, "Cancel");
     }
 
     private void drawOverlay(GraphicsContext gc) {

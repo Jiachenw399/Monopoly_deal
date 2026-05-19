@@ -3,11 +3,19 @@ package model;
 public class PropertiesCards extends Card {
     private PropertyColor currentColor;
     private final PropertiesCardsType type;
+    private final String propertyName;
+    private final String imageFileName;
     private boolean hasHouse;
     private boolean hasHotel;
 
     public PropertiesCards(PropertiesCardsType type) {
+        this(type, type.name(), type.name().toLowerCase() + ".png");
+    }
+
+    public PropertiesCards(PropertiesCardsType type, String propertyName, String imageFileName) {
         this.type = type;
+        this.propertyName = propertyName;
+        this.imageFileName = imageFileName;
         this.currentColor = getDefaultColor(type);
         this.hasHouse = false;
         this.hasHotel = false;
@@ -23,6 +31,25 @@ public class PropertiesCards extends Card {
 
     public PropertiesCardsType getType() {
         return type;
+    }
+
+    public static String getShortColorName(PropertyColor color) {
+        return switch (color) {
+            case DARK_BLUE -> "D.BLUE";
+            case ORANGE -> "ORANGE";
+            case BLACK -> "BLACK";
+            case RED -> "RED";
+            case DARK_GREEN -> "D.GREEN";
+            case BROWN -> "BROWN";
+            case PINK -> "PINK";
+            case LIGHT_BLUE -> "L.BLUE";
+            case LIGHT_GREEN -> "L.GREEN";
+            case YELLOW -> "YELLOW";
+        };
+    }
+
+    public String getImageFileName() {
+        return imageFileName;
     }
 
     public PropertyColor getCurrentColor() {

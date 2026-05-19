@@ -14,8 +14,8 @@ public class RuleScreen {
 
     private static final String[] RULES = {
             "1. Each player starts with 5 cards.",
-            "2. At the start of a turn, draw 2 cards.",
-            "3. If the player has no hand cards, draw 5 cards.",
+            "2. At the start of a turn, drawAllBackground 2 cards.",
+            "3. If the player has no hand cards, drawAllBackground 5 cards.",
             "4. Each player can play up to 3 cards per turn.",
             "5. Money cards go to the bank area.",
             "6. Property cards go to the property area.",
@@ -24,12 +24,13 @@ public class RuleScreen {
     };
 
     public RuleScreen() {
-        canvas = new Canvas(Game.SCREEN_WIDTH, Game.SCREEN_HEIGHT);
+        canvas = new Canvas(GuiScale.canvasWidth(), GuiScale.canvasHeight());
         isShow = false;
     }
 
     public void paint() {
         GraphicsContext gc = canvas.getGraphicsContext2D();
+        GuiScale.prepare(gc);
 
         drawBackground(gc);
         drawTitle(gc);
@@ -38,8 +39,7 @@ public class RuleScreen {
     }
 
     public void clear() {
-        GraphicsContext gc = canvas.getGraphicsContext2D();
-        gc.clearRect(0, 0, canvas.getWidth(), canvas.getHeight());
+        GuiScale.clear(canvas);
     }
 
     private void drawBackground(GraphicsContext gc) {

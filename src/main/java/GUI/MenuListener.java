@@ -2,9 +2,7 @@ package GUI;
 
 import javafx.scene.Scene;
 import javafx.scene.input.KeyCode;
-import javafx.stage.Stage;
 import logic.Game;
-import network.OnlineLauncher;
 
 public class MenuListener {
     private final MainMenu menu;
@@ -20,10 +18,10 @@ public class MenuListener {
     }
 
     public void addListener(Scene scene) {
-        scene.setOnKeyPressed(event -> handleKeyPressed(scene, event.getCode()));
+        scene.setOnKeyPressed(event -> handleKeyPressed(event.getCode()));
     }
 
-    private void handleKeyPressed(Scene scene, KeyCode code) {
+    private void handleKeyPressed(KeyCode code) {
         switch (code) {
             case N:
                 showRuleScreen();
@@ -31,12 +29,6 @@ public class MenuListener {
 
             case A:
                 startGame();
-                break;
-
-            case L:
-                if (scene.getWindow() instanceof Stage stage) {
-                    OnlineLauncher.openLanMenu(stage);
-                }
                 break;
 
             case X:

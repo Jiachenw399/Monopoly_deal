@@ -91,54 +91,79 @@ public class DrawPileAndDiscardPile {
     }
 
     private void addPropertiesCards() {
-        int[] amount = {
-                2, // DARK_BLUE
-                3, // ORANGE
-                4, // BLACK
-                3, // RED
-                3, // DARK_GREEN
-                2, // BROWN
-                3, // PINK
-                3, // LIGHT_BLUE
-                2, // LIGHT_GREEN
-                3, // YELLOW
+        addNormalPropertyCards();
+        addPropertyWildCards();
+    }
 
-                2, // WILD_PINK_ORANGE
-                2, // WILD_RED_YELLOW
-                1, // WILD_BLACK_DARK_GREEN
-                1, // WILD_BLACK_LIGHT_BLUE
-                1, // WILD_BLACK_LIGHT_GREEN
-                1, // WILD_LIGHT_BLUE_BROWN
-                1, // WILD_DARK_BLUE_DARK_GREEN
-                2  // WILD_ALL
-        };
+    private void addNormalPropertyCards() {
+        // DARK BLUE
+        addPropertyCard(PropertiesCardsType.DARK_BLUE, "Boardwalk", "boardwalk.png");
+        addPropertyCard(PropertiesCardsType.DARK_BLUE, "Park Place", "park_place.png");
 
-        PropertiesCardsType[] types = {
-                PropertiesCardsType.DARK_BLUE,
-                PropertiesCardsType.ORANGE,
-                PropertiesCardsType.BLACK,
-                PropertiesCardsType.RED,
-                PropertiesCardsType.DARK_GREEN,
-                PropertiesCardsType.BROWN,
-                PropertiesCardsType.PINK,
-                PropertiesCardsType.LIGHT_BLUE,
-                PropertiesCardsType.LIGHT_GREEN,
-                PropertiesCardsType.YELLOW,
+        // BROWN
+        addPropertyCard(PropertiesCardsType.BROWN, "Baltic Avenue", "baltic_avenue.png");
+        addPropertyCard(PropertiesCardsType.BROWN, "Mediterranean Avenue", "mediterranean_avenue.png");
 
-                PropertiesCardsType.WILD_PINK_ORANGE,
-                PropertiesCardsType.WILD_RED_YELLOW,
-                PropertiesCardsType.WILD_BLACK_DARK_GREEN,
-                PropertiesCardsType.WILD_BLACK_LIGHT_BLUE,
-                PropertiesCardsType.WILD_BLACK_LIGHT_GREEN,
-                PropertiesCardsType.WILD_LIGHT_BLUE_BROWN,
-                PropertiesCardsType.WILD_DARK_BLUE_DARK_GREEN,
-                PropertiesCardsType.WILD_ALL
-        };
+        // LIGHT BLUE
+        addPropertyCard(PropertiesCardsType.LIGHT_BLUE, "Connecticut Avenue", "connecticut_avenue.png");
+        addPropertyCard(PropertiesCardsType.LIGHT_BLUE, "Oriental Avenue", "oriental_avenue.png");
+        addPropertyCard(PropertiesCardsType.LIGHT_BLUE, "Vermont Avenue", "vermont_avenue.png");
 
-        for (int i = 0; i < types.length; i++) {
-            for (int j = 0; j < amount[i]; j++) {
-                DrawPile.add(new PropertiesCards(types[i]));
-            }
+        // PINK
+        addPropertyCard(PropertiesCardsType.PINK, "St. Charles Place", "st_charles_place.png");
+        addPropertyCard(PropertiesCardsType.PINK, "States Avenue", "states_avenue.png");
+        addPropertyCard(PropertiesCardsType.PINK, "Virginia Avenue", "virginia_avenue.png");
+
+        // ORANGE
+        addPropertyCard(PropertiesCardsType.ORANGE, "New York Avenue", "new_york_avenue.png");
+        addPropertyCard(PropertiesCardsType.ORANGE, "St. James Place", "st_james_place.png");
+        addPropertyCard(PropertiesCardsType.ORANGE, "Tennessee Avenue", "tennessee_avenue.png");
+
+        // RED
+        addPropertyCard(PropertiesCardsType.RED, "Illinois Avenue", "illinois_avenue.png");
+        addPropertyCard(PropertiesCardsType.RED, "Indiana Avenue", "indiana_avenue.png");
+        addPropertyCard(PropertiesCardsType.RED, "Kentucky Avenue", "kentucky_avenue.png");
+
+        // YELLOW
+        addPropertyCard(PropertiesCardsType.YELLOW, "Atlantic Avenue", "atlantic_avenue.png");
+        addPropertyCard(PropertiesCardsType.YELLOW, "Marvin Gardens", "marvin_gardens.png");
+        addPropertyCard(PropertiesCardsType.YELLOW, "Ventnor Avenue", "ventnor_avenue.png");
+
+        // DARK GREEN
+        addPropertyCard(PropertiesCardsType.DARK_GREEN, "North Carolina Avenue", "north_carolina_avenue.png");
+        addPropertyCard(PropertiesCardsType.DARK_GREEN, "Pacific Avenue", "pacific_avenue.png");
+        addPropertyCard(PropertiesCardsType.DARK_GREEN, "Pennsylvania Avenue", "pennsylvania_avenue.png");
+
+        // BLACK / RAILROAD
+        addPropertyCard(PropertiesCardsType.BLACK, "B&O Railroad", "b_and_o_railroad.png");
+        addPropertyCard(PropertiesCardsType.BLACK, "Pennsylvania Railroad", "pennsylvania_railroad.png");
+        addPropertyCard(PropertiesCardsType.BLACK, "Reading Railroad", "reading_railroad.png");
+        addPropertyCard(PropertiesCardsType.BLACK, "Short Line", "short_line.png");
+
+        // LIGHT GREEN / UTILITY
+        addPropertyCard(PropertiesCardsType.LIGHT_GREEN, "Electric Company", "electric_company.png");
+        addPropertyCard(PropertiesCardsType.LIGHT_GREEN, "Water Works", "water_works.png");
+    }
+
+    private void addPropertyWildCards() {
+        addSeveralPropertyCards(PropertiesCardsType.WILD_PINK_ORANGE, 2);
+        addSeveralPropertyCards(PropertiesCardsType.WILD_RED_YELLOW, 2);
+        addSeveralPropertyCards(PropertiesCardsType.WILD_BLACK_DARK_GREEN, 1);
+        addSeveralPropertyCards(PropertiesCardsType.WILD_BLACK_LIGHT_BLUE, 1);
+        addSeveralPropertyCards(PropertiesCardsType.WILD_BLACK_LIGHT_GREEN, 1);
+        addSeveralPropertyCards(PropertiesCardsType.WILD_LIGHT_BLUE_BROWN, 1);
+        addSeveralPropertyCards(PropertiesCardsType.WILD_DARK_BLUE_DARK_GREEN, 1);
+        addSeveralPropertyCards(PropertiesCardsType.WILD_ALL, 2);
+    }
+
+    private void addPropertyCard(PropertiesCardsType type, String propertyName, String imageFileName) {
+        DrawPile.add(new PropertiesCards(type, propertyName, imageFileName));
+    }
+
+    private void addSeveralPropertyCards(PropertiesCardsType type, int amount) {
+        for (int i = 0; i < amount; i++) {
+            DrawPile.add(new PropertiesCards(type));
         }
     }
+
 }

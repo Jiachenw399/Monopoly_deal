@@ -1,11 +1,14 @@
 package logic;
 
 import model.Player;
-import model.PropertiesCards;
 import model.PropertyColor;
 
 public class RentCalculator {
     public int calculateRent(Player player, PropertyColor color) {
+        if (player == null || color == null) {
+            return 0;
+        }
+
         int propertyCount = countPropertiesByColor(player, color);
 
         if (propertyCount == 0) {
@@ -19,83 +22,147 @@ public class RentCalculator {
     }
 
     private int countPropertiesByColor(Player player, PropertyColor color) {
-        int count = 0;
-
-        for (PropertiesCards card : player.getPropertyCards()) {
-            if (card.getCurrentColor() == color) {
-                count++;
-            }
-        }
-
-        return count;
+        return PlayerInfoHelper.getPropertyCountByCurrentColor(player, color);
     }
 
     private int calculateBaseRent(PropertyColor color, int propertyCount) {
         int safeCount = Math.min(propertyCount, color.getAmountToCompleteSet());
 
         return switch (color) {
-            case BROWN -> switch (safeCount) {
-                case 1 -> 1;
-                default -> 2;
-            };
-
-            case LIGHT_BLUE -> switch (safeCount) {
-                case 1 -> 1;
-                case 2 -> 2;
-                default -> 3;
-            };
-
-            case PINK, ORANGE -> switch (safeCount) {
-                case 1 -> 1;
-                case 2 -> 2;
-                default -> 4;
-            };
-
-            case RED, YELLOW -> switch (safeCount) {
-                case 1 -> 2;
-                case 2 -> 3;
-                default -> 6;
-            };
-
-            case BLACK, LIGHT_GREEN -> switch (safeCount) {
-                case 1 -> 1;
-                case 2 -> 2;
-                case 3 -> 3;
-                default -> 4;
-            };
-
-            case DARK_GREEN -> switch (safeCount) {
-                case 1 -> 2;
-                case 2 -> 4;
-                default -> 7;
-            };
-
-            case DARK_BLUE -> switch (safeCount) {
-                case 1 -> 3;
-                default -> 8;
-            };
+            case BROWN -> calculateBrownRent(safeCount);
+            case LIGHT_BLUE -> calculateLightBlueRent(safeCount);
+            case PINK -> calculatePinkRent(safeCount);
+            case ORANGE -> calculateOrangeRent(safeCount);
+            case RED -> calculateRedRent(safeCount);
+            case YELLOW -> calculateYellowRent(safeCount);
+            case BLACK -> calculateBlackRent(safeCount);
+            case LIGHT_GREEN -> calculateLightGreenRent(safeCount);
+            case DARK_GREEN -> calculateDarkGreenRent(safeCount);
+            case DARK_BLUE -> calculateDarkBlueRent(safeCount);
         };
-    }//still need to modified
+    }
+
+    private int calculateBrownRent(int count) {
+        if (count == 1) {
+            return 1;
+        }
+
+        return 2;
+    }
+
+    private int calculateLightBlueRent(int count) {
+        if (count == 1) {
+            return 1;
+        }
+
+        if (count == 2) {
+            return 2;
+        }
+
+        return 3;
+    }
+
+    private int calculatePinkRent(int count) {
+        if (count == 1) {
+            return 1;
+        }
+
+        if (count == 2) {
+            return 2;
+        }
+
+        return 3;
+    }
+
+    private int calculateOrangeRent(int count) {
+        if (count == 1) {
+            return 1;
+        }
+
+        if (count == 2) {
+            return 3;
+        }
+
+        return 5;
+    }
+
+    private int calculateRedRent(int count) {
+        if (count == 1) {
+            return 2;
+        }
+
+        if (count == 2) {
+            return 3;
+        }
+
+        return 6;
+    }
+
+    private int calculateYellowRent(int count) {
+        if (count == 1) {
+            return 2;
+        }
+
+        if (count == 2) {
+            return 4;
+        }
+
+        return 6;
+    }
+
+    private int calculateBlackRent(int count) {
+        if (count == 1) {
+            return 1;
+        }
+
+        if (count == 2) {
+            return 2;
+        }
+
+        if (count == 3) {
+            return 3;
+        }
+
+        return 4;
+    }
+
+    private int calculateLightGreenRent(int count) {
+        if (count == 1) {
+            return 1;
+        }
+
+        return 2;
+    }
+
+    private int calculateDarkGreenRent(int count) {
+        if (count == 1) {
+            return 2;
+        }
+
+        if (count == 2) {
+            return 4;
+        }
+
+        return 7;
+    }
+
+    private int calculateDarkBlueRent(int count) {
+        if (count == 1) {
+            return 3;
+        }
+
+        return 8;
+    }
 
     private int calculateBuildingRent(Player player, PropertyColor color) {
         int rent = 0;
 
-        for (PropertiesCards card : player.getPropertyCards()) {
-            if (card.getCurrentColor() == color) {
-                if (card.hasHouse()) {
-                    rent += 3;
-                    break;
-                }
-            }
+        if (PlayerInfoHelper.hasHouse(player, color)) {
+            rent += 3;
         }
 
-        for (PropertiesCards card : player.getPropertyCards()) {
-            if (card.getCurrentColor() == color) {
-                if (card.hasHotel()) {
-                    rent += 4;
-                    break;
-                }
-            }
+        if (PlayerInfoHelper.hasHotel(player, color)) {
+            rent += 4;
         }
 
         return rent;

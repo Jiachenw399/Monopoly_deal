@@ -6,6 +6,7 @@ import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.TextAlignment;
 import logic.Game;
+import logic.PlayerInfoHelper;
 import model.ActionCards;
 import model.Player;
 import model.PropertiesCards;
@@ -65,8 +66,11 @@ public class SlyDealPanel {
                     continue;
                 }
 
-                double x = panelX + (displayIndex % 7) * (cardWidth + gap);
-                double y = panelY + ((double) displayIndex / 7) * (cardHeight + 35);
+                int col = displayIndex % 7;
+                int row = displayIndex / 7;
+
+                double x = panelX + col * (cardWidth + gap);
+                double y = panelY + row * (cardHeight + 35);
 
                 if (mouseX >= x && mouseX <= x + cardWidth
                         && mouseY >= y && mouseY <= y + cardHeight) {
@@ -123,8 +127,11 @@ public class SlyDealPanel {
                     continue;
                 }
 
-                double x = panelX + (displayIndex % 7) * (cardWidth + gap);
-                double y = panelY + ((double) displayIndex / 7) * (cardHeight + 35);
+                int col = displayIndex % 7;
+                int row = displayIndex / 7;
+
+                double x = panelX + col * (cardWidth + gap);
+                double y = panelY + row * (cardHeight + 35);
 
                 drawChoiceCard(gc, playerIndex, card, x, y);
                 displayIndex++;
@@ -141,6 +148,11 @@ public class SlyDealPanel {
                                 PropertiesCards card,
                                 double x,
                                 double y) {
+        if (CardImageHelper.drawCardImage(gc, card, x, y, cardWidth, cardHeight)) {
+            drawOwnerBadge(gc, playerIndex, x, y);
+            return;
+        }
+
         gc.setFill(Color.LIGHTBLUE);
         gc.fillRoundRect(x, y, cardWidth, cardHeight, 15, 15);
 
@@ -163,6 +175,22 @@ public class SlyDealPanel {
             gc.setFont(Font.font("Arial", 11));
             gc.fillText("WILD", x + cardWidth / 2, y + 100);
         }
+    }
+
+    private void drawOwnerBadge(GraphicsContext gc, int playerIndex, double x, double y) {
+        gc.setFill(Color.rgb(255, 255, 255, 0.88));
+        gc.fillRoundRect(x + 6, y + 6, 54, 22, 8, 8);
+
+        gc.setStroke(Color.rgb(30, 35, 48));
+        gc.strokeRoundRect(x + 6, y + 6, 54, 22, 8, 8);
+
+        gc.setFill(Color.rgb(30, 35, 48));
+        gc.setFont(Font.font("Arial", 12));
+        gc.setTextAlign(TextAlignment.CENTER);
+        gc.setTextBaseline(VPos.CENTER);
+        gc.fillText("P" + (playerIndex + 1), x + 33, y + 17);
+
+        gc.setTextBaseline(VPos.TOP);
     }
 
     private void drawEmptyMessage(GraphicsContext gc) {

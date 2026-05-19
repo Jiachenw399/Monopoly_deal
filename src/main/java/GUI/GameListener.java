@@ -20,7 +20,10 @@ public class GameListener {
     }
 
     public void addListener(Scene scene) {
-        scene.setOnMouseClicked(event -> handleMouseClick(event.getX(), event.getY()));
+        scene.setOnMouseClicked(event -> handleMouseClick(
+                GuiScale.toLogical(event.getX()),
+                GuiScale.toLogical(event.getY())
+        ));
     }
 
     private void handleMouseClick(double x, double y) {
@@ -36,6 +39,10 @@ public class GameListener {
             return;
         }
 
+        if (gameScreen.handleBackgroundPageButtonClick(x, y)) {
+            return;
+        }
+
         if (handleWildCardClick(x, y)) {
             return;
         }
@@ -47,12 +54,28 @@ public class GameListener {
         handleHandCardClick(x, y);
     }
 
+    private boolean handlePlayerDetailPopupClick(double x, double y) {
+        if (!gameScreen.isPlayerDetailPopupShowing()) {
+            return false;
+        }
+
+        if (gameScreen.isPlayerDetailPopupCloseClicked(x, y)) {
+            gameScreen.closePlayerDetailPopup();
+        }
+
+        return true;
+    }
+
     private boolean handleSelectionModeClick(double x, double y) {
         if (handlePaymentSelection(x, y)) {
             return true;
         }
 
         if (handleSlyDealSelection(x, y)) {
+            return true;
+        }
+
+        if (handleForcedDealSelection(x, y)) {
             return true;
         }
 
@@ -101,6 +124,60 @@ public class GameListener {
         }
 
         return gameScreen.handlePaymentCardClick(x, y);
+    }
+
+    private boolean handleForcedDealSelection(double x, double y) {
+        if (!gameScreen.isForcedDealSelecting()) {
+            return false;
+        }
+
+        if (gameScreen.isForcedDealCancelClicked(x, y)) {
+            gameScreen.cancelForcedDealSelection();
+            return true;
+        }
+
+        if (gameScreen.isForcedDealBackClicked(x, y)) {
+            gameScreen.setSelectedForcedDealTarget(null);
+            return true;
+        }
+
+        Player targetPlayer = gameScreen.getClickedForcedDealTarget(x, y);
+
+        if (targetPlayer != null) {
+            gameScreen.setSelectedForcedDealTarget(targetPlayer);
+            return true;
+        }
+
+        PropertiesCards myCard = gameScreen.getClickedForcedDealMyProperty(x, y);
+
+        if (myCard != null) {
+            gameScreen.setSelectedForcedDealMyProperty(myCard);
+            return true;
+        }
+
+        PropertiesCards targetCard = gameScreen.getClickedForcedDealTargetProperty(x, y);
+
+        if (targetCard != null) {
+            gameScreen.setSelectedForcedDealTargetProperty(targetCard);
+            return true;
+        }
+
+        if (gameScreen.isForcedDealConfirmClicked(x, y)) {
+            if (gameScreen.canConfirmForcedDeal()) {
+                game.finishForcedDeal(
+                        gameScreen.getPendingForcedDealCard(),
+                        gameScreen.getSelectedForcedDealTarget(),
+                        gameScreen.getSelectedForcedDealMyProperty(),
+                        gameScreen.getSelectedForcedDealTargetProperty()
+                );
+
+                gameScreen.cancelForcedDealSelection();
+            }
+
+            return true;
+        }
+
+        return true;
     }
 
     private boolean handleSlyDealSelection(double x, double y) {
@@ -264,7 +341,7 @@ public class GameListener {
                 selectedWildCard.setCurrentColor(selectedColor);
             }
 
-            gameScreen.setSelectedWildCard(null);
+            gameScreen.clearSelectedWildCard();
             return true;
         }
 
@@ -307,11 +384,13 @@ public class GameListener {
 
     private boolean handleButtonClick(double x, double y) {
         if (gameScreen.isEndTurnClicked(x, y)) {
+            gameScreen.clearSelectedWildCard();
             game.guiEndTurn();
             return true;
         }
 
         if (gameScreen.isBackMenuClicked(x, y)) {
+            gameScreen.clearSelectedWildCard();
             gameScreen.setShow(false);
             menu.setShow(true);
             return true;
@@ -320,7 +399,8 @@ public class GameListener {
         int viewedPlayerIndex = gameScreen.getClickedPlayerViewButtonIndex(x, y);
 
         if (viewedPlayerIndex != -1) {
-            gameScreen.setViewedPlayerIndex(viewedPlayerIndex);
+            gameScreen.clearSelectedWildCard();
+            gameScreen.showPlayerDetailPopup(viewedPlayerIndex);
             return true;
         }
 
@@ -378,11 +458,14 @@ public class GameListener {
                 gameScreen.startMultipleColorRentSelection(actionCard);
                 yield true;
             }
-            case HOUSE -> {
+            case HOUSE,HOTEL -> {
                 gameScreen.startBuildingSelection(actionCard);
                 yield true;
             }
-            case FORCED_DEAL -> false;
+            case FORCED_DEAL -> {
+                gameScreen.startForcedDealSelection(actionCard);
+                yield true;
+            }
             case BIRTHDAY -> {
                 game.finishBirthday(actionCard);
                 yield true;
@@ -393,10 +476,6 @@ public class GameListener {
                 yield true;
             }
             case DOUBLE_THE_RENT -> false;
-            case HOTEL -> {
-                gameScreen.startBuildingSelection(actionCard);
-                yield true;
-            }
             case DEAL_BREAKER -> {
                 gameScreen.startDealBreakerSelection(actionCard);
                 yield true;
@@ -406,7 +485,10 @@ public class GameListener {
                 gameScreen.startTwoColorRentSelection(actionCard);
                 yield true;
             }
-            case PASS_GO -> false;
+            case PASS_GO -> {
+                game.finishPassGo(actionCard);
+                yield true;
+            }
             default -> false;
         };
     }

@@ -1,11 +1,13 @@
 package network;
 
 import logic.Game;
+import model.ActionCardType;
 import model.ActionCards;
 import model.Card;
 import model.MoneyCards;
 import model.Player;
 import model.PropertiesCards;
+import model.PropertyColor;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -329,6 +331,246 @@ public class GameServer {
         }
     }
 
+    private synchronized void finishActionIfValid(ClientHandler requester, String command, String body) {
+        if (!isGameStarted()) {
+            requester.send(new NetworkMessage("SERVER", "Game has not started yet").encode());
+            return;
+        }
+
+        int expectedPlayerId = game.getCurrentPlayerIndex() + 1;
+
+        if (requester.getPlayerId() != expectedPlayerId) {
+            requester.send(new NetworkMessage("SERVER", "It is Player " + expectedPlayerId + "'s turn").encode());
+            return;
+        }
+
+        String[] args = body.trim().isEmpty() ? new String[0] : body.trim().split("\\s+");
+        boolean success;
+
+        switch (command) {
+            case "BIRTHDAY" -> success = finishBirthdayCommand(requester, args);
+            case "DEBT" -> success = finishDebtCommand(requester, args);
+            case "SLY" -> success = finishSlyCommand(requester, args);
+            case "DEAL_BREAKER" -> success = finishDealBreakerCommand(requester, args);
+            case "RENT" -> success = finishTwoColorRentCommand(requester, args);
+            case "RENT_ANY" -> success = finishMultipleColorRentCommand(requester, args);
+            case "HOUSE" -> success = finishBuildingCommand(requester, args, ActionCardType.HOUSE);
+            case "HOTEL" -> success = finishBuildingCommand(requester, args, ActionCardType.HOTEL);
+            case "FORCED_DEAL" -> {
+                requester.send(new NetworkMessage("SERVER", "FORCED_DEAL is not implemented in the current game logic").encode());
+                return;
+            }
+            default -> {
+                requester.send(new NetworkMessage("SERVER", "Unknown action command: " + command).encode());
+                return;
+            }
+        }
+
+        if (!success) {
+            requester.send(new NetworkMessage("SERVER", "Action failed: " + command + " " + body).encode());
+            return;
+        }
+
+        broadcast(new NetworkMessage("BROADCAST", "Player " + requester.getPlayerId() + " used " + command));
+        sendGameStateToAll();
+    }
+
+    private boolean finishBirthdayCommand(ClientHandler requester, String[] args) {
+        if (args.length < 1) {
+            requester.send(new NetworkMessage("SERVER", "Use BIRTHDAY <handNo>").encode());
+            return false;
+        }
+
+        ActionCards card = getActionCardFromHand(requester, args[0], ActionCardType.BIRTHDAY);
+        return card != null && game.finishBirthday(card);
+    }
+
+    private boolean finishDebtCommand(ClientHandler requester, String[] args) {
+        if (args.length < 2) {
+            requester.send(new NetworkMessage("SERVER", "Use DEBT <handNo> <targetPlayer>").encode());
+            return false;
+        }
+
+        ActionCards card = getActionCardFromHand(requester, args[0], ActionCardType.DEBT_COLLECTOR);
+        Player target = getPlayerByOneBasedNumber(args[1]);
+        return card != null && target != null && game.finishDebtCollector(card, target);
+    }
+
+    private boolean finishSlyCommand(ClientHandler requester, String[] args) {
+        if (args.length < 3) {
+            requester.send(new NetworkMessage("SERVER", "Use SLY <handNo> <targetPlayer> <propertyNo>").encode());
+            return false;
+        }
+
+        ActionCards card = getActionCardFromHand(requester, args[0], ActionCardType.SLY_DEAL);
+        Player target = getPlayerByOneBasedNumber(args[1]);
+        PropertiesCards property = getPropertyByOneBasedNumber(target, args[2]);
+        return card != null && property != null && game.finishSlyDeal(card, target, property);
+    }
+
+    private boolean finishDealBreakerCommand(ClientHandler requester, String[] args) {
+        if (args.length < 3) {
+            requester.send(new NetworkMessage("SERVER", "Use DEAL_BREAKER <handNo> <targetPlayer> <color>").encode());
+            return false;
+        }
+
+        ActionCards card = getActionCardFromHand(requester, args[0], ActionCardType.DEAL_BREAKER);
+        Player target = getPlayerByOneBasedNumber(args[1]);
+        PropertyColor color = parseColor(args[2]);
+        ArrayList<PropertiesCards> selectedSet = getPropertiesByColor(target, color);
+
+        return card != null && target != null && !selectedSet.isEmpty()
+                && game.finishDealBreaker(card, target, selectedSet);
+    }
+
+    private boolean finishTwoColorRentCommand(ClientHandler requester, String[] args) {
+        if (args.length < 2) {
+            requester.send(new NetworkMessage("SERVER", "Use RENT <handNo> <color> [DOUBLE]").encode());
+            return false;
+        }
+
+        Card rawCard = getHandCardByOneBasedNumber(requester, args[0]);
+        PropertyColor color = parseColor(args[1]);
+        boolean useDoubleRent = hasDoubleToken(args);
+
+        if (!(rawCard instanceof ActionCards actionCard)) {
+            return false;
+        }
+
+        return color != null && isTwoColorRentCard(actionCard)
+                && game.finishTwoColorRent(actionCard, color, useDoubleRent);
+    }
+
+    private boolean finishMultipleColorRentCommand(ClientHandler requester, String[] args) {
+        if (args.length < 3) {
+            requester.send(new NetworkMessage("SERVER", "Use RENT_ANY <handNo> <targetPlayer> <color> [DOUBLE]").encode());
+            return false;
+        }
+
+        ActionCards card = getActionCardFromHand(requester, args[0], ActionCardType.RENT_WITH_MULTIPLE_COLOR);
+        Player target = getPlayerByOneBasedNumber(args[1]);
+        PropertyColor color = parseColor(args[2]);
+        boolean useDoubleRent = hasDoubleToken(args);
+
+        return card != null && target != null && color != null
+                && game.finishMultipleColorRent(card, target, color, useDoubleRent);
+    }
+
+    private boolean finishBuildingCommand(ClientHandler requester, String[] args, ActionCardType type) {
+        if (args.length < 2) {
+            requester.send(new NetworkMessage("SERVER", "Use " + type.name() + " <handNo> <color>").encode());
+            return false;
+        }
+
+        ActionCards card = getActionCardFromHand(requester, args[0], type);
+        PropertyColor color = parseColor(args[1]);
+
+        if (card == null || color == null) {
+            return false;
+        }
+
+        if (type == ActionCardType.HOUSE) {
+            return game.finishHouse(card, color);
+        }
+
+        return game.finishHotel(card, color);
+    }
+
+    private ActionCards getActionCardFromHand(ClientHandler requester, String handNumberText, ActionCardType expectedType) {
+        Card card = getHandCardByOneBasedNumber(requester, handNumberText);
+
+        if (card instanceof ActionCards actionCard && actionCard.getActionCardType() == expectedType) {
+            return actionCard;
+        }
+
+        requester.send(new NetworkMessage("SERVER", "Hand card " + handNumberText + " is not " + expectedType.name()).encode());
+        return null;
+    }
+
+    private Card getHandCardByOneBasedNumber(ClientHandler requester, String handNumberText) {
+        int index = parseOneBasedCardIndex(handNumberText);
+
+        if (index < 0) {
+            return null;
+        }
+
+        Player player = game.getPlayers().get(requester.getPlayerId() - 1);
+
+        if (index >= player.getHandCards().size()) {
+            return null;
+        }
+
+        return player.getHandCards().get(index);
+    }
+
+    private Player getPlayerByOneBasedNumber(String playerNumberText) {
+        int index = parseOneBasedCardIndex(playerNumberText);
+
+        if (index < 0 || index >= game.getPlayers().size()) {
+            return null;
+        }
+
+        return game.getPlayers().get(index);
+    }
+
+    private PropertiesCards getPropertyByOneBasedNumber(Player player, String propertyNumberText) {
+        if (player == null) {
+            return null;
+        }
+
+        int index = parseOneBasedCardIndex(propertyNumberText);
+
+        if (index < 0 || index >= player.getPropertyCards().size()) {
+            return null;
+        }
+
+        return player.getPropertyCards().get(index);
+    }
+
+    private ArrayList<PropertiesCards> getPropertiesByColor(Player player, PropertyColor color) {
+        ArrayList<PropertiesCards> result = new ArrayList<>();
+
+        if (player == null || color == null) {
+            return result;
+        }
+
+        for (PropertiesCards card : player.getPropertyCards()) {
+            if (card.getCurrentColor() == color) {
+                result.add(card);
+            }
+        }
+
+        return result;
+    }
+
+    private PropertyColor parseColor(String colorText) {
+        try {
+            return PropertyColor.valueOf(colorText.trim().toUpperCase());
+        } catch (IllegalArgumentException | NullPointerException e) {
+            return null;
+        }
+    }
+
+    private boolean hasDoubleToken(String[] args) {
+        for (String arg : args) {
+            if ("DOUBLE".equalsIgnoreCase(arg)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private boolean isTwoColorRentCard(ActionCards card) {
+        ActionCardType type = card.getActionCardType();
+
+        return type == ActionCardType.RENT_WITH_RED_AND_YELLOW
+                || type == ActionCardType.RENT_WITH_ORANGE_AND_PINK
+                || type == ActionCardType.RENT_WITH_BROWN_AND_LIGHT_BLUE
+                || type == ActionCardType.RENT_WITH_BLACK_AND_LIGHT_GREEN
+                || type == ActionCardType.RENT_WITH_DARK_BLUE_AND_DARK_GREEN;
+    }
+
     private synchronized void sendGameStateToAll() {
         if (game == null) {
             return;
@@ -508,11 +750,25 @@ public class GameServer {
                 payIfValid(this, message.getBody());
             } else if ("JUST_SAY_NO".equals(message.getType())) {
                 justSayNoIfValid(this);
+            } else if (isActionCommand(message.getType())) {
+                finishActionIfValid(this, message.getType(), message.getBody());
             } else if ("END_TURN".equals(message.getType())) {
                 endTurnIfGameStarted(this);
             } else {
                 send(new NetworkMessage("SERVER", "Unknown message: " + message.getType()).encode());
             }
+        }
+
+        private boolean isActionCommand(String type) {
+            return "BIRTHDAY".equals(type)
+                    || "DEBT".equals(type)
+                    || "SLY".equals(type)
+                    || "DEAL_BREAKER".equals(type)
+                    || "RENT".equals(type)
+                    || "RENT_ANY".equals(type)
+                    || "HOUSE".equals(type)
+                    || "HOTEL".equals(type)
+                    || "FORCED_DEAL".equals(type);
         }
 
         private void send(String encodedMessage) {

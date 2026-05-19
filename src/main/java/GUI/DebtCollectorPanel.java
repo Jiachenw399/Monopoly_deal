@@ -6,6 +6,7 @@ import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.TextAlignment;
 import logic.Game;
+import logic.PlayerInfoHelper;
 import model.ActionCards;
 import model.Card;
 import model.Player;
@@ -183,23 +184,19 @@ public class DebtCollectorPanel {
             return;
         }
 
-        String propertyText = "";
+        StringBuilder propertyText = new StringBuilder();
 
         for (int i = 0; i < player.getPropertyCards().size(); i++) {
             if (i >= 4) {
-                propertyText += "...";
+                propertyText.append("...");
                 break;
             }
 
             PropertiesCards card = player.getPropertyCards().get(i);
 
-            if (card.getCurrentColor() == null) {
-                propertyText += "NO ";
-            } else {
-                propertyText += PlayerInfoHelper.getShortColorName(card.getCurrentColor()) + " ";
-            }
+            propertyText.append(PropertiesCards.getShortColorName(card.getCurrentColor())).append(" ");
         }
 
-        gc.fillText(propertyText, textX, textY + 22);
+        gc.fillText(propertyText.toString(), textX, textY + 22);
     }
 }
