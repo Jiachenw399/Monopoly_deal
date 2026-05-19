@@ -94,7 +94,7 @@ public class DealBreakerPanel {
         drawOverlay(gc);
         drawTitle(gc);
         drawCompletedSets(gc);
-        ScreenDrawHelper.drawButton(gc, 720, 505, 140, 40, "CANCEL");
+        ScreenDrawHelper.drawButton(gc, 720, 505, 140, 40, "Cancel");
     }
 
     private void drawOverlay(GraphicsContext gc) {

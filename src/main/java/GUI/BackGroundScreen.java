@@ -1,0 +1,389 @@
+package GUI;
+
+import javafx.geometry.VPos;
+import javafx.scene.canvas.Canvas;
+import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.paint.Color;
+import javafx.scene.text.Font;
+import javafx.scene.text.TextAlignment;
+import logic.Game;
+import model.ActionCards;
+import model.Card;
+import model.MoneyCards;
+import model.Player;
+import model.PropertiesCards;
+import model.PropertyColor;
+
+import java.util.ArrayList;
+
+public class BackGroundScreen {
+    private final Game game;
+
+    private final double smallCardWidth = 60;
+    private final double smallCardHeight = 85;
+    private final double cardWidth = 82;
+
+    public BackGroundScreen(Game game) {
+        this.game = game;
+    }
+
+    public void drawAllBackground(Canvas canvas, PropertiesCards selectedWildCard) {
+        drawBackground(canvas);
+        drawCurrentPlayer(canvas);
+        drawBankCards(canvas);
+        drawPropertyCards(canvas, selectedWildCard);
+        drawHandCards(canvas);
+        drawButtons(canvas);
+        drawWinMessage(canvas);
+    }
+
+    private void drawBackground(Canvas canvas) {
+        GraphicsContext gc = canvas.getGraphicsContext2D();
+        ScreenDrawHelper.drawPageBackground(gc, Game.SCREEN_WIDTH, Game.SCREEN_HEIGHT);
+    }
+
+    private void drawCurrentPlayer(Canvas canvas) {
+        GraphicsContext gc = canvas.getGraphicsContext2D();
+        Player currentPlayer = game.getCurrentPlayer();
+
+        ScreenDrawHelper.drawPanel(gc, 16, 14, 735, 94);
+
+        gc.setTextAlign(TextAlignment.LEFT);
+        gc.setTextBaseline(VPos.TOP);
+
+        gc.setFill(ScreenDrawHelper.TEXT);
+        gc.setFont(Font.font("Arial", 22));
+        gc.fillText("Player " + (game.getCurrentPlayerIndex() + 1) + "'s Turn", 36, 28);
+
+        ScreenDrawHelper.drawBadge(gc, 36, 62, 145, 28,
+                "Played " + currentPlayer.getUseCardTimes() + "/3",
+                Color.rgb(255, 226, 166));
+
+        int completedSets = PlayerInfoHelper.getCompletedSetCount(currentPlayer);
+        ScreenDrawHelper.drawBadge(gc, 195, 62, 155, 28,
+                "Sets " + completedSets + "/3",
+                Color.rgb(167, 243, 208));
+
+        drawDeckInfoBesideSets(gc);
+
+        if (game.isDiscard()) {
+            gc.setFill(ScreenDrawHelper.DANGER);
+            gc.setFont(Font.font("Arial", 15));
+            gc.fillText("Discard Phase: discard " + (currentPlayer.getHandCards().size() - 7) + " card(s)", 520, 67);
+        }
+    }
+
+    private void drawDeckInfoBesideSets(GraphicsContext gc) {
+        int remainingCards = game.getDrawCards().getDrawPile().size();
+
+        double deckX = 375;
+        double deckY = 42;
+        double deckWidth = 34;
+        double deckHeight = 44;
+
+        int thickness = Math.max(1, Math.min(6, remainingCards / 15 + 1));
+
+        for (int i = thickness - 1; i >= 0; i--) {
+            double offset = i * 2.2;
+
+            gc.setFill(Color.rgb(240, 245, 255));
+            gc.fillRoundRect(deckX - offset, deckY + offset, deckWidth, deckHeight, 6, 6);
+
+            gc.setStroke(Color.rgb(70, 85, 110));
+            gc.strokeRoundRect(deckX - offset, deckY + offset, deckWidth, deckHeight, 6, 6);
+        }
+
+        gc.setFill(ScreenDrawHelper.ACCENT);
+        gc.setFont(Font.font("Arial", 13));
+        gc.setTextAlign(TextAlignment.CENTER);
+        gc.setTextBaseline(VPos.CENTER);
+        gc.fillText(String.valueOf(remainingCards), deckX + deckWidth / 2, deckY + deckHeight / 2);
+
+        gc.setFill(ScreenDrawHelper.MUTED_TEXT);
+        gc.setFont(Font.font("Arial", 13));
+        gc.setTextAlign(TextAlignment.LEFT);
+        gc.setTextBaseline(VPos.TOP);
+        gc.fillText("Draw Pile", deckX + 48, deckY + 3);
+        gc.fillText(remainingCards + " left", deckX + 48, deckY + 23);
+    }
+
+    private void drawBankCards(Canvas canvas) {
+        GraphicsContext gc = canvas.getGraphicsContext2D();
+        Player currentPlayer = game.getCurrentPlayer();
+
+        ScreenDrawHelper.drawPanel(gc, 16, 118, 735, 128);
+        ScreenDrawHelper.drawSectionTitle(gc, "Bank Area", 32, 132);
+
+        int total = PlayerInfoHelper.getBankTotal(currentPlayer);
+
+        gc.setFont(Font.font("Arial", 15));
+        gc.setFill(ScreenDrawHelper.ACCENT);
+        gc.fillText("Total Money: " + total + "M", 190, 134);
+
+        double startX = 32;
+        double startY = 160;
+        double cardGap = 75;
+
+        int index = 0;
+        for (Card card : currentPlayer.getBankCards()) {
+            double x = startX + index * cardGap;
+            double y = startY;
+
+            if (!CardImageHelper.drawCardImage(gc, card, x, y, smallCardWidth, smallCardHeight)) {
+                ScreenDrawHelper.drawSmallCard(gc, x, y, "Money", card.getValue() + "M", Color.GOLD);
+            }
+            index++;
+        }
+    }
+
+    private void drawPropertyCards(Canvas canvas, PropertiesCards selectedWildCard) {
+        GraphicsContext gc = canvas.getGraphicsContext2D();
+        Player currentPlayer = game.getCurrentPlayer();
+
+        ScreenDrawHelper.drawPanel(gc, 16, 260, 735, 128);
+        ScreenDrawHelper.drawSectionTitle(gc, "Property Area", 32, 274);
+
+        double startX = 32;
+        double startY = 302;
+        double cardGap = 75;
+
+        int index = 0;
+        for (PropertiesCards card : currentPlayer.getPropertyCards()) {
+            double x = startX + index * cardGap;
+            double y = startY;
+
+            String colorText = getDisplayColorName(card.getCurrentColor());
+
+            if (card == selectedWildCard) {
+                gc.setStroke(ScreenDrawHelper.ACCENT);
+                gc.setLineWidth(4);
+                gc.strokeRoundRect(x - 3, y - 3, smallCardWidth + 6, smallCardHeight + 6, 12, 12);
+                gc.setLineWidth(1);
+            }
+
+            boolean hasImage = CardImageHelper.drawCardImage(gc, card, x, y, smallCardWidth, smallCardHeight);
+
+            if (!hasImage) {
+                ScreenDrawHelper.drawSmallCard(gc, x, y, "Property", colorText, Color.LIGHTBLUE);
+
+                if (card.isWildCard()) {
+                    gc.setFill(Color.RED);
+                    gc.setFont(Font.font("Arial", 10));
+                    gc.setTextAlign(TextAlignment.CENTER);
+                    gc.fillText("WILD", x + 30, y + 75);
+                }
+            }
+
+            drawPropertyBuildingLabel(gc, card, x, y);
+            index++;
+        }
+
+        drawWildColorButtons(gc, selectedWildCard);
+    }
+
+    private void drawPropertyBuildingLabel(GraphicsContext gc, PropertiesCards card, double x, double y) {
+        PropertyColor color = card.getCurrentColor();
+
+        if (color == null) {
+            return;
+        }
+
+        double labelY = y + smallCardHeight - 20;
+
+        if (PlayerInfoHelper.hasHotel(game.getCurrentPlayer(), color)) {
+            gc.setFill(Color.DARKBLUE);
+            gc.setFont(Font.font("Arial", 10));
+            gc.setTextAlign(TextAlignment.CENTER);
+            gc.fillText("HOTEL", x + smallCardWidth / 2, labelY);
+            return;
+        }
+
+        if (PlayerInfoHelper.hasHouse(game.getCurrentPlayer(), color)) {
+            gc.setFill(Color.DARKGREEN);
+            gc.setFont(Font.font("Arial", 10));
+            gc.setTextAlign(TextAlignment.CENTER);
+            gc.fillText("HOUSE", x + smallCardWidth / 2, labelY);
+        }
+    }
+
+    private void drawWildColorButtons(GraphicsContext gc, PropertiesCards selectedWildCard) {
+        if (selectedWildCard == null) {
+            return;
+        }
+
+        double x = 520;
+        double y = 255;
+        double w = 115;
+        double h = 28;
+        double gapX = 10;
+        double gapY = 8;
+        int buttonsPerRow = 2;
+
+        gc.setFill(Color.WHITE);
+        gc.setFont(Font.font("Arial", 16));
+        gc.setTextAlign(TextAlignment.LEFT);
+        gc.fillText("Choose Wild Color:", x, y - 25);
+
+        for (int i = 0; i < selectedWildCard.getType().getColors().size(); i++) {
+            PropertyColor color = selectedWildCard.getType().getColors().get(i);
+
+            int row = i / buttonsPerRow;
+            int col = i % buttonsPerRow;
+
+            double buttonX = x + col * (w + gapX);
+            double buttonY = y + row * (h + gapY);
+
+            gc.setFill(Color.LIGHTYELLOW);
+            gc.fillRoundRect(buttonX, buttonY, w, h, 8, 8);
+
+            gc.setStroke(Color.BLACK);
+            gc.strokeRoundRect(buttonX, buttonY, w, h, 8, 8);
+
+            gc.setFill(Color.BLACK);
+            gc.setFont(Font.font("Arial", 11));
+            gc.setTextAlign(TextAlignment.CENTER);
+            gc.setTextBaseline(VPos.CENTER);
+            gc.fillText(getDisplayColorName(color), buttonX + w / 2, buttonY + h / 2);
+        }
+
+        gc.setTextBaseline(VPos.TOP);
+    }
+
+    private void drawHandCards(Canvas canvas) {
+        GraphicsContext gc = canvas.getGraphicsContext2D();
+        Player currentPlayer = game.getCurrentPlayer();
+        ArrayList<Card> handCards = currentPlayer.getHandCards();
+
+        double titleY = Game.SCREEN_HEIGHT - 180;
+        ScreenDrawHelper.drawPanel(gc, 16, titleY - 14, 745, 165);
+
+        gc.setFill(ScreenDrawHelper.TEXT);
+        gc.setFont(Font.font("Arial", 18));
+        gc.setTextAlign(TextAlignment.LEFT);
+        gc.setTextBaseline(VPos.TOP);
+        gc.fillText("Hand Cards", 32, titleY);
+
+        double currentGap = getHandCardGap(handCards);
+
+        for (int i = 0; i < handCards.size(); i++) {
+            double handStartX = 20;
+            double x = handStartX + i * (cardWidth + currentGap);
+            double y = Game.SCREEN_HEIGHT - 150;
+
+            Card card = handCards.get(i);
+            drawHandCard(gc, card, x, y, i + 1);
+        }
+    }
+
+    private double getHandCardGap(ArrayList<Card> handCards) {
+        double gap = 10;
+        double currentGap = gap;
+
+        if (handCards.size() > 1) {
+            double totalWidth = handCards.size() * cardWidth + (handCards.size() - 1) * gap;
+
+            double handAreaWidth = 740;
+            if (totalWidth > handAreaWidth) {
+                currentGap = (handAreaWidth - handCards.size() * cardWidth) / (handCards.size() - 1);
+            }
+        }
+
+        return currentGap;
+    }
+
+    private void drawHandCard(GraphicsContext gc, Card card, double x, double y, int number) {
+        double cardHeight = 112;
+        if (CardImageHelper.drawCardImage(gc, card, x, y, cardWidth, cardHeight)) {
+            CardImageHelper.drawHandNumberBadge(gc, number, x + 5, y + 5);
+            return;
+        }
+
+        Color color = Color.WHITE;
+        String type = "";
+        String name = "";
+        String value = card.getValue() + "M";
+
+        switch (card) {
+            case MoneyCards moneyCards -> {
+                color = Color.GOLD;
+                type = "Money";
+                name = value;
+            }
+            case PropertiesCards propertyCard -> {
+                color = Color.LIGHTBLUE;
+                type = "Property";
+                name = propertyCard.getType().name();
+            }
+            case ActionCards actionCard -> {
+                color = Color.LIGHTPINK;
+                type = "Action";
+                name = actionCard.getActionCardType().name();
+            }
+            default -> {
+            }
+        }
+
+        gc.setFill(color);
+        gc.fillRoundRect(x, y, cardWidth, cardHeight, 15, 15);
+
+        gc.setStroke(Color.BLACK);
+        gc.strokeRoundRect(x, y, cardWidth, cardHeight, 15, 15);
+
+        gc.setFill(Color.BLACK);
+        gc.setFont(Font.font("Arial", 13));
+        gc.setTextAlign(TextAlignment.CENTER);
+        gc.fillText(String.valueOf(number), x + cardWidth / 2, y + 8);
+        gc.fillText(type, x + cardWidth / 2, y + 30);
+        gc.fillText(value, x + cardWidth / 2, y + 50);
+
+        gc.setFont(Font.font("Arial", 10));
+        ScreenDrawHelper.drawWrappedText(gc, name, x + 6, y + 70, cardWidth - 12, 12);
+    }
+
+    private void drawButtons(Canvas canvas) {
+        GraphicsContext gc = canvas.getGraphicsContext2D();
+
+        ScreenDrawHelper.drawButton(gc, 820, 520, 170, 40, "END TURN");
+        ScreenDrawHelper.drawButton(gc, 820, 570, 170, 40, "BACK MENU");
+    }
+
+    private void drawWinMessage(Canvas canvas) {
+        if (!game.isWin()) {
+            return;
+        }
+
+        GraphicsContext gc = canvas.getGraphicsContext2D();
+        ScreenDrawHelper.drawOverlay(gc);
+        ScreenDrawHelper.drawPanel(gc, 275, 220, 485, 155);
+
+        gc.setFill(ScreenDrawHelper.ACCENT);
+        gc.setFont(Font.font("Arial", 42));
+        gc.setTextAlign(TextAlignment.CENTER);
+        gc.setTextBaseline(VPos.CENTER);
+        gc.fillText("Player " + (game.getCurrentPlayerIndex() + 1) + " Wins!", Game.SCREEN_WIDTH / 2, 285);
+
+        gc.setFill(ScreenDrawHelper.MUTED_TEXT);
+        gc.setFont(Font.font("Arial", 17));
+        gc.fillText("Congratulations!", Game.SCREEN_WIDTH / 2, 332);
+    }
+
+    private String getDisplayColorName(PropertyColor color) {
+        if (color == null) {
+            return "No Color";
+        }
+
+        String[] words = color.name().toLowerCase().split("_");
+        StringBuilder builder = new StringBuilder();
+
+        for (String word : words) {
+            if (!builder.isEmpty()) {
+                builder.append(" ");
+            }
+
+            builder.append(word.substring(0, 1).toUpperCase());
+            builder.append(word.substring(1));
+        }
+
+        return builder.toString();
+    }
+}

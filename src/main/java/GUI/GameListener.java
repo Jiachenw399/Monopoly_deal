@@ -28,6 +28,10 @@ public class GameListener {
             return;
         }
 
+        if (handlePlayerDetailPopupClick(x, y)) {
+            return;
+        }
+
         if (handleSelectionModeClick(x, y)) {
             return;
         }
@@ -45,6 +49,18 @@ public class GameListener {
         }
 
         handleHandCardClick(x, y);
+    }
+
+    private boolean handlePlayerDetailPopupClick(double x, double y) {
+        if (!gameScreen.isPlayerDetailPopupShowing()) {
+            return false;
+        }
+
+        if (gameScreen.isPlayerDetailPopupCloseClicked(x, y)) {
+            gameScreen.closePlayerDetailPopup();
+        }
+
+        return true;
     }
 
     private boolean handleSelectionModeClick(double x, double y) {
@@ -117,10 +133,44 @@ public class GameListener {
             return true;
         }
 
+        if (gameScreen.isForcedDealBackClicked(x, y)) {
+            gameScreen.setSelectedForcedDealTarget(null);
+            return true;
+        }
+
         Player targetPlayer = gameScreen.getClickedForcedDealTarget(x, y);
 
         if (targetPlayer != null) {
-            gameScreen.finish(targetPlayer);
+            gameScreen.setSelectedForcedDealTarget(targetPlayer);
+            return true;
+        }
+
+        PropertiesCards myCard = gameScreen.getClickedForcedDealMyProperty(x, y);
+
+        if (myCard != null) {
+            gameScreen.setSelectedForcedDealMyProperty(myCard);
+            return true;
+        }
+
+        PropertiesCards targetCard = gameScreen.getClickedForcedDealTargetProperty(x, y);
+
+        if (targetCard != null) {
+            gameScreen.setSelectedForcedDealTargetProperty(targetCard);
+            return true;
+        }
+
+        if (gameScreen.isForcedDealConfirmClicked(x, y)) {
+            if (gameScreen.canConfirmForcedDeal()) {
+                game.finishForcedDeal(
+                        gameScreen.getPendingForcedDealCard(),
+                        gameScreen.getSelectedForcedDealTarget(),
+                        gameScreen.getSelectedForcedDealMyProperty(),
+                        gameScreen.getSelectedForcedDealTargetProperty()
+                );
+
+                gameScreen.cancelForcedDealSelection();
+            }
+
             return true;
         }
 
@@ -288,7 +338,7 @@ public class GameListener {
                 selectedWildCard.setCurrentColor(selectedColor);
             }
 
-            gameScreen.setSelectedWildCard(null);
+            gameScreen.clearSelectedWildCard();
             return true;
         }
 
@@ -331,13 +381,13 @@ public class GameListener {
 
     private boolean handleButtonClick(double x, double y) {
         if (gameScreen.isEndTurnClicked(x, y)) {
-            gameScreen.setSelectedWildCard(null);
+            gameScreen.clearSelectedWildCard();
             game.guiEndTurn();
             return true;
         }
 
         if (gameScreen.isBackMenuClicked(x, y)) {
-            gameScreen.setSelectedWildCard(null);
+            gameScreen.clearSelectedWildCard();
             gameScreen.setShow(false);
             menu.setShow(true);
             return true;
@@ -346,8 +396,8 @@ public class GameListener {
         int viewedPlayerIndex = gameScreen.getClickedPlayerViewButtonIndex(x, y);
 
         if (viewedPlayerIndex != -1) {
-            gameScreen.setSelectedWildCard(null);
-            gameScreen.setViewedPlayerIndex(viewedPlayerIndex);
+            gameScreen.clearSelectedWildCard();
+            gameScreen.showPlayerDetailPopup(viewedPlayerIndex);
             return true;
         }
 

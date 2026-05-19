@@ -193,11 +193,7 @@ public class DebtCollectorPanel {
 
             PropertiesCards card = player.getPropertyCards().get(i);
 
-            if (card.getCurrentColor() == null) {
-                propertyText += "NO ";
-            } else {
-                propertyText += PlayerInfoHelper.getShortColorName(card.getCurrentColor()) + " ";
-            }
+            propertyText += PlayerInfoHelper.getShortColorName(card.getCurrentColor()) + " ";
         }
 
         gc.fillText(propertyText, textX, textY + 22);
