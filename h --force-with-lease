@@ -1,0 +1,23 @@
+[33m74b902f[m v0.1
+[33m1e9e926[m Create README.md
+[33m43be3db[m sd
+[33m88d373f[m 我做了一点点基础类 还没实现具体功能
+[33ma943c6a[m Update Monopoly Deal.iml
+[33m88f1f13[m 我浅浅做了一点点基础类
+[33m01855fd[m 基础类
+[33mf06c56a[m 我大概做了一部分基础类 先等一下GUI和逻辑设计的同学
+[33mc7dab5a[m 。
+[33mb653e92[m 。
+[33mfae5feb[m 。
+[33m4f95058[m 改方法 让他看起来更好一点
+[33mcad20dd[m 牌堆功能 已实现 基础类已经准备好 逻辑类·的同学可以开始做了 基础类有什么需求 或者有什么困难 可以联系我
+[33mdd90f91[m 改好
+[33m1f50596[m 。
+[33m395de93[m 改了一些bug
+[33m22a2bb9[m 改好
+[33m51182a2[m checkwin和player初始化逻辑
+[33m8e571eb[m 菜单改了个名
+[33m69de719[m gggg
+[33m9345217[m 0
+[33mce9e786[m Update Game.java
+[33mc2394e7[m[33m ([m[1;36mHEAD[m[33m)[m 完善了一下Player中的onturn方法
