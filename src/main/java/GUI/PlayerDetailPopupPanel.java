@@ -13,10 +13,14 @@ import model.Player;
 import model.PropertiesCards;
 import model.PropertyColor;
 
+import java.util.ArrayList;
+
 public class PlayerDetailPopupPanel {
     private final Game game;
 
     private int selectedPlayerIndex = -1;
+    private int bankPage = 0;
+    private int propertyPage = 0;
 
     private final double popupX = 145;
     private final double popupY = 70;
@@ -31,8 +35,18 @@ public class PlayerDetailPopupPanel {
     private final double cardWidth = 68;
     private final double cardHeight = 93;
     private final double cardGapX = 82;
-    private final double cardGapY = 105;
-    private final int cardsPerRow = 8;
+    private final int cardsPerPage = 8;
+
+    private final double pageButtonWidth = 34;
+    private final double pageButtonHeight = 26;
+
+    private final double bankPrevX = 715;
+    private final double bankNextX = 810;
+    private final double bankButtonY = 247;
+
+    private final double propertyPrevX = 715;
+    private final double propertyNextX = 810;
+    private final double propertyButtonY = 405;
 
     public PlayerDetailPopupPanel(Game game) {
         this.game = game;
@@ -44,10 +58,14 @@ public class PlayerDetailPopupPanel {
         }
 
         selectedPlayerIndex = playerIndex;
+        bankPage = 0;
+        propertyPage = 0;
     }
 
     public void close() {
         selectedPlayerIndex = -1;
+        bankPage = 0;
+        propertyPage = 0;
     }
 
     public boolean isShowing() {
@@ -60,6 +78,65 @@ public class PlayerDetailPopupPanel {
                 && mouseY >= closeY && mouseY <= closeY + closeHeight;
     }
 
+    public boolean handlePageButtonClick(double mouseX, double mouseY) {
+        if (!isShowing()) {
+            return false;
+        }
+
+        Player player = game.getPlayers().get(selectedPlayerIndex);
+
+        if (isBankPrevClicked(mouseX, mouseY)) {
+            if (bankPage > 0) {
+                bankPage--;
+            }
+            return true;
+        }
+
+        if (isBankNextClicked(mouseX, mouseY)) {
+            if (bankPage < getMaxPage(player.getBankCards().size())) {
+                bankPage++;
+            }
+            return true;
+        }
+
+        if (isPropertyPrevClicked(mouseX, mouseY)) {
+            if (propertyPage > 0) {
+                propertyPage--;
+            }
+            return true;
+        }
+
+        if (isPropertyNextClicked(mouseX, mouseY)) {
+            if (propertyPage < getMaxPage(player.getPropertyCards().size())) {
+                propertyPage++;
+            }
+            return true;
+        }
+
+        return false;
+    }
+
+    private boolean isBankPrevClicked(double mouseX, double mouseY) {
+        return isInside(mouseX, mouseY, bankPrevX, bankButtonY, pageButtonWidth, pageButtonHeight);
+    }
+
+    private boolean isBankNextClicked(double mouseX, double mouseY) {
+        return isInside(mouseX, mouseY, bankNextX, bankButtonY, pageButtonWidth, pageButtonHeight);
+    }
+
+    private boolean isPropertyPrevClicked(double mouseX, double mouseY) {
+        return isInside(mouseX, mouseY, propertyPrevX, propertyButtonY, pageButtonWidth, pageButtonHeight);
+    }
+
+    private boolean isPropertyNextClicked(double mouseX, double mouseY) {
+        return isInside(mouseX, mouseY, propertyNextX, propertyButtonY, pageButtonWidth, pageButtonHeight);
+    }
+
+    private boolean isInside(double mouseX, double mouseY, double x, double y, double width, double height) {
+        return mouseX >= x && mouseX <= x + width
+                && mouseY >= y && mouseY <= y + height;
+    }
+
     public void draw(GraphicsContext gc) {
         if (!isShowing()) {
             return;
@@ -67,6 +144,7 @@ public class PlayerDetailPopupPanel {
 
         Player player = game.getPlayers().get(selectedPlayerIndex);
 
+        keepPageInRange(player);
         drawOverlay(gc);
         drawPopupBox(gc);
         drawTitle(gc, player);
@@ -76,30 +154,59 @@ public class PlayerDetailPopupPanel {
         drawPropertyArea(gc, player);
     }
 
+    private void keepPageInRange(Player player) {
+        int maxBankPage = getMaxPage(player.getBankCards().size());
+        int maxPropertyPage = getMaxPage(player.getPropertyCards().size());
+
+        if (bankPage > maxBankPage) {
+            bankPage = maxBankPage;
+        }
+
+        if (propertyPage > maxPropertyPage) {
+            propertyPage = maxPropertyPage;
+        }
+
+        if (bankPage < 0) {
+            bankPage = 0;
+        }
+
+        if (propertyPage < 0) {
+            propertyPage = 0;
+        }
+    }
+
+    private int getMaxPage(int size) {
+        if (size <= 0) {
+            return 0;
+        }
+
+        return (size - 1) / cardsPerPage;
+    }
+
     private void drawOverlay(GraphicsContext gc) {
         gc.setFill(Color.rgb(0, 0, 0, 0.72));
         gc.fillRect(0, 0, Game.SCREEN_WIDTH, Game.SCREEN_HEIGHT);
     }
 
     private void drawPopupBox(GraphicsContext gc) {
-        gc.setFill(Color.rgb(245, 247, 250));
+        gc.setFill(Color.rgb(18, 24, 35));
         gc.fillRoundRect(popupX, popupY, popupWidth, popupHeight, 24, 24);
 
-        gc.setStroke(Color.WHITE);
+        gc.setStroke(Color.rgb(255, 184, 77));
         gc.setLineWidth(2);
         gc.strokeRoundRect(popupX, popupY, popupWidth, popupHeight, 24, 24);
         gc.setLineWidth(1);
     }
 
     private void drawTitle(GraphicsContext gc, Player player) {
-        gc.setFill(Color.rgb(30, 35, 48));
+        gc.setFill(Color.rgb(255, 232, 180));
         gc.setFont(Font.font("Arial", 28));
         gc.setTextAlign(TextAlignment.LEFT);
         gc.setTextBaseline(VPos.TOP);
         gc.fillText("Player " + (selectedPlayerIndex + 1) + " Details", popupX + 28, popupY + 24);
 
         gc.setFont(Font.font("Arial", 15));
-        gc.setFill(Color.rgb(90, 100, 118));
+        gc.setFill(Color.rgb(210, 218, 230));
         gc.fillText("Hand, bank area and property area overview", popupX + 30, popupY + 62);
     }
 
@@ -132,19 +239,19 @@ public class PlayerDetailPopupPanel {
     }
 
     private void drawInfoBadge(GraphicsContext gc, double x, double y, double width, String title, String value) {
-        gc.setFill(Color.rgb(225, 232, 242));
+        gc.setFill(Color.rgb(35, 45, 63));
         gc.fillRoundRect(x, y, width, 58, 14, 14);
 
-        gc.setStroke(Color.rgb(205, 212, 225));
+        gc.setStroke(Color.rgb(255, 184, 77, 0.75));
         gc.strokeRoundRect(x, y, width, 58, 14, 14);
 
-        gc.setFill(Color.rgb(90, 100, 118));
+        gc.setFill(Color.rgb(210, 218, 230));
         gc.setFont(Font.font("Arial", 13));
         gc.setTextAlign(TextAlignment.CENTER);
         gc.setTextBaseline(VPos.TOP);
         gc.fillText(title, x + width / 2, y + 8);
 
-        gc.setFill(Color.rgb(30, 35, 48));
+        gc.setFill(Color.WHITE);
         gc.setFont(Font.font("Arial", 20));
         gc.fillText(value, x + width / 2, y + 29);
     }
@@ -152,61 +259,119 @@ public class PlayerDetailPopupPanel {
     private void drawBankArea(GraphicsContext gc, Player player) {
         double titleX = popupX + 30;
         double titleY = popupY + 178;
-
-        gc.setFill(Color.rgb(30, 35, 48));
-        gc.setFont(Font.font("Arial", 19));
-        gc.setTextAlign(TextAlignment.LEFT);
-        gc.setTextBaseline(VPos.TOP);
-        gc.fillText("Bank Area", titleX, titleY);
-
-        if (player.getBankCards().isEmpty()) {
-            drawEmptyText(gc, "No bank cards", titleX, titleY + 40);
-            return;
-        }
-
         double startX = popupX + 30;
         double startY = popupY + 212;
 
-        for (int i = 0; i < player.getBankCards().size(); i++) {
-            Card card = player.getBankCards().get(i);
+        drawAreaTitle(gc, "Bank Area", titleX, titleY);
 
-            double x = startX + (i % cardsPerRow) * cardGapX;
-            double y = startY + (i / cardsPerRow) * cardGapY;
-
-            drawSmallCard(gc, card, x, y);
+        if (player.getBankCards().isEmpty()) {
+            drawEmptyText(gc, "No bank cards", startX, startY + 25);
+            return;
         }
+
+        drawCardsByPage(gc, player.getBankCards(), startX, startY, bankPage);
+        drawPageController(
+                gc,
+                bankPrevX,
+                bankNextX,
+                bankButtonY,
+                bankPage,
+                getMaxPage(player.getBankCards().size())
+        );
     }
 
     private void drawPropertyArea(GraphicsContext gc, Player player) {
         double titleX = popupX + 30;
         double titleY = popupY + 335;
-
-        gc.setFill(Color.rgb(30, 35, 48));
-        gc.setFont(Font.font("Arial", 19));
-        gc.setTextAlign(TextAlignment.LEFT);
-        gc.setTextBaseline(VPos.TOP);
-        gc.fillText("Property Area", titleX, titleY);
-
-        if (player.getPropertyCards().isEmpty()) {
-            drawEmptyText(gc, "No property cards", titleX, titleY + 40);
-            return;
-        }
-
         double startX = popupX + 30;
         double startY = popupY + 368;
 
-        for (int i = 0; i < player.getPropertyCards().size(); i++) {
-            Card card = player.getPropertyCards().get(i);
+        drawAreaTitle(gc, "Property Area", titleX, titleY);
 
-            double x = startX + (i % cardsPerRow) * cardGapX;
-            double y = startY + (i / cardsPerRow) * cardGapY;
+        if (player.getPropertyCards().isEmpty()) {
+            drawEmptyText(gc, "No property cards", startX, startY + 25);
+            return;
+        }
+
+        drawCardsByPage(gc, player.getPropertyCards(), startX, startY, propertyPage);
+        drawPageController(
+                gc,
+                propertyPrevX,
+                propertyNextX,
+                propertyButtonY,
+                propertyPage,
+                getMaxPage(player.getPropertyCards().size())
+        );
+    }
+
+    private void drawAreaTitle(GraphicsContext gc, String title, double x, double y) {
+        gc.setFill(Color.WHITE);
+        gc.setFont(Font.font("Arial", 19));
+        gc.setTextAlign(TextAlignment.LEFT);
+        gc.setTextBaseline(VPos.TOP);
+        gc.fillText(title, x, y);
+    }
+
+    private void drawCardsByPage(GraphicsContext gc, ArrayList<? extends Card> cards, double startX, double startY, int page) {
+        int startIndex = page * cardsPerPage;
+        int endIndex = Math.min(startIndex + cardsPerPage, cards.size());
+
+        for (int i = startIndex; i < endIndex; i++) {
+            Card card = cards.get(i);
+
+            double x = startX + (i - startIndex) * cardGapX;
+            double y = startY;
 
             drawSmallCard(gc, card, x, y);
         }
     }
 
+    private void drawPageController(GraphicsContext gc, double prevX, double nextX, double y, int currentPage, int maxPage) {
+        drawPageButton(gc, prevX, y, "<", currentPage > 0);
+        drawPageButton(gc, nextX, y, ">", currentPage < maxPage);
+
+        gc.setFill(Color.rgb(210, 218, 230));
+        gc.setFont(Font.font("Arial", 14));
+        gc.setTextAlign(TextAlignment.CENTER);
+        gc.setTextBaseline(VPos.CENTER);
+        gc.fillText((currentPage + 1) + "/" + (maxPage + 1), prevX + 64, y + pageButtonHeight / 2);
+
+        gc.setTextBaseline(VPos.TOP);
+    }
+
+    private void drawPageButton(GraphicsContext gc, double x, double y, String text, boolean enabled) {
+        if (enabled) {
+            gc.setFill(Color.rgb(255, 184, 77));
+        } else {
+            gc.setFill(Color.rgb(90, 90, 90));
+        }
+
+        gc.fillRoundRect(x, y, pageButtonWidth, pageButtonHeight, 8, 8);
+
+        if (enabled) {
+            gc.setStroke(Color.rgb(220, 130, 40));
+        } else {
+            gc.setStroke(Color.rgb(120, 120, 120));
+        }
+
+        gc.strokeRoundRect(x, y, pageButtonWidth, pageButtonHeight, 8, 8);
+
+        if (enabled) {
+            gc.setFill(Color.rgb(34, 26, 10));
+        } else {
+            gc.setFill(Color.rgb(190, 190, 190));
+        }
+
+        gc.setFont(Font.font("Arial", 16));
+        gc.setTextAlign(TextAlignment.CENTER);
+        gc.setTextBaseline(VPos.CENTER);
+        gc.fillText(text, x + pageButtonWidth / 2, y + pageButtonHeight / 2);
+
+        gc.setTextBaseline(VPos.TOP);
+    }
+
     private void drawEmptyText(GraphicsContext gc, String text, double x, double y) {
-        gc.setFill(Color.rgb(120, 128, 145));
+        gc.setFill(Color.rgb(170, 180, 195));
         gc.setFont(Font.font("Arial", 15));
         gc.setTextAlign(TextAlignment.LEFT);
         gc.setTextBaseline(VPos.TOP);

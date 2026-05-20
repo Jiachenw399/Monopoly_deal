@@ -31,7 +31,15 @@ public class GameListener {
             return;
         }
 
+        if (handleActionCardChoiceClick(x, y)) {
+            return;
+        }
+
         if (handleSelectionModeClick(x, y)) {
+            return;
+        }
+
+        if (handlePlayerDetailPopupClick(x, y)) {
             return;
         }
 
@@ -54,6 +62,54 @@ public class GameListener {
         handleHandCardClick(x, y);
     }
 
+    private boolean handleActionCardChoiceClick(double x, double y) {
+        if (!gameScreen.isActionCardChoiceShowing()) {
+            return false;
+        }
+
+        if (gameScreen.isActionCardChoiceCancelClicked(x, y)) {
+            gameScreen.closeActionCardChoice();
+            return true;
+        }
+
+        ActionCards selectedCard = gameScreen.getSelectedActionCardChoiceCard();
+
+        if (selectedCard == null) {
+            gameScreen.closeActionCardChoice();
+            return true;
+        }
+
+        if (gameScreen.isActionCardChoiceMoneyClicked(x, y)) {
+            playActionCardAsMoney(selectedCard);
+            gameScreen.closeActionCardChoice();
+            return true;
+        }
+
+        if (gameScreen.isActionCardChoiceActionClicked(x, y)) {
+            if (!gameScreen.canUseSelectedActionCardAsAction()) {
+                return true;
+            }
+
+            gameScreen.closeActionCardChoice();
+            handleActionCardClick(selectedCard);
+            return true;
+        }
+
+        return true;
+    }
+
+    private void playActionCardAsMoney(ActionCards selectedCard) {
+        Player currentPlayer = game.getCurrentPlayer();
+
+        if (!currentPlayer.getHandCards().contains(selectedCard)) {
+            return;
+        }
+
+        currentPlayer.getHandCards().remove(selectedCard);
+        currentPlayer.getBankCards().add(selectedCard);
+        currentPlayer.setUseCardTimes(currentPlayer.getUseCardTimes() + 1);
+    }
+
     private boolean handlePlayerDetailPopupClick(double x, double y) {
         if (!gameScreen.isPlayerDetailPopupShowing()) {
             return false;
@@ -61,6 +117,11 @@ public class GameListener {
 
         if (gameScreen.isPlayerDetailPopupCloseClicked(x, y)) {
             gameScreen.closePlayerDetailPopup();
+            return true;
+        }
+
+        if (gameScreen.handlePlayerDetailPopupPageButtonClick(x, y)) {
+            return true;
         }
 
         return true;
@@ -385,12 +446,14 @@ public class GameListener {
     private boolean handleButtonClick(double x, double y) {
         if (gameScreen.isEndTurnClicked(x, y)) {
             gameScreen.clearSelectedWildCard();
+            gameScreen.closeActionCardChoice();
             game.guiEndTurn();
             return true;
         }
 
         if (gameScreen.isBackMenuClicked(x, y)) {
             gameScreen.clearSelectedWildCard();
+            gameScreen.closeActionCardChoice();
             gameScreen.setShow(false);
             menu.setShow(true);
             return true;
@@ -400,6 +463,7 @@ public class GameListener {
 
         if (viewedPlayerIndex != -1) {
             gameScreen.clearSelectedWildCard();
+            gameScreen.closeActionCardChoice();
             gameScreen.showPlayerDetailPopup(viewedPlayerIndex);
             return true;
         }
@@ -431,7 +495,8 @@ public class GameListener {
             return;
         }
 
-        if (handleActionCardClick(selectedCard)) {
+        if (selectedCard instanceof ActionCards actionCard) {
+            gameScreen.showActionCardChoice(actionCard);
             return;
         }
 
@@ -442,54 +507,52 @@ public class GameListener {
         }
     }
 
-    private boolean handleActionCardClick(Card selectedCard) {
+    private void handleActionCardClick(Card selectedCard) {
         if (!(selectedCard instanceof ActionCards actionCard)) {
-            return false;
+            return;
         }
 
         ActionCardType type = actionCard.getActionCardType();
 
-        return switch (type) {
+        switch (type) {
             case SLY_DEAL -> {
                 gameScreen.startSlyDealSelection(actionCard);
-                yield true;
             }
             case RENT_WITH_MULTIPLE_COLOR -> {
                 gameScreen.startMultipleColorRentSelection(actionCard);
-                yield true;
             }
-            case HOUSE,HOTEL -> {
+            case HOUSE, HOTEL -> {
                 gameScreen.startBuildingSelection(actionCard);
-                yield true;
             }
             case FORCED_DEAL -> {
                 gameScreen.startForcedDealSelection(actionCard);
-                yield true;
             }
             case BIRTHDAY -> {
                 game.finishBirthday(actionCard);
-                yield true;
             }
-            case JUST_SAY_NO -> false;
+            case JUST_SAY_NO -> {
+            }
             case DEBT_COLLECTOR -> {
                 gameScreen.startDebtCollectorSelection(actionCard);
-                yield true;
             }
-            case DOUBLE_THE_RENT -> false;
+            case DOUBLE_THE_RENT -> {
+            }
             case DEAL_BREAKER -> {
                 gameScreen.startDealBreakerSelection(actionCard);
-                yield true;
             }
-            case RENT_WITH_DARK_BLUE_AND_DARK_GREEN, RENT_WITH_BROWN_AND_LIGHT_BLUE, RENT_WITH_BLACK_AND_LIGHT_GREEN,
-                 RENT_WITH_RED_AND_YELLOW, RENT_WITH_ORANGE_AND_PINK -> {
+            case RENT_WITH_DARK_BLUE_AND_DARK_GREEN,
+                 RENT_WITH_BROWN_AND_LIGHT_BLUE,
+                 RENT_WITH_BLACK_AND_LIGHT_GREEN,
+                 RENT_WITH_RED_AND_YELLOW,
+                 RENT_WITH_ORANGE_AND_PINK -> {
                 gameScreen.startTwoColorRentSelection(actionCard);
-                yield true;
             }
             case PASS_GO -> {
                 game.finishPassGo(actionCard);
-                yield true;
             }
-            default -> false;
-        };
+            default -> {
+
+            }
+        }
     }
 }

@@ -26,6 +26,7 @@ public class GameScreen {
     private WildCardSelectionPanel wildCardSelectionPanel;
     private PlayerViewPanel playerViewPanel;
     private PlayerDetailPopupPanel playerDetailPopupPanel;
+    private ActionCardChoicePanel actionCardChoicePanel;
 
     private double cardWidth = 82;
     private double cardHeight = 112;
@@ -51,6 +52,7 @@ public class GameScreen {
         wildCardSelectionPanel = new WildCardSelectionPanel(game);
         playerViewPanel = new PlayerViewPanel();
         playerDetailPopupPanel = new PlayerDetailPopupPanel(game);
+        actionCardChoicePanel = new ActionCardChoicePanel();
         this.isShow = false;
     }
 
@@ -80,7 +82,9 @@ public class GameScreen {
         buildingSelectionPanel.draw(canvas.getGraphicsContext2D());
         forcedDealPanel.draw(canvas.getGraphicsContext2D());
         playerDetailPopupPanel.draw(canvas.getGraphicsContext2D());
+        actionCardChoicePanel.draw(canvas.getGraphicsContext2D());
     }
+
     private void syncViewedPlayerWithCurrentTurn() {
         int currentTurnPlayerIndex = game.getCurrentPlayerIndex();
 
@@ -413,6 +417,10 @@ public class GameScreen {
         return playerDetailPopupPanel.isCloseClicked(mouseX, mouseY);
     }
 
+    public boolean handlePlayerDetailPopupPageButtonClick(double mouseX, double mouseY) {
+        return playerDetailPopupPanel.handlePageButtonClick(mouseX, mouseY);
+    }
+
     public void closePlayerDetailPopup() {
         playerDetailPopupPanel.close();
     }
@@ -513,5 +521,38 @@ public class GameScreen {
 
     public void clearSelectedWildCard() {
         wildCardSelectionPanel.clearSelection();
+    }
+
+    public void showActionCardChoice(ActionCards card) {
+        actionCardChoicePanel.show(card);
+        wildCardSelectionPanel.clearSelection();
+    }
+
+    public void closeActionCardChoice() {
+        actionCardChoicePanel.close();
+    }
+
+    public boolean isActionCardChoiceShowing() {
+        return actionCardChoicePanel.isShowing();
+    }
+
+    public ActionCards getSelectedActionCardChoiceCard() {
+        return actionCardChoicePanel.getSelectedCard();
+    }
+
+    public boolean isActionCardChoiceMoneyClicked(double mouseX, double mouseY) {
+        return actionCardChoicePanel.isMoneyClicked(mouseX, mouseY);
+    }
+
+    public boolean isActionCardChoiceActionClicked(double mouseX, double mouseY) {
+        return actionCardChoicePanel.isActionClicked(mouseX, mouseY);
+    }
+
+    public boolean isActionCardChoiceCancelClicked(double mouseX, double mouseY) {
+        return actionCardChoicePanel.isCancelClicked(mouseX, mouseY);
+    }
+
+    public boolean canUseSelectedActionCardAsAction() {
+        return actionCardChoicePanel.canUseAsAction();
     }
 }
