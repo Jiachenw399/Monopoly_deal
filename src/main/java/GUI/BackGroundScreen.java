@@ -392,8 +392,8 @@ public class BackGroundScreen {
 
     private void drawHandCard(GraphicsContext gc, Card card, double x, double y, int number) {
         double cardHeight = 112;
+
         if (CardImageHelper.drawCardImage(gc, card, x, y, cardWidth, cardHeight)) {
-            CardImageHelper.drawHandNumberBadge(gc, number, x + 5, y + 5);
             return;
         }
 
@@ -431,7 +431,7 @@ public class BackGroundScreen {
         gc.setFill(Color.BLACK);
         gc.setFont(Font.font("Arial", 13));
         gc.setTextAlign(TextAlignment.CENTER);
-        gc.fillText(String.valueOf(number), x + cardWidth / 2, y + 8);
+
         gc.fillText(type, x + cardWidth / 2, y + 30);
         gc.fillText(value, x + cardWidth / 2, y + 50);
 
@@ -442,8 +442,8 @@ public class BackGroundScreen {
     private void drawButtons(Canvas canvas) {
         GraphicsContext gc = canvas.getGraphicsContext2D();
 
-        ScreenDrawHelper.drawButton(gc, 820, 520, 170, 40, "END TURN");
-        ScreenDrawHelper.drawButton(gc, 820, 570, 170, 40, "BACK MENU");
+        ScreenDrawHelper.drawButton(gc, 820, 520, 170, 40, "End Turn");
+        ScreenDrawHelper.drawButton(gc, 820, 570, 170, 40, "Back Menu");
     }
 
     private void drawWinMessage(Canvas canvas) {
