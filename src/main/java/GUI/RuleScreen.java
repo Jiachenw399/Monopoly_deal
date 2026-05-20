@@ -8,14 +8,15 @@ import javafx.scene.text.Font;
 import javafx.scene.text.TextAlignment;
 import logic.Game;
 
+
 public class RuleScreen {
     private final Canvas canvas;
     private boolean isShow;
 
     private static final String[] RULES = {
             "1. Each player starts with 5 cards.",
-            "2. At the start of a turn, drawAllBackground 2 cards.",
-            "3. If the player has no hand cards, drawAllBackground 5 cards.",
+            "2. At the start of a turn, take 2 cards.",
+            "3. If the player has no hand cards, take 5 cards.",
             "4. Each player can play up to 3 cards per turn.",
             "5. Money cards go to the bank area.",
             "6. Property cards go to the property area.",

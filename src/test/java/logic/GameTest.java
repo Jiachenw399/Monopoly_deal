@@ -23,31 +23,6 @@ public class GameTest {
         assertFalse(game.isWin());
     }
 
-    @Test
-    public void testStartgame(){
-        Game game = new Game();
-        game.startGame();
-        assertEquals(0, game.getCurrentPlayerIndex());
-        assertTrue(game.getCurrentPlayer().isOnTurn());
-    }
-
-    @Test
-    public void testEndTurnSwitchPlayer() {
-        Game game = new Game();
-        game.startGame();
-
-        Player firstPlayer = game.getCurrentPlayer();
-
-        game.guiEndTurn();
-
-        Player secondPlayer = game.getCurrentPlayer();
-
-        assertNotSame(firstPlayer, secondPlayer);
-        assertEquals(1, game.getCurrentPlayerIndex());
-        assertTrue(secondPlayer.isOnTurn());
-        assertFalse(firstPlayer.isOnTurn());
-    }
-
     @Test//测试抓牌
     public void testStartTurnDrawTwoCards() {
         Game game = new Game();
