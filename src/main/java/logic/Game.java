@@ -62,8 +62,6 @@ public class Game {
         resetGame();
         setupNewPlayers();
         turnManager.startFirstTurn();
-
-        System.out.println("Monopoly Deal GUI game started.");
     }
 
     private void resetGame() {
@@ -79,7 +77,7 @@ public class Game {
     }
 
     private ActionCardService createActionCardService() {
-        return new ActionCardService(players, drawCards, paymentManager, rentCalculator);
+        return new ActionCardService(players, paymentManager, rentCalculator);
     }
 
     private void setupNewPlayers() {
@@ -103,179 +101,129 @@ public class Game {
     }
 
     public boolean playCard(Card card) {
-        boolean success = cardPlayService.playCard(getCurrentPlayer(), card);
-
-        if (success) {
-            checkCurrentPlayerWin();
-        }
-
-        return success;
+        return finishAction(cardPlayService.playCard(getCurrentPlayer(), card));
     }
 
     public boolean finishPassGo(ActionCards passGoCard) {
-        boolean success = actionCardService.finishPassGo(getCurrentPlayer(), passGoCard);
-
-        if (success) {
-            checkCurrentPlayerWin();
-        }
-
-        return success;
+        return finishAction(actionCardService.finishPassGo(getCurrentPlayer(), passGoCard));
     }
 
     public boolean finishBirthday(ActionCards birthdayCard) {
-        boolean success = actionCardService.finishBirthday(getCurrentPlayer(), birthdayCard);
-
-        if (success) {
-            checkCurrentPlayerWin();
-        }
-
-        return success;
+        return finishAction(actionCardService.finishBirthday(getCurrentPlayer(), birthdayCard));
     }
 
     public boolean finishSlyDeal(ActionCards slyDealCard, Player targetPlayer, PropertiesCards stolenCard) {
-        boolean success = actionCardService.finishSlyDeal(
+        return finishAction(actionCardService.finishSlyDeal(
                 getCurrentPlayer(),
                 slyDealCard,
                 targetPlayer,
                 stolenCard
-        );
-
-        if (success) {
-            checkCurrentPlayerWin();
-        }
-
-        return success;
+        ));
     }
 
     public boolean finishDealBreaker(ActionCards dealBreakerCard,
-                                  Player targetPlayer,
-                                  ArrayList<PropertiesCards> selectedSet) {
-        boolean success = actionCardService.finishDealBreaker(
+                                     Player targetPlayer,
+                                     ArrayList<PropertiesCards> selectedSet) {
+        return finishAction(actionCardService.finishDealBreaker(
                 getCurrentPlayer(),
                 dealBreakerCard,
                 targetPlayer,
                 selectedSet
-        );
-
-        if (success) {
-            checkCurrentPlayerWin();
-        }
-
-        return success;
+        ));
     }
 
     public boolean finishDebtCollector(ActionCards debtCollectorCard, Player targetPlayer) {
-        boolean success = actionCardService.finishDebtCollector(
+        return finishAction(actionCardService.finishDebtCollector(
                 getCurrentPlayer(),
                 debtCollectorCard,
                 targetPlayer
-        );
-
-        if (success) {
-            checkCurrentPlayerWin();
-        }
-
-        return success;
+        ));
     }
 
     public boolean finishTwoColorRent(ActionCards rentCard,
-                                   PropertyColor selectedColor,
-                                   boolean useDoubleRent) {
-        boolean success = actionCardService.finishTwoColorRent(
+                                      PropertyColor selectedColor,
+                                      boolean useDoubleRent) {
+        return finishAction(actionCardService.finishTwoColorRent(
                 getCurrentPlayer(),
                 rentCard,
                 selectedColor,
                 useDoubleRent
-        );
-
-        if (success) {
-            checkCurrentPlayerWin();
-        }
-
-        return success;
+        ));
     }
 
     public boolean finishMultipleColorRent(ActionCards rentCard,
-                                        Player targetPlayer,
-                                        PropertyColor selectedColor,
-                                        boolean useDoubleRent) {
-        boolean success = actionCardService.finishMultipleColorRent(
+                                           Player targetPlayer,
+                                           PropertyColor selectedColor,
+                                           boolean useDoubleRent) {
+        return finishAction(actionCardService.finishMultipleColorRent(
                 getCurrentPlayer(),
                 rentCard,
                 targetPlayer,
                 selectedColor,
                 useDoubleRent
-        );
-
-        if (success) {
-            checkCurrentPlayerWin();
-        }
-
-        return success;
+        ));
     }
 
     public boolean finishHouse(ActionCards houseCard, PropertyColor selectedColor) {
-        boolean success = actionCardService.finishHouse(getCurrentPlayer(), houseCard, selectedColor);
-
-        if (success) {
-            checkCurrentPlayerWin();
-        }
-
-        return success;
+        return finishAction(actionCardService.finishHouse(getCurrentPlayer(), houseCard, selectedColor));
     }
 
     public boolean finishHotel(ActionCards hotelCard, PropertyColor selectedColor) {
-        boolean success = actionCardService.finishHotel(getCurrentPlayer(), hotelCard, selectedColor);
-
-        if (success) {
-            checkCurrentPlayerWin();
-        }
-
-        return success;
+        return finishAction(actionCardService.finishHotel(getCurrentPlayer(), hotelCard, selectedColor));
     }
 
     public boolean finishForcedDeal(ActionCards forcedDealCard,
                                     Player targetPlayer,
                                     PropertiesCards currentPlayerCard,
                                     PropertiesCards targetPlayerCard) {
-        boolean success = actionCardService.finishForcedDeal(
+        return finishAction(actionCardService.finishForcedDeal(
                 getCurrentPlayer(),
                 forcedDealCard,
                 targetPlayer,
                 currentPlayerCard,
                 targetPlayerCard
-        );
-
-        if (success) {
-            checkCurrentPlayerWin();
-        }
-
-        return success;
+        ));
     }
 
-    public boolean hasDoubleTheRentCard(Player player) {return actionCardService.hasDoubleTheRentCard(player);}
+    public boolean hasDoubleTheRentCard(Player player) {
+        return actionCardService.hasDoubleTheRentCard(player);
+    }
 
-    public boolean isPaymentSelecting() {return paymentManager.isPaymentSelecting();}
+    public boolean isPaymentSelecting() {
+        return paymentManager.isPaymentSelecting();
+    }
 
-    public PaymentRequest getCurrentPaymentRequest() {return paymentManager.getCurrentPaymentRequest();}
+    public PaymentRequest getCurrentPaymentRequest() {
+        return paymentManager.getCurrentPaymentRequest();
+    }
 
-    public boolean canCurrentPaymentUseJustSayNo() {return paymentManager.canCurrentPaymentUseJustSayNo();}
+    public boolean canCurrentPaymentUseJustSayNo() {
+        return paymentManager.canCurrentPaymentUseJustSayNo();
+    }
 
-    public void currentPaymentUseJustSayNo() {paymentManager.currentPaymentUseJustSayNo();}
+    public void currentPaymentUseJustSayNo() {
+        paymentManager.currentPaymentUseJustSayNo();
+    }
 
     public boolean finishCurrentPayment(ArrayList<Card> selectedCards) {
-        boolean success = paymentManager.finishCurrentPayment(selectedCards);
+        return finishAction(paymentManager.finishCurrentPayment(selectedCards));
+    }
 
+    public int getTotalAssetsValue(Player player) {
+        return paymentManager.getTotalAssetsValue(player);
+    }
+
+    public int getCardsValue(ArrayList<Card> cards) {
+        return paymentManager.getCardsValue(cards);
+    }
+
+    private boolean finishAction(boolean success) {
         if (success) {
             checkCurrentPlayerWin();
         }
 
         return success;
     }
-
-    public int getTotalAssetsValue(Player player) {return paymentManager.getTotalAssetsValue(player);}
-
-    public int getCardsValue(ArrayList<Card> cards) {return paymentManager.getCardsValue(cards);}
 
     private boolean checkCurrentPlayerWin() {
         if (getCurrentPlayer().checkIfWin()) {
@@ -286,19 +234,33 @@ public class Game {
         return false;
     }
 
-    public Player getCurrentPlayer() {return turnManager.getCurrentPlayer();}
+    public Player getCurrentPlayer() {
+        return turnManager.getCurrentPlayer();
+    }
 
-    public int getCurrentPlayerIndex() {return turnManager.getCurrentPlayerIndex();}
+    public int getCurrentPlayerIndex() {
+        return turnManager.getCurrentPlayerIndex();
+    }
 
-    public ArrayList<Player> getPlayers() {return players;}
+    public ArrayList<Player> getPlayers() {
+        return players;
+    }
 
-    public DrawPileAndDiscardPile getDrawCards() {return drawCards;}
+    public DrawPileAndDiscardPile getDrawCards() {
+        return drawCards;
+    }
 
-    public boolean isWin() {return isWin;}
+    public boolean isWin() {
+        return isWin;
+    }
 
-    public void setWin(boolean win) {isWin = win;}
+    public void setWin(boolean win) {
+        isWin = win;
+    }
 
-    public boolean isDiscard() {return turnManager.isDiscard();}
+    public boolean isDiscard() {
+        return turnManager.isDiscard();
+    }
 
     public static class PaymentRequest {
         private final Player receiver;
@@ -311,10 +273,16 @@ public class Game {
             this.amount = amount;
         }
 
-        public Player getReceiver() {return receiver;}
+        public Player getReceiver() {
+            return receiver;
+        }
 
-        public Player getPayer() {return payer;}
+        public Player getPayer() {
+            return payer;
+        }
 
-        public int getAmount() {return amount;}
+        public int getAmount() {
+            return amount;
+        }
     }
 }

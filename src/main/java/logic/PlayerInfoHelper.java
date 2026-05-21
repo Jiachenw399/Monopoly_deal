@@ -33,9 +33,7 @@ public class PlayerInfoHelper {
         }
 
         for (PropertyColor color : PropertyColor.values()) {
-            int current = getPropertyCountByCurrentColor(player, color);
-
-            if (current >= color.getAmountToCompleteSet()) {
+            if (getPropertyCountByCurrentColor(player, color) >= color.getAmountToCompleteSet()) {
                 completedSets++;
             }
         }
@@ -59,40 +57,16 @@ public class PlayerInfoHelper {
         return count;
     }
 
-    public static int getPropertyCountByColor(Player player, PropertyColor color) {
-        return getPropertyCountByCurrentColor(player, color);
-    }
-
     public static boolean hasPropertyColor(Player player, PropertyColor color) {
         return getPropertyCountByCurrentColor(player, color) > 0;
     }
 
     public static boolean hasHouse(Player player, PropertyColor color) {
-        if (player == null || color == null) {
-            return false;
-        }
-
-        for (PropertiesCards card : player.getPropertyCards()) {
-            if (card.getCurrentColor() == color && card.hasHouse()) {
-                return true;
-            }
-        }
-
-        return false;
+        return hasBuilding(player, color, true);
     }
 
     public static boolean hasHotel(Player player, PropertyColor color) {
-        if (player == null || color == null) {
-            return false;
-        }
-
-        for (PropertiesCards card : player.getPropertyCards()) {
-            if (card.getCurrentColor() == color && card.hasHotel()) {
-                return true;
-            }
-        }
-
-        return false;
+        return hasBuilding(player, color, false);
     }
 
     public static ArrayList<PropertiesCards> getCompleteSetByColor(Player player, PropertyColor color) {
@@ -108,11 +82,11 @@ public class PlayerInfoHelper {
             }
         }
 
-        if (result.size() >= color.getAmountToCompleteSet()) {
-            return result;
+        if (result.size() < color.getAmountToCompleteSet()) {
+            result.clear();
         }
 
-        return new ArrayList<>();
+        return result;
     }
 
     public static boolean canBeStolenBySlyDeal(Player targetPlayer, PropertiesCards card) {
@@ -126,7 +100,28 @@ public class PlayerInfoHelper {
             return true;
         }
 
-        int count = getPropertyCountByCurrentColor(targetPlayer, color);
-        return count < color.getAmountToCompleteSet();
+        return getPropertyCountByCurrentColor(targetPlayer, color) < color.getAmountToCompleteSet();
+    }
+
+    private static boolean hasBuilding(Player player, PropertyColor color, boolean checkHouse) {
+        if (player == null || color == null) {
+            return false;
+        }
+
+        for (PropertiesCards card : player.getPropertyCards()) {
+            if (card.getCurrentColor() == color && hasSelectedBuilding(card, checkHouse)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private static boolean hasSelectedBuilding(PropertiesCards card, boolean checkHouse) {
+        if (checkHouse) {
+            return card.hasHouse();
+        }
+
+        return card.hasHotel();
     }
 }

@@ -3,7 +3,6 @@ package logic;
 import model.ActionCards;
 import model.ActionCardType;
 import model.Card;
-import model.DrawPileAndDiscardPile;
 import model.Player;
 import model.PropertiesCards;
 import model.PropertyColor;
@@ -16,7 +15,6 @@ public class ActionCardService {
     private final RentCalculator rentCalculator;
 
     public ActionCardService(ArrayList<Player> players,
-                             DrawPileAndDiscardPile drawCards,
                              PaymentManager paymentManager,
                              RentCalculator rentCalculator) {
         this.players = players;
@@ -64,7 +62,6 @@ public class ActionCardService {
         moveActionCardToDiscard(currentPlayer, slyDealCard);
         targetPlayer.getPropertyCards().remove(stolenCard);
         currentPlayer.getPropertyCards().add(stolenCard);
-
         increaseUseCardTimes(currentPlayer);
         return true;
     }
@@ -80,7 +77,6 @@ public class ActionCardService {
         moveActionCardToDiscard(currentPlayer, dealBreakerCard);
         targetPlayer.getPropertyCards().removeAll(selectedSet);
         currentPlayer.getPropertyCards().addAll(selectedSet);
-
         increaseUseCardTimes(currentPlayer);
         return true;
     }
@@ -95,7 +91,6 @@ public class ActionCardService {
         moveActionCardToDiscard(currentPlayer, debtCollectorCard);
         paymentManager.addPaymentRequest(currentPlayer, targetPlayer, 5);
         paymentManager.startNextPaymentRequest();
-
         increaseUseCardTimes(currentPlayer);
         return true;
     }
@@ -108,26 +103,7 @@ public class ActionCardService {
             return false;
         }
 
-        boolean canUseDoubleRent = canUseDoubleRent(currentPlayer, useDoubleRent);
-
-        if (canUseDoubleRent && currentPlayer.getUseCardTimes() > 1) {
-            return false;
-        }
-
-        int rent = getFinalRent(currentPlayer, selectedColor, canUseDoubleRent);
-
-        moveActionCardToDiscard(currentPlayer, rentCard);
-        discardDoubleTheRentIfUsed(currentPlayer, canUseDoubleRent);
-
-        for (Player player : players) {
-            if (player != currentPlayer) {
-                paymentManager.addPaymentRequest(currentPlayer, player, rent);
-            }
-        }
-
-        paymentManager.startNextPaymentRequest();
-        increaseRentUseTimes(currentPlayer, canUseDoubleRent);
-        return true;
+        return finishRent(currentPlayer, rentCard, selectedColor, null, true, useDoubleRent);
     }
 
     public boolean finishMultipleColorRent(Player currentPlayer,
@@ -139,22 +115,7 @@ public class ActionCardService {
             return false;
         }
 
-        boolean canUseDoubleRent = canUseDoubleRent(currentPlayer, useDoubleRent);
-
-        if (canUseDoubleRent && currentPlayer.getUseCardTimes() > 1) {
-            return false;
-        }
-
-        int rent = getFinalRent(currentPlayer, selectedColor, canUseDoubleRent);
-
-        moveActionCardToDiscard(currentPlayer, rentCard);
-        discardDoubleTheRentIfUsed(currentPlayer, canUseDoubleRent);
-
-        paymentManager.addPaymentRequest(currentPlayer, targetPlayer, rent);
-        paymentManager.startNextPaymentRequest();
-
-        increaseRentUseTimes(currentPlayer, canUseDoubleRent);
-        return true;
+        return finishRent(currentPlayer, rentCard, selectedColor, targetPlayer, false, useDoubleRent);
     }
 
     public boolean finishForcedDeal(Player currentPlayer,
@@ -178,7 +139,19 @@ public class ActionCardService {
         return true;
     }
 
+    public boolean finishHouse(Player currentPlayer, ActionCards houseCard, PropertyColor selectedColor) {
+        return finishBuilding(currentPlayer, houseCard, selectedColor, ActionCardType.HOUSE);
+    }
+
+    public boolean finishHotel(Player currentPlayer, ActionCards hotelCard, PropertyColor selectedColor) {
+        return finishBuilding(currentPlayer, hotelCard, selectedColor, ActionCardType.HOTEL);
+    }
+
     public boolean hasDoubleTheRentCard(Player player) {
+        if (player == null) {
+            return false;
+        }
+
         for (Card card : player.getHandCards()) {
             if (card instanceof ActionCards actionCard
                     && actionCard.getActionCardType() == ActionCardType.DOUBLE_THE_RENT) {
@@ -187,6 +160,90 @@ public class ActionCardService {
         }
 
         return false;
+    }
+
+    private boolean finishRent(Player currentPlayer,
+                               ActionCards rentCard,
+                               PropertyColor selectedColor,
+                               Player targetPlayer,
+                               boolean allPlayers,
+                               boolean useDoubleRent) {
+        boolean canUseDoubleRent = canUseDoubleRent(currentPlayer, useDoubleRent);
+
+        if (canUseDoubleRent && currentPlayer.getUseCardTimes() > 1) {
+            return false;
+        }
+
+        int rent = getFinalRent(currentPlayer, selectedColor, canUseDoubleRent);
+
+        moveActionCardToDiscard(currentPlayer, rentCard);
+        discardDoubleTheRentIfUsed(currentPlayer, canUseDoubleRent);
+
+        if (allPlayers) {
+            addPaymentRequestsForAllOtherPlayers(currentPlayer, rent);
+        } else {
+            paymentManager.addPaymentRequest(currentPlayer, targetPlayer, rent);
+        }
+
+        paymentManager.startNextPaymentRequest();
+        increaseRentUseTimes(currentPlayer, canUseDoubleRent);
+        return true;
+    }
+
+    private void addPaymentRequestsForAllOtherPlayers(Player currentPlayer, int amount) {
+        for (Player player : players) {
+            if (player != currentPlayer) {
+                paymentManager.addPaymentRequest(currentPlayer, player, amount);
+            }
+        }
+    }
+
+    private boolean finishBuilding(Player currentPlayer,
+                                   ActionCards buildingCard,
+                                   PropertyColor selectedColor,
+                                   ActionCardType buildingType) {
+        if (!canFinishBuilding(currentPlayer, buildingCard, selectedColor, buildingType)) {
+            return false;
+        }
+
+        moveActionCardToDiscard(currentPlayer, buildingCard);
+
+        PropertiesCards property = findFirstPropertyByColor(currentPlayer, selectedColor);
+
+        if (property == null) {
+            return false;
+        }
+
+        if (buildingType == ActionCardType.HOUSE) {
+            property.setHasHouse(true);
+        } else {
+            property.setHasHotel(true);
+        }
+
+        increaseUseCardTimes(currentPlayer);
+        return true;
+    }
+
+    private boolean canFinishBuilding(Player currentPlayer,
+                                      ActionCards card,
+                                      PropertyColor selectedColor,
+                                      ActionCardType buildingType) {
+        if (!canFinishActionCard(currentPlayer, card, buildingType) || selectedColor == null) {
+            return false;
+        }
+
+        if (!isCompleteSet(currentPlayer, selectedColor)) {
+            return false;
+        }
+
+        boolean hasHouse = PlayerInfoHelper.hasHouse(currentPlayer, selectedColor);
+        boolean hasHotel = PlayerInfoHelper.hasHotel(currentPlayer, selectedColor);
+
+        if (buildingType == ActionCardType.HOUSE) {
+            return !hasHouse;
+        }
+
+        return hasHouse && !hasHotel;
     }
 
     private boolean canFinishSlyDeal(Player currentPlayer,
@@ -256,11 +313,8 @@ public class ActionCardService {
         }
 
         for (PropertiesCards propertyCard : selectedSet) {
-            if (!targetPlayer.getPropertyCards().contains(propertyCard)) {
-                return false;
-            }
-
-            if (propertyCard.getCurrentColor() != color) {
+            if (!targetPlayer.getPropertyCards().contains(propertyCard)
+                    || propertyCard.getCurrentColor() != color) {
                 return false;
             }
         }
@@ -383,77 +437,9 @@ public class ActionCardService {
         player.setUseCardTimes(player.getUseCardTimes() + 1);
     }
 
-    public boolean finishHouse(Player currentPlayer, ActionCards houseCard, PropertyColor selectedColor) {
-        if (!canFinishHouse(currentPlayer, houseCard, selectedColor)) {
-            return false;
-        }
-
-        moveActionCardToDiscard(currentPlayer, houseCard);
-
-        PropertiesCards property = findFirstPropertyByColor(currentPlayer, selectedColor);
-        if (property != null) {
-            property.setHasHouse(true);
-        }
-
-        increaseUseCardTimes(currentPlayer);
-        return true;
-    }
-
-    public boolean finishHotel(Player currentPlayer, ActionCards hotelCard, PropertyColor selectedColor) {
-        if (!canFinishHotel(currentPlayer, hotelCard, selectedColor)) {
-            return false;
-        }
-
-        moveActionCardToDiscard(currentPlayer, hotelCard);
-
-        PropertiesCards property = findFirstPropertyByColor(currentPlayer, selectedColor);
-        if (property != null) {
-            property.setHasHotel(true);
-        }
-
-        increaseUseCardTimes(currentPlayer);
-        return true;
-    }
-
-    private boolean canFinishHouse(Player currentPlayer, ActionCards card, PropertyColor selectedColor) {
-        if (!canFinishActionCard(currentPlayer, card, ActionCardType.HOUSE)) {
-            return false;
-        }
-
-        if (selectedColor == null) {
-            return false;
-        }
-
-        return isCompleteSet(currentPlayer, selectedColor)
-                && !hasHouse(currentPlayer, selectedColor);
-    }
-
-    private boolean canFinishHotel(Player currentPlayer, ActionCards card, PropertyColor selectedColor) {
-        if (!canFinishActionCard(currentPlayer, card, ActionCardType.HOTEL)) {
-            return false;
-        }
-
-        if (selectedColor == null) {
-            return false;
-        }
-
-        return isCompleteSet(currentPlayer, selectedColor)
-                && hasHouse(currentPlayer, selectedColor)
-                && !hasHotel(currentPlayer, selectedColor);
-    }
-
     private boolean isCompleteSet(Player player, PropertyColor color) {
         int count = PlayerInfoHelper.getPropertyCountByCurrentColor(player, color);
-
         return count >= color.getAmountToCompleteSet();
-    }
-
-    private boolean hasHouse(Player player, PropertyColor color) {
-        return PlayerInfoHelper.hasHouse(player, color);
-    }
-
-    private boolean hasHotel(Player player, PropertyColor color) {
-        return PlayerInfoHelper.hasHotel(player, color);
     }
 
     private PropertiesCards findFirstPropertyByColor(Player player, PropertyColor color) {

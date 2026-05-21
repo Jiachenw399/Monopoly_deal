@@ -260,7 +260,7 @@ public class PaymentSelectionPanel {
         int row = 0;
 
         for (PropertyColor color : PropertyColor.values()) {
-            int originalCount = PlayerInfoHelper.getPropertyCountByColor(receiver, color);
+            int originalCount = PlayerInfoHelper.getPropertyCountByCurrentColor(receiver,color);
             int addedCount = getSelectedPropertyCountByColor(color);
             int newCount = originalCount + addedCount;
             int need = color.getAmountToCompleteSet();

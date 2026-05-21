@@ -8,14 +8,12 @@ import java.util.ArrayList;
 
 public class TurnManager {
     private final ArrayList<Player> players;
-    private final DrawPileAndDiscardPile drawCards;
 
     private int currentPlayerIndex;
     private boolean isDiscard;
 
     public TurnManager(ArrayList<Player> players, DrawPileAndDiscardPile drawCards) {
         this.players = players;
-        this.drawCards = drawCards;
         this.currentPlayerIndex = 0;
         this.isDiscard = false;
     }

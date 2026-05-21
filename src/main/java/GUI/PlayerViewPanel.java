@@ -53,6 +53,6 @@ public class PlayerViewPanel {
         gc.setFont(Font.font("Arial", 14));
         gc.setTextAlign(TextAlignment.CENTER);
         gc.setTextBaseline(VPos.CENTER);
-        gc.fillText("PLAYER " + (playerIndex + 1), BUTTON_X + BUTTON_WIDTH / 2, y + BUTTON_HEIGHT / 2);
+        gc.fillText("Player " + (playerIndex + 1), BUTTON_X + BUTTON_WIDTH / 2, y + BUTTON_HEIGHT / 2);
     }
 }
