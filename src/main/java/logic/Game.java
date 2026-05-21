@@ -96,6 +96,14 @@ public class Game {
         turnManager.endTurn();
     }
 
+    public void forceAdvanceTurnForAbsentPlayer() {
+        if (checkCurrentPlayerWin()) {
+            return;
+        }
+
+        turnManager.forceAdvanceTurnForAbsentPlayer();
+    }
+
     public boolean discard(Card card) {
         return turnManager.discard(card);
     }

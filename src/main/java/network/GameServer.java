@@ -77,8 +77,29 @@ public class GameServer {
     }
 
     private synchronized void removeClient(ClientHandler clientHandler) {
+        int disconnectedPlayerId = clientHandler.getPlayerId();
         clients.remove(clientHandler);
-        System.out.println("Player " + clientHandler.getPlayerId() + " disconnected. Players: " + clients.size());
+        System.out.println("Player " + disconnectedPlayerId + " disconnected. Players: " + clients.size());
+        handleDisconnectedPlayerDuringGame(disconnectedPlayerId);
+    }
+
+    private synchronized void handleDisconnectedPlayerDuringGame(int disconnectedPlayerId) {
+        if (!isGameStarted()) {
+            return;
+        }
+
+        int currentPlayerId = game.getCurrentPlayerIndex() + 1;
+
+        if (disconnectedPlayerId != currentPlayerId) {
+            return;
+        }
+
+        game.forceAdvanceTurnForAbsentPlayer();
+        broadcast(new NetworkMessage(
+                "BROADCAST",
+                "Player " + disconnectedPlayerId + " left; turn advanced to Player " + (game.getCurrentPlayerIndex() + 1)
+        ));
+        sendGameStateToAll();
     }
 
     private synchronized int getPlayerCount() {
