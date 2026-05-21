@@ -3,7 +3,6 @@ package model;
 import java.util.ArrayList;
 import java.util.Collections;
 
-//牌堆 功能完全实现 辛苦修改bug的同学 进行bug测试
 public class DrawPileAndDiscardPile {
     private ArrayList<Card> DrawPile;
     private ArrayList<Card> DiscardPile;
@@ -14,20 +13,10 @@ public class DrawPileAndDiscardPile {
         addActionCards();
         addPropertiesCards();
         shuffleDrawCards();
-        //创建对象时 更新
     }
 
     public void shuffleDrawCards() {
         Collections.shuffle(DrawPile);
-    }
-
-    public void update(){
-        DrawPile.clear();
-        addMoneyCards();
-        addActionCards();
-        addPropertiesCards();
-        shuffleDrawCards();
-        //游戏结束时 更新牌堆
     }
 
     public void shuffle(){
@@ -44,11 +33,11 @@ public class DrawPileAndDiscardPile {
 
     private void addMoneyCards(){
         int[] moneyValues = {
-                1,1,1,1,1,1,  // 1
-                2,2,2,2,2,    // 2
-                3,4,3,4,3,4,  // 3 4
-                5,5,          // 5
-                10};           // 10
+                1,1,1,1,1,1,
+                2,2,2,2,2,
+                3,4,3,4,3,4,
+                5,5,
+                10};
         for (int value : moneyValues) {
             DrawPile.add(new MoneyCards(value));
         }
