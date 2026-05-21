@@ -61,12 +61,9 @@ public class ActionCardChoicePanel {
     }
 
     public boolean canUseAsAction() {
-        if (selectedCard == null) {
-            return false;
-        }
-
         ActionCardType type = selectedCard.getActionCardType();
 
+        //JUST_SAY_NO and DOUBLE_THE_RENT cannot be directly used
         return type != ActionCardType.JUST_SAY_NO
                 && type != ActionCardType.DOUBLE_THE_RENT;
     }
@@ -83,7 +80,7 @@ public class ActionCardChoicePanel {
 
         drawOverlay(gc);
         drawPanel(gc);
-        drawTitle(gc);
+        drawChoiceWindow(gc);
         drawButtons(gc);
     }
 
@@ -101,8 +98,7 @@ public class ActionCardChoicePanel {
         gc.strokeRoundRect(panelX, panelY, panelWidth, panelHeight, 24, 24);
         gc.setLineWidth(1);
     }
-
-    private void drawTitle(GraphicsContext gc) {
+    private void drawChoiceWindow(GraphicsContext gc) {
         gc.setFill(Color.rgb(255, 232, 180));
         gc.setFont(Font.font("Arial", 24));
         gc.setTextAlign(TextAlignment.CENTER);
@@ -118,18 +114,18 @@ public class ActionCardChoicePanel {
     }
 
     private void drawButtons(GraphicsContext gc) {
-        drawNormalButton(gc, moneyButtonX, moneyButtonY, moneyButtonWidth, moneyButtonHeight, "As Money");
+        drawButtonCanBeUsed(gc, moneyButtonX, moneyButtonY, moneyButtonWidth, moneyButtonHeight, "As Money");
 
         if (canUseAsAction()) {
-            drawNormalButton(gc, actionButtonX, actionButtonY, actionButtonWidth, actionButtonHeight, "As Action");
+            drawButtonCanBeUsed(gc, actionButtonX, actionButtonY, actionButtonWidth, actionButtonHeight, "As Action");
         } else {
-            drawDisabledButton(gc, actionButtonX, actionButtonY, actionButtonWidth, actionButtonHeight, "As Action");
+            drawButtonCannotBeUsed(gc, actionButtonX, actionButtonY, actionButtonWidth, actionButtonHeight, "As Action");
         }
 
         drawCancelButton(gc);
     }
 
-    private void drawNormalButton(GraphicsContext gc, double x, double y, double width, double height, String text) {
+    private void drawButtonCanBeUsed(GraphicsContext gc, double x, double y, double width, double height, String text) {
         gc.setFill(Color.rgb(255, 184, 77));
         gc.fillRoundRect(x, y, width, height, 12, 12);
 
@@ -143,7 +139,7 @@ public class ActionCardChoicePanel {
         gc.fillText(text, x + width / 2, y + height / 2);
     }
 
-    private void drawDisabledButton(GraphicsContext gc, double x, double y, double width, double height, String text) {
+    private void drawButtonCannotBeUsed(GraphicsContext gc, double x, double y, double width, double height, String text) {
         gc.setFill(Color.rgb(20, 20, 20));
         gc.fillRoundRect(x, y, width, height, 12, 12);
 
