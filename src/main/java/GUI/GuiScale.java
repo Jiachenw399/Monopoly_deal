@@ -15,7 +15,7 @@ import logic.Game;
 public class GuiScale {
 
     /** Default display scale for the main game canvas (design × 1.2). */
-    public static final double DISPLAY_SCALE = 1.5;
+    public static final double DISPLAY_SCALE = 1.56;
 
     private static final GuiScale DEFAULT =
             new GuiScale(Game.SCREEN_WIDTH, Game.SCREEN_HEIGHT);
