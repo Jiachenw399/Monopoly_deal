@@ -40,7 +40,7 @@ public class OnlinePlayWindow extends Stage {
 
         log.setEditable(false);
         log.setWrapText(true);
-        commandField.setPromptText("HELLO, PLAYERS, START_GAME, STATE, PLAY_CARD 1, … or QUIT");
+        commandField.setPromptText("END_TURN, PLAY_CARD 1, DISCARD 1, STATE, START_GAME, HELP, QUIT");
         sendButton.setDefaultButton(true);
         sendButton.setDisable(true);
 
@@ -113,6 +113,11 @@ public class OnlinePlayWindow extends Stage {
         if ("QUIT".equalsIgnoreCase(input)) {
             shutdown();
             close();
+            return;
+        }
+        if ("HELP".equalsIgnoreCase(input)) {
+            appendLog(NetworkCommandHelp.TEXT);
+            commandField.clear();
             return;
         }
         NetworkMessage message = parseInput(input);

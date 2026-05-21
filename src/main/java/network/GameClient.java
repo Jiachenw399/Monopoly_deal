@@ -44,6 +44,11 @@ public class GameClient {
                     break;
                 }
 
+                if ("HELP".equalsIgnoreCase(input)) {
+                    System.out.println(NetworkCommandHelp.TEXT);
+                    continue;
+                }
+
                 out.println(parseInput(input).encode());
             }
         } catch (IOException e) {

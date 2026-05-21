@@ -40,6 +40,20 @@ public class TurnManager {
         moveToNextPlayer();
     }
 
+    /** Used when the current player disconnects online: discard down to 7, then advance. */
+    public void forceAdvanceTurnForAbsentPlayer() {
+        Player currentPlayer = getCurrentPlayer();
+
+        while (currentPlayer.getHandCards().size() > 7) {
+            int lastIndex = currentPlayer.getHandCards().size() - 1;
+            Card card = currentPlayer.getHandCards().get(lastIndex);
+            currentPlayer.discardCardFromHand(card);
+        }
+
+        isDiscard = false;
+        moveToNextPlayer();
+    }
+
     public boolean discard(Card card) {
         Player currentPlayer = getCurrentPlayer();
 
