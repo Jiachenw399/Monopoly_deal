@@ -215,6 +215,52 @@ public class GameServer {
         sendGameStateToAll();
     }
 
+    private synchronized void playActionCardAsMoneyIfValid(ClientHandler requester, String cardNumberText) {
+        if (!isGameStarted()) {
+            requester.send(new NetworkMessage("SERVER", "Game has not started yet").encode());
+            return;
+        }
+
+        int expectedPlayerId = game.getCurrentPlayerIndex() + 1;
+
+        if (requester.getPlayerId() != expectedPlayerId) {
+            requester.send(new NetworkMessage("SERVER", "It is Player " + expectedPlayerId + "'s turn").encode());
+            return;
+        }
+
+        int cardIndex = parseOneBasedCardIndex(cardNumberText);
+
+        if (cardIndex < 0) {
+            requester.send(new NetworkMessage("SERVER", "Use PLAY_AS_MONEY <number>, for example PLAY_AS_MONEY 1").encode());
+            return;
+        }
+
+        Player player = game.getPlayers().get(requester.getPlayerId() - 1);
+
+        if (player.getUseCardTimes() >= 3) {
+            requester.send(new NetworkMessage("SERVER", "You have already played 3 cards this turn").encode());
+            return;
+        }
+
+        if (cardIndex >= player.getHandCards().size()) {
+            requester.send(new NetworkMessage("SERVER", "No hand card number " + (cardIndex + 1)).encode());
+            return;
+        }
+
+        Card selectedCard = player.getHandCards().get(cardIndex);
+
+        if (!(selectedCard instanceof ActionCards)) {
+            requester.send(new NetworkMessage("SERVER", "Only action cards need PLAY_AS_MONEY").encode());
+            return;
+        }
+
+        String selectedCardText = cardToText(selectedCard);
+        player.putMoneyCard(selectedCard);
+        player.increaseUseCardTimes();
+        broadcast(new NetworkMessage("BROADCAST", "Player " + requester.getPlayerId() + " banked " + selectedCardText));
+        sendGameStateToAll();
+    }
+
     private synchronized void discardIfValid(ClientHandler requester, String cardNumberText) {
         if (!isGameStarted()) {
             requester.send(new NetworkMessage("SERVER", "Game has not started yet").encode());
@@ -370,6 +416,7 @@ public class GameServer {
 
         switch (command) {
             case "BIRTHDAY" -> success = finishBirthdayCommand(requester, args);
+            case "PASS_GO" -> success = finishPassGoCommand(requester, args);
             case "DEBT" -> success = finishDebtCommand(requester, args);
             case "SLY" -> success = finishSlyCommand(requester, args);
             case "DEAL_BREAKER" -> success = finishDealBreakerCommand(requester, args);
@@ -377,10 +424,7 @@ public class GameServer {
             case "RENT_ANY" -> success = finishMultipleColorRentCommand(requester, args);
             case "HOUSE" -> success = finishBuildingCommand(requester, args, ActionCardType.HOUSE);
             case "HOTEL" -> success = finishBuildingCommand(requester, args, ActionCardType.HOTEL);
-            case "FORCED_DEAL" -> {
-                requester.send(new NetworkMessage("SERVER", "FORCED_DEAL is not implemented in the current game logic").encode());
-                return;
-            }
+            case "FORCED_DEAL" -> success = finishForcedDealCommand(requester, args);
             default -> {
                 requester.send(new NetworkMessage("SERVER", "Unknown action command: " + command).encode());
                 return;
@@ -394,6 +438,16 @@ public class GameServer {
 
         broadcast(new NetworkMessage("BROADCAST", "Player " + requester.getPlayerId() + " used " + command));
         sendGameStateToAll();
+    }
+
+    private boolean finishPassGoCommand(ClientHandler requester, String[] args) {
+        if (args.length < 1) {
+            requester.send(new NetworkMessage("SERVER", "Use PASS_GO <handNo>").encode());
+            return false;
+        }
+
+        ActionCards card = getActionCardFromHand(requester, args[0], ActionCardType.PASS_GO);
+        return card != null && game.finishPassGo(card);
     }
 
     private boolean finishBirthdayCommand(ClientHandler requester, String[] args) {
@@ -475,6 +529,22 @@ public class GameServer {
 
         return card != null && target != null && color != null
                 && game.finishMultipleColorRent(card, target, color, useDoubleRent);
+    }
+
+    private boolean finishForcedDealCommand(ClientHandler requester, String[] args) {
+        if (args.length < 4) {
+            requester.send(new NetworkMessage("SERVER", "Use FORCED_DEAL <handNo> <targetPlayer> <myPropertyNo> <targetPropertyNo>").encode());
+            return false;
+        }
+
+        ActionCards card = getActionCardFromHand(requester, args[0], ActionCardType.FORCED_DEAL);
+        Player target = getPlayerByOneBasedNumber(args[1]);
+        Player currentPlayer = game.getPlayers().get(requester.getPlayerId() - 1);
+        PropertiesCards myProperty = getPropertyByOneBasedNumber(currentPlayer, args[2]);
+        PropertiesCards targetProperty = getPropertyByOneBasedNumber(target, args[3]);
+
+        return card != null && target != null && myProperty != null && targetProperty != null
+                && game.finishForcedDeal(card, target, myProperty, targetProperty);
     }
 
     private boolean finishBuildingCommand(ClientHandler requester, String[] args, ActionCardType type) {
@@ -765,6 +835,8 @@ public class GameServer {
                 }
             } else if ("PLAY_CARD".equals(message.getType())) {
                 playCardIfValid(this, message.getBody());
+            } else if ("PLAY_AS_MONEY".equals(message.getType())) {
+                playActionCardAsMoneyIfValid(this, message.getBody());
             } else if ("DISCARD".equals(message.getType())) {
                 discardIfValid(this, message.getBody());
             } else if ("PAY".equals(message.getType())) {
@@ -782,6 +854,7 @@ public class GameServer {
 
         private boolean isActionCommand(String type) {
             return "BIRTHDAY".equals(type)
+                    || "PASS_GO".equals(type)
                     || "DEBT".equals(type)
                     || "SLY".equals(type)
                     || "DEAL_BREAKER".equals(type)
