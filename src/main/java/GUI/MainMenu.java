@@ -30,6 +30,7 @@ public class MainMenu {
         GuiScale.clear(canvas);
     }
 
+    //Draw main menu background
     private void drawBackground(GraphicsContext gc) {
         ScreenDrawHelper.drawPageBackground(gc, Game.SCREEN_WIDTH, Game.SCREEN_HEIGHT);
 

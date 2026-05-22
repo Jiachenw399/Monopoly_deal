@@ -40,7 +40,6 @@ public class TurnManager {
         moveToNextPlayer();
     }
 
-    /** Used when the current player disconnects online: discard down to 7, then advance. */
     public void forceAdvanceTurnForAbsentPlayer() {
         Player currentPlayer = getCurrentPlayer();
 

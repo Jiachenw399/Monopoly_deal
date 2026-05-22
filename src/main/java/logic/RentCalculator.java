@@ -4,6 +4,7 @@ import model.Player;
 import model.PropertyColor;
 
 public class RentCalculator {
+    //use to calculate the final rent
     public int calculateRent(Player player, PropertyColor color) {
 
         int propertyCount = PlayerInfoHelper.getPropertyCountByCurrentColor(player, color);

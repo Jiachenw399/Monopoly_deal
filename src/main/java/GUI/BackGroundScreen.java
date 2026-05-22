@@ -56,6 +56,7 @@ public class BackGroundScreen {
         drawWinMessage(canvas);
     }
 
+    //If a player change the page of the bank card, it should be reset when player changed
     private void resetPageWhenPlayerChanged() {
         int currentPlayerIndex = game.getCurrentPlayerIndex();
 
@@ -66,6 +67,7 @@ public class BackGroundScreen {
         }
     }
 
+    //Draw game background
     private void drawBackground(Canvas canvas) {
         GraphicsContext gc = canvas.getGraphicsContext2D();
         ScreenDrawHelper.drawPageBackground(gc, Game.SCREEN_WIDTH, Game.SCREEN_HEIGHT);
@@ -102,6 +104,7 @@ public class BackGroundScreen {
         }
     }
 
+    //Draw 'Draw pile'
     private void drawDeckInfoBesideSets(GraphicsContext gc) {
         int remainingCards = game.getDrawCards().getDrawPile().size();
 
