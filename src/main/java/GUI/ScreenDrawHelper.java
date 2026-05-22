@@ -20,6 +20,51 @@ public class ScreenDrawHelper {
     public static final Color WARNING = Color.rgb(255, 210, 93);
     public static final Color DANGER = Color.rgb(255, 112, 112);
 
+    public static final Color TABLE_FELT = Color.rgb(16, 68, 42);
+    public static final Color TABLE_FELT_HIGHLIGHT = Color.rgb(24, 88, 54, 0.4);
+    public static final Color TABLE_RAIL = Color.rgb(110, 72, 38);
+    public static final Color TABLE_RAIL_DARK = Color.rgb(72, 46, 24);
+    public static final double TABLE_BORDER_WIDTH = 26;
+    public static final double TABLE_CONTENT_PAD = 8;
+
+    public static double tableContentX() {
+        return TABLE_BORDER_WIDTH + TABLE_CONTENT_PAD;
+    }
+
+    public static double tableContentY() {
+        return TABLE_BORDER_WIDTH + TABLE_CONTENT_PAD;
+    }
+
+    public static double tableContentWidth(double screenWidth, double rightColumnX) {
+        return rightColumnX - tableContentX() - TABLE_CONTENT_PAD;
+    }
+
+    public static void drawGameTableBackground(GraphicsContext gc, double width, double height) {
+        gc.clearRect(0, 0, width, height);
+
+        gc.setFill(TABLE_RAIL_DARK);
+        gc.fillRect(0, 0, width, height);
+
+        gc.setFill(TABLE_RAIL);
+        gc.fillRect(4, 4, width - 8, height - 8);
+
+        double inset = TABLE_BORDER_WIDTH;
+        double feltWidth = width - inset * 2;
+        double feltHeight = height - inset * 2;
+
+        gc.setFill(TABLE_FELT);
+        gc.fillRect(inset, inset, feltWidth, feltHeight);
+
+        gc.setFill(TABLE_FELT_HIGHLIGHT);
+        gc.fillOval(inset + feltWidth * 0.15, inset + feltHeight * 0.1, feltWidth * 0.55, feltHeight * 0.45);
+        gc.setFill(Color.rgb(10, 52, 32, 0.25));
+        gc.fillOval(inset + feltWidth * 0.45, inset + feltHeight * 0.45, feltWidth * 0.5, feltHeight * 0.4);
+
+        gc.setStroke(Color.rgb(140, 95, 52, 0.55));
+        gc.setLineWidth(2);
+        gc.strokeRect(inset + 1, inset + 1, feltWidth - 2, feltHeight - 2);
+    }
+
     public static void drawPageBackground(GraphicsContext gc, double width, double height) {
         gc.clearRect(0, 0, width, height);
         gc.setFill(BACKGROUND);
