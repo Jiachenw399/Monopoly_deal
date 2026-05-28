@@ -26,6 +26,7 @@ public class Game {
     private PaymentManager paymentManager;
     private ActionCardService actionCardService;
     private TurnManager turnManager;
+    private final ArrayList<GameObserver> observers;
 
     private boolean isWin;
 
@@ -36,6 +37,7 @@ public class Game {
     public Game(int playerCount) {
         this.playerCount = normalizePlayerCount(playerCount);
         players = new ArrayList<>();
+        observers = new ArrayList<>();
         rentCalculator = new RentCalculator();
         cardPlayService = new MoneyCardAndPropertyCardPlayService();
         gameSetupService = new GameSetupService();
@@ -62,6 +64,7 @@ public class Game {
         resetGame();
         setupNewPlayers();
         turnManager.startFirstTurn();
+        notifyObservers();
     }
 
     private void resetGame() {
@@ -84,16 +87,38 @@ public class Game {
         gameSetupService.setupPlayers(players, drawCards, playerCount);
     }
 
+    public void addObserver(GameObserver observer) {
+        if (observer == null) {
+            return;
+        }
+
+        if (!observers.contains(observer)) {
+            observers.add(observer);
+        }
+    }
+
+    public void removeObserver(GameObserver observer) {
+        observers.remove(observer);
+    }
+
+    private void notifyObservers() {
+        for (GameObserver observer : observers) {
+            observer.onGameStateChanged();
+        }
+    }
+
     public void startTurn(Player currentPlayer) {
         turnManager.startTurn(currentPlayer);
     }
 
     public void guiEndTurn() {
         if (checkCurrentPlayerWin()) {
+            notifyObservers();
             return;
         }
 
         turnManager.endTurn();
+        notifyObservers();
     }
 
     public void forceAdvanceTurnForAbsentPlayer() {
@@ -105,12 +130,20 @@ public class Game {
     }
 
     public boolean discard(Card card) {
-        return turnManager.discard(card);
+        boolean success = turnManager.discard(card);
+
+        if (success) {
+            notifyObservers();
+        }
+
+        return success;
     }
 
     public boolean playCard(Card card) {
         return finishAction(cardPlayService.playCard(getCurrentPlayer(), card));
     }
+
+    public boolean playActionCardAsMoney(ActionCards card) {return finishAction(cardPlayService.playActionCardAsMoney(getCurrentPlayer(), card));}
 
     public boolean finishPassGo(ActionCards passGoCard) {
         return finishAction(actionCardService.finishPassGo(getCurrentPlayer(), passGoCard));
@@ -228,6 +261,7 @@ public class Game {
     private boolean finishAction(boolean success) {
         if (success) {
             checkCurrentPlayerWin();
+            notifyObservers();
         }
 
         return success;

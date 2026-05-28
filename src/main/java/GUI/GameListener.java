@@ -99,15 +99,7 @@ public class GameListener {
     }
 
     private void playActionCardAsMoney(ActionCards selectedCard) {
-        Player currentPlayer = game.getCurrentPlayer();
-
-        if (!currentPlayer.getHandCards().contains(selectedCard)) {
-            return;
-        }
-
-        currentPlayer.getHandCards().remove(selectedCard);
-        currentPlayer.getBankCards().add(selectedCard);
-        currentPlayer.setUseCardTimes(currentPlayer.getUseCardTimes() + 1);
+        game.playActionCardAsMoney(selectedCard);
     }
 
     private boolean handlePlayerDetailPopupClick(double x, double y) {

@@ -1,5 +1,6 @@
 package logic;
 
+import model.ActionCards;
 import model.Card;
 import model.MoneyCards;
 import model.Player;
@@ -20,6 +21,16 @@ public class MoneyCardAndPropertyCardPlayService {
         }
 
         return false;
+    }
+
+    public boolean playActionCardAsMoney(Player currentPlayer, ActionCards card) {
+        if (!canPlayCard(currentPlayer, card)) {
+            return false;
+        }
+
+        currentPlayer.putMoneyCard(card);
+        increaseUseCardTimes(currentPlayer);
+        return true;
     }
 
     private boolean canPlayCard(Player currentPlayer, Card card) {
