@@ -745,8 +745,6 @@ public class GameServer {
             appendProperties(builder, game.getPlayers().get(playerIndex).getPropertyCards());
         }
 
-        builder.append(";allHands=");
-        appendHandsByPlayer(builder);
         builder.append(";publicBanks=");
         appendPublicCardsByPlayer(builder, false);
         builder.append(";publicProperties=");
@@ -754,19 +752,6 @@ public class GameServer {
         builder.append(";win=").append(game.isWin());
 
         return builder.toString();
-    }
-
-    private void appendHandsByPlayer(StringBuilder builder) {
-        for (int i = 0; i < game.getPlayers().size(); i++) {
-            if (i > 0) {
-                builder.append("|");
-            }
-
-            Player player = game.getPlayers().get(i);
-            builder.append("P").append(i + 1).append("[");
-            appendCardsWithSeparator(builder, player.getHandCards(), "~");
-            builder.append("]");
-        }
     }
 
     private void appendPublicCardsByPlayer(StringBuilder builder, boolean properties) {
