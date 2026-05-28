@@ -5,6 +5,7 @@ import model.Player;
 import model.PropertiesCards;
 import model.PropertyColor;
 
+// Handles choosing and changing wild card colors.
 public class WildCardSelectionPanel {
     private final Game game;
 
@@ -24,23 +25,28 @@ public class WildCardSelectionPanel {
     private final double colorButtonGapY = 8;
     private final int colorButtonsPerRow = 2;
 
+    // Creates the panel with no selected wild card.
     public WildCardSelectionPanel(Game game) {
         this.game = game;
         this.selectedWildCard = null;
     }
 
+    // Returns the currently selected wild card.
     public PropertiesCards getSelectedWildCard() {
         return selectedWildCard;
     }
 
+    // Stores the wild card selected by the user.
     public void setSelectedWildCard(PropertiesCards selectedWildCard) {
         this.selectedWildCard = selectedWildCard;
     }
 
+    // Clears the selected wild card.
     public void clearSelection() {
         selectedWildCard = null;
     }
 
+    // Returns the clicked wild card from the property area.
     public PropertiesCards getClickedWildCard(double mouseX, double mouseY) {
         Player currentPlayer = game.getCurrentPlayer();
 
@@ -63,6 +69,7 @@ public class WildCardSelectionPanel {
         return null;
     }
 
+    // Returns the clicked color option for the selected wild card.
     public PropertyColor getClickedWildColorButton(double mouseX, double mouseY) {
         if (selectedWildCard == null) {
             return null;

@@ -6,6 +6,7 @@ import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.TextAlignment;
 
+// Provides shared drawing helper methods and colors.
 public class ScreenDrawHelper {
     public static final Color BACKGROUND = Color.rgb(18, 24, 38);
     public static final Color BACKGROUND_LIGHT = Color.rgb(28, 38, 58);
@@ -20,6 +21,7 @@ public class ScreenDrawHelper {
     public static final Color WARNING = Color.rgb(255, 210, 93);
     public static final Color DANGER = Color.rgb(255, 112, 112);
 
+    // Draws the common page background.
     public static void drawPageBackground(GraphicsContext gc, double width, double height) {
         gc.clearRect(0, 0, width, height);
         gc.setFill(BACKGROUND);
@@ -35,11 +37,13 @@ public class ScreenDrawHelper {
         gc.fillOval(width - 220, height - 170, 330, 230);
     }
 
+    // Draws a dark overlay over the screen.
     public static void drawOverlay(GraphicsContext gc) {
         gc.setFill(Color.rgb(5, 8, 14, 0.78));
         gc.fillRect(0, 0, 1035, 625);
     }
 
+    // Draws a dark rounded panel.
     public static void drawPanel(GraphicsContext gc,
                                  double x,
                                  double y,
@@ -51,6 +55,7 @@ public class ScreenDrawHelper {
         gc.strokeRoundRect(x, y, width, height, 20, 20);
     }
 
+    // Draws a light rounded panel.
     public static void drawLightPanel(GraphicsContext gc,
                                       double x,
                                       double y,
@@ -62,6 +67,7 @@ public class ScreenDrawHelper {
         gc.strokeRoundRect(x, y, width, height, 20, 20);
     }
 
+    // Draws a section title.
     public static void drawSectionTitle(GraphicsContext gc, String title, double x, double y) {
         gc.setFill(TEXT);
         gc.setFont(Font.font("Arial", 18));
@@ -70,6 +76,7 @@ public class ScreenDrawHelper {
         gc.fillText(title, x, y);
     }
 
+    // Draws a small rounded text badge.
     public static void drawBadge(GraphicsContext gc,
                                  double x,
                                  double y,
@@ -87,6 +94,7 @@ public class ScreenDrawHelper {
         gc.setTextBaseline(VPos.TOP);
     }
 
+    // Draws an active button.
     public static void drawButton(GraphicsContext gc,
                                   double x,
                                   double y,
@@ -110,6 +118,7 @@ public class ScreenDrawHelper {
         gc.setTextBaseline(VPos.TOP);
     }
 
+    // Draws a disabled button.
     public static void drawDisabledButton(GraphicsContext gc,
                                           double x,
                                           double y,
@@ -130,6 +139,7 @@ public class ScreenDrawHelper {
         gc.setTextBaseline(VPos.TOP);
     }
 
+    // Draws the shared Double the Rent checkbox.
     public static void drawDoubleRentOption(GraphicsContext gc,
                                             double x,
                                             double y,
@@ -161,6 +171,7 @@ public class ScreenDrawHelper {
         gc.setTextBaseline(VPos.TOP);
     }
 
+    // Draws a simple small card without image.
     public static void drawSmallCard(GraphicsContext gc,
                                      double x,
                                      double y,
@@ -181,6 +192,7 @@ public class ScreenDrawHelper {
         drawWrappedText(gc, text, x + 5, y + 35, 50, 11);
     }
 
+    // Draws long text across multiple lines.
     public static void drawWrappedText(GraphicsContext gc,
                                        String text,
                                        double x,

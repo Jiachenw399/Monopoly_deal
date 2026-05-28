@@ -7,6 +7,7 @@ import javafx.scene.text.Font;
 import javafx.scene.text.TextAlignment;
 import logic.Game;
 
+// Draws buttons used to view each player details.
 public class PlayerViewPanel {
     private static final double BUTTON_X = 760;
     private static final double BUTTON_Y = 55;
@@ -14,6 +15,7 @@ public class PlayerViewPanel {
     private static final double BUTTON_HEIGHT = 35;
     private static final double BUTTON_GAP = 10;
 
+    // Draws one button for each player.
     public void drawPlayerViewButtons(GraphicsContext gc, Game game, int viewedPlayerIndex) {
         for (int i = 0; i < game.getPlayers().size(); i++) {
             drawPlayerViewButton(gc, i, i == viewedPlayerIndex);
@@ -22,6 +24,7 @@ public class PlayerViewPanel {
         gc.setTextBaseline(VPos.TOP);
     }
 
+    // Returns the clicked player button index.
     public static int getClickedPlayerViewButtonIndex(Game game, double mouseX, double mouseY) {
         for (int i = 0; i < game.getPlayers().size(); i++) {
             double buttonY = BUTTON_Y + i * (BUTTON_HEIGHT + BUTTON_GAP);
@@ -35,6 +38,7 @@ public class PlayerViewPanel {
         return -1;
     }
 
+    // Draws a single player view button.
     private static void drawPlayerViewButton(GraphicsContext gc, int playerIndex, boolean selected) {
         double y = BUTTON_Y + playerIndex * (BUTTON_HEIGHT + BUTTON_GAP);
 

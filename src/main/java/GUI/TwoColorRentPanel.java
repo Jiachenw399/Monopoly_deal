@@ -13,6 +13,7 @@ import model.PropertyColor;
 
 import java.util.ArrayList;
 
+// Handles the selection UI for two-color rent cards.
 public class TwoColorRentPanel {
     private final Game game;
 
@@ -24,21 +25,25 @@ public class TwoColorRentPanel {
     private final double buttonWidth = 170;
     private final double buttonHeight = 55;
 
+    // Creates the panel and stores game data.
     public TwoColorRentPanel(Game game) {
         this.game = game;
         this.pendingCard = null;
         this.useDoubleRent = false;
     }
 
+    // Starts rent color selection for the given card.
     public void startSelection(ActionCards card) {
         pendingCard = card;
         useDoubleRent = false;
     }
 
+    // Cancels the current rent selection.
     public void cancelSelection() {
         pendingCard = null;
     }
 
+    // Checks whether this panel is active.
     public boolean isSelecting() {
         return pendingCard != null;
     }
@@ -47,14 +52,17 @@ public class TwoColorRentPanel {
         return pendingCard;
     }
 
+    // Returns whether Double the Rent is selected.
     public boolean shouldUseDoubleRent() {
         return useDoubleRent;
     }
 
+    // Switches the Double the Rent option on or off.
     public void toggleDoubleRent() {
         useDoubleRent = !useDoubleRent;
     }
 
+    // Checks whether the Double the Rent option was clicked.
     public boolean isDoubleRentClicked(double mouseX, double mouseY) {
         return isSelecting()
                 && game.hasDoubleTheRentCard(game.getCurrentPlayer())
@@ -63,12 +71,14 @@ public class TwoColorRentPanel {
                 && mouseY >= 410 && mouseY <= 445;
     }
 
+    // Checks whether the cancel button was clicked.
     public boolean isCancelClicked(double mouseX, double mouseY) {
         return isSelecting()
                 && mouseX >= 720 && mouseX <= 860
                 && mouseY >= 505 && mouseY <= 545;
     }
 
+    // Returns the clicked rent color if it is usable.
     public PropertyColor getClickedRentColor(double mouseX, double mouseY) {
         if (!isSelecting()) {
             return null;
@@ -95,6 +105,7 @@ public class TwoColorRentPanel {
         return null;
     }
 
+    // Draws the whole two-color rent panel.
     public void draw(GraphicsContext gc) {
         if (!isSelecting()) {
             return;
@@ -108,11 +119,13 @@ public class TwoColorRentPanel {
         gc.setTextBaseline(VPos.TOP);
     }
 
+    // Draws the dark background overlay.
     private void drawOverlay(GraphicsContext gc) {
         gc.setFill(Color.rgb(0, 0, 0, 0.75));
         gc.fillRect(0, 0, Game.SCREEN_WIDTH, Game.SCREEN_HEIGHT);
     }
 
+    // Draws the panel title and instruction.
     private void drawTitle(GraphicsContext gc) {
         gc.setFill(Color.WHITE);
         gc.setFont(Font.font("Arial", 26));
@@ -125,6 +138,7 @@ public class TwoColorRentPanel {
                 Game.SCREEN_WIDTH / 2, 100);
     }
 
+    // Draws the two possible rent color buttons.
     private void drawColorButtons(GraphicsContext gc) {
         ArrayList<PropertyColor> colors = getRentColors(pendingCard.getActionCardType());
         boolean hasAnyColor = false;
@@ -151,6 +165,7 @@ public class TwoColorRentPanel {
         }
     }
 
+    // Draws one color button.
     private void drawColorButton(GraphicsContext gc, PropertyColor color, double x, double y, boolean usable) {
         gc.fillRoundRect(x, y, buttonWidth, buttonHeight, 14, 14);
 
@@ -170,6 +185,7 @@ public class TwoColorRentPanel {
         }
     }
 
+    // Draws a warning when no color can be used.
     private void drawNoUsableColorMessage(GraphicsContext gc) {
         gc.setFill(Color.LIGHTYELLOW);
         gc.setFont(Font.font("Arial", 20));
@@ -179,6 +195,7 @@ public class TwoColorRentPanel {
                 Game.SCREEN_WIDTH / 2, 340);
     }
 
+    // Draws the optional Double the Rent checkbox.
     private void drawDoubleRentOption(GraphicsContext gc, double x, double y) {
         if (!game.hasDoubleTheRentCard(game.getCurrentPlayer())
                 || game.getCurrentPlayer().getUseCardTimes() > 1) {
@@ -208,6 +225,7 @@ public class TwoColorRentPanel {
         gc.setTextBaseline(VPos.TOP);
     }
 
+    // Gets the two colors allowed by the rent card type.
     private ArrayList<PropertyColor> getRentColors(ActionCardType type) {
         ArrayList<PropertyColor> colors = new ArrayList<>();
 

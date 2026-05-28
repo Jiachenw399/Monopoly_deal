@@ -14,6 +14,7 @@ import model.PropertyColor;
 
 import java.util.ArrayList;
 
+// Handles the payment selection popup when a player must pay assets.
 public class PaymentSelectionPanel {
     private final Game game;
     private final ArrayList<Card> selectedCards;
@@ -43,11 +44,13 @@ public class PaymentSelectionPanel {
     private final double arrowWidth = 34;
     private final double arrowHeight = 28;
 
+    // Creates the panel and stores selected payment cards.
     public PaymentSelectionPanel(Game game) {
         this.game = game;
         this.selectedCards = new ArrayList<>();
     }
 
+    // Draws the payment selection screen.
     public void draw(GraphicsContext gc) {
         if (!game.isPaymentSelecting()) {
             return;
@@ -67,6 +70,7 @@ public class PaymentSelectionPanel {
         drawActionButtons(gc, request, payer);
     }
 
+    // Resets pages when a new payment request starts.
     private void resetPagesWhenRequestChanged(Game.PaymentRequest request) {
         if (request != lastRequest) {
             bankPageIndex = 0;
@@ -75,11 +79,13 @@ public class PaymentSelectionPanel {
         }
     }
 
+    // Draws the dark background overlay.
     private void drawOverlay(GraphicsContext gc) {
         gc.setFill(Color.rgb(0, 0, 0, 0.78));
         gc.fillRect(0, 0, Game.SCREEN_WIDTH, Game.SCREEN_HEIGHT);
     }
 
+    // Draws payment title and payment amount information.
     private void drawTitle(GraphicsContext gc, Game.PaymentRequest request, Player payer, Player receiver) {
         int payerIndex = game.getPlayers().indexOf(payer) + 1;
         int receiverIndex = game.getPlayers().indexOf(receiver) + 1;
@@ -109,6 +115,7 @@ public class PaymentSelectionPanel {
         }
     }
 
+    // Draws the payer bank cards for selection.
     private void drawPaymentBankCards(GraphicsContext gc, Player payer) {
         gc.setFill(Color.WHITE);
         gc.setFont(Font.font("Arial", 19));
@@ -141,6 +148,7 @@ public class PaymentSelectionPanel {
         }
     }
 
+    // Draws the payer property cards for selection.
     private void drawPaymentPropertyCards(GraphicsContext gc, Player payer) {
         gc.setFill(Color.WHITE);
         gc.setFont(Font.font("Arial", 19));
@@ -174,6 +182,7 @@ public class PaymentSelectionPanel {
         }
     }
 
+    // Calculates the last page index for a card list.
     private int getMaxPage(int cardCount) {
         if (cardCount <= 0) {
             return 0;
@@ -182,6 +191,7 @@ public class PaymentSelectionPanel {
         return (cardCount - 1) / cardsPerPage;
     }
 
+    // Keeps the current page index within valid bounds.
     private int keepPageInRange(int pageIndex, int maxPage) {
         if (pageIndex < 0) {
             return 0;
@@ -194,6 +204,7 @@ public class PaymentSelectionPanel {
         return pageIndex;
     }
 
+    // Draws current page number text.
     private void drawPageText(GraphicsContext gc, int pageIndex, int maxPage, double x, double y) {
         gc.setFill(Color.LIGHTGRAY);
         gc.setFont(Font.font("Arial", 13));
@@ -202,6 +213,7 @@ public class PaymentSelectionPanel {
         gc.fillText("Page " + (pageIndex + 1) + "/" + (maxPage + 1), x, y);
     }
 
+    // Draws previous and next page buttons.
     private void drawArrowButtons(GraphicsContext gc,
                                   double prevX,
                                   double nextX,
@@ -221,6 +233,7 @@ public class PaymentSelectionPanel {
         }
     }
 
+    // Draws message text when no cards are available.
     private void drawEmptyText(GraphicsContext gc, String text, double x, double y) {
         gc.setFill(Color.LIGHTGRAY);
         gc.setFont(Font.font("Arial", 15));
@@ -229,6 +242,7 @@ public class PaymentSelectionPanel {
         gc.fillText(text, x, y);
     }
 
+    // Draws a preview of the receiver after payment.
     private void drawReceiverPreview(GraphicsContext gc, Player receiver) {
         double boxX = 735;
         double boxY = 145;
@@ -255,6 +269,7 @@ public class PaymentSelectionPanel {
         drawReceiverSetPreview(gc, receiver, boxX, boxY + 100);
     }
 
+    // Shows how selected property cards affect receiver sets.
     private void drawReceiverSetPreview(GraphicsContext gc, Player receiver, double boxX, double startY) {
         double lineGap = 24;
         int row = 0;
@@ -304,6 +319,7 @@ public class PaymentSelectionPanel {
         }
     }
 
+    // Draws confirm, clear, and Just Say No buttons.
     private void drawActionButtons(GraphicsContext gc, Game.PaymentRequest request, Player payer) {
         int requiredAmount = Math.min(request.getAmount(), game.getTotalAssetsValue(payer));
         int selectedTotal = game.getCardsValue(selectedCards);
@@ -321,6 +337,7 @@ public class PaymentSelectionPanel {
         }
     }
 
+    // Counts selected property cards with the given color.
     private int getSelectedPropertyCountByColor(PropertyColor color) {
         int count = 0;
 
@@ -335,6 +352,7 @@ public class PaymentSelectionPanel {
         return count;
     }
 
+    // Draws one selectable payment card.
     private void drawPaymentCard(GraphicsContext gc, Card card, double x, double y, String type, String text, Color color) {
         if (selectedCards.contains(card)) {
             gc.setFill(Color.YELLOW);
@@ -363,18 +381,21 @@ public class PaymentSelectionPanel {
         ScreenDrawHelper.drawWrappedText(gc, text, x + 5, y + 52, cardWidth - 10, 11);
     }
 
+    // Checks whether the confirm button was clicked.
     public boolean isConfirmClicked(double mouseX, double mouseY) {
         return game.isPaymentSelecting()
                 && mouseX >= 330 && mouseX <= 490
                 && mouseY >= 555 && mouseY <= 595;
     }
 
+    // Checks whether the clear button was clicked.
     public boolean isClearClicked(double mouseX, double mouseY) {
         return game.isPaymentSelecting()
                 && mouseX >= 510 && mouseX <= 630
                 && mouseY >= 555 && mouseY <= 595;
     }
 
+    // Checks whether the Just Say No button was clicked.
     public boolean isJustSayNoClicked(double mouseX, double mouseY) {
         return game.isPaymentSelecting()
                 && game.canCurrentPaymentUseJustSayNo()
@@ -382,14 +403,17 @@ public class PaymentSelectionPanel {
                 && mouseY >= 555 && mouseY <= 595;
     }
 
+    // Clears all selected payment cards.
     public void clearSelection() {
         selectedCards.clear();
     }
 
+    // Returns a copy of selected payment cards.
     public ArrayList<Card> getSelectedCards() {
         return new ArrayList<>(selectedCards);
     }
 
+    // Checks whether the selected cards cover the required payment.
     public boolean canConfirm() {
         if (!game.isPaymentSelecting()) {
             return false;
@@ -402,6 +426,7 @@ public class PaymentSelectionPanel {
         return selectedTotal >= requiredAmount;
     }
 
+    // Handles clicks on cards or page buttons.
     public boolean handleCardClick(double mouseX, double mouseY) {
         Game.PaymentRequest request = game.getCurrentPaymentRequest();
 
@@ -432,6 +457,7 @@ public class PaymentSelectionPanel {
         return false;
     }
 
+    // Selects or unselects a payment card.
     private void toggleSelectedCard(Card card) {
         if (card == null) {
             return;
@@ -444,6 +470,7 @@ public class PaymentSelectionPanel {
         }
     }
 
+    // Handles page button clicks for both card areas.
     private boolean handlePageButtonClick(double mouseX, double mouseY, Player payer) {
         if (handleBankPageButtonClick(mouseX, mouseY, payer)) {
             return true;
@@ -496,6 +523,7 @@ public class PaymentSelectionPanel {
         return false;
     }
 
+    // Checks whether the mouse position is inside a rectangle.
     private boolean isInside(double mouseX,
                              double mouseY,
                              double x,
@@ -508,6 +536,7 @@ public class PaymentSelectionPanel {
                 && mouseY <= y + height;
     }
 
+    // Returns the clicked bank card on the current page.
     private Card getClickedPaymentBankCard(double mouseX, double mouseY, Player payer) {
         int startIndex = bankPageIndex * cardsPerPage;
         int endIndex = Math.min(startIndex + cardsPerPage, payer.getBankCards().size());
@@ -526,6 +555,7 @@ public class PaymentSelectionPanel {
         return null;
     }
 
+    // Returns the clicked property card on the current page.
     private Card getClickedPaymentPropertyCard(double mouseX, double mouseY, Player payer) {
         int startIndex = propertyPageIndex * cardsPerPage;
         int endIndex = Math.min(startIndex + cardsPerPage, payer.getPropertyCards().size());
@@ -544,6 +574,7 @@ public class PaymentSelectionPanel {
         return null;
     }
 
+    // Converts enum color names into readable text.
     private String getDisplayColorName(PropertyColor color) {
         if (color == null) {
             return "No Color";
