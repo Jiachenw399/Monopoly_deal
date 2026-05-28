@@ -33,9 +33,10 @@ public class GameScreen {
     private double cardWidth = 82;
     private double cardHeight = 112;
     private double gap = 10;
-    private double handStartX = 20;
-    private double handAreaX = 20;
-    private double handAreaWidth = 740;
+    private final double handStartX = ScreenDrawHelper.tableContentX() + 4;
+    private final double handAreaX = handStartX;
+    private final double handAreaWidth =
+            ScreenDrawHelper.tableContentWidth(Game.SCREEN_WIDTH, 760) - 8;
     private double handStartY = Game.SCREEN_HEIGHT - 150;
 
     private boolean shuffleAnimating = false;
