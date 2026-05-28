@@ -57,7 +57,7 @@ public class GameServer {
     }
 
     private synchronized boolean isServerFull() {
-        return clients.size() >= MAX_PLAYERS;
+        return clients.size() >= MAX_PLAYERS || gameStarted;
     }
 
     private void rejectClient(Socket clientSocket) {
@@ -65,7 +65,10 @@ public class GameServer {
                 PrintWriter out = new PrintWriter(clientSocket.getOutputStream(), true);
                 Socket socketToClose = clientSocket
         ) {
-            out.println(new NetworkMessage("FULL", "Server already has " + MAX_PLAYERS + " players").encode());
+            String reason = gameStarted
+                    ? "Game has already started. Join before Start Game."
+                    : "Server already has " + MAX_PLAYERS + " players";
+            out.println(new NetworkMessage("FULL", reason).encode());
         } catch (IOException e) {
             System.out.println("Failed to reject client: " + e.getMessage());
         }
@@ -757,11 +760,11 @@ public class GameServer {
 
     private String cardToText(Card card) {
         if (card instanceof MoneyCards) {
-            return "MONEY_" + card.getValue();
+            return "MONEY:" + card.getValue();
         }
 
         if (card instanceof ActionCards actionCard) {
-            return "ACTION_" + actionCard.getActionCardType().name() + "_" + card.getValue();
+            return "ACTION:" + actionCard.getActionCardType().name() + ":" + card.getValue();
         }
 
         if (card instanceof PropertiesCards propertyCard) {
@@ -773,7 +776,8 @@ public class GameServer {
 
     private String propertyToText(PropertiesCards card) {
         String currentColor = card.getCurrentColor() == null ? "NO_COLOR" : card.getCurrentColor().name();
-        return "PROPERTY_" + card.getType().name() + "_" + currentColor + "_" + card.getValue();
+        return "PROPERTY:" + card.getType().name() + ":" + currentColor + ":"
+                + card.getImageFileName() + ":" + card.getValue();
     }
 
     private class ClientHandler extends Thread {

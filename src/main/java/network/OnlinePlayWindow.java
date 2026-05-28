@@ -14,6 +14,7 @@ import javafx.scene.control.CheckBox;
 import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
+import javafx.scene.image.Image;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
@@ -25,9 +26,11 @@ import logic.Game;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.InputStream;
 import java.io.PrintWriter;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -50,6 +53,7 @@ public class OnlinePlayWindow extends Stage {
     private final String host;
     private final Canvas canvas = new Canvas(GuiScale.canvasWidth(), GuiScale.canvasHeight());
     private final ArrayList<String> logLines = new ArrayList<>();
+    private final Map<String, Image> imageCache = new HashMap<>();
 
     private volatile boolean closed;
     private Socket socket;
@@ -236,6 +240,10 @@ public class OnlinePlayWindow extends Stage {
     }
 
     private void drawLargeCard(GraphicsContext gc, CardInfo card, double x, double y) {
+        if (drawCardImage(gc, card, x, y, CARD_WIDTH, CARD_HEIGHT)) {
+            return;
+        }
+
         Color fill = colorFor(card);
         gc.setFill(fill);
         gc.fillRoundRect(x, y, CARD_WIDTH, CARD_HEIGHT, 12, 12);
@@ -250,6 +258,10 @@ public class OnlinePlayWindow extends Stage {
     }
 
     private void drawSmallCard(GraphicsContext gc, CardInfo card, double x, double y, boolean property) {
+        if (drawCardImage(gc, card, x, y, SMALL_CARD_WIDTH, SMALL_CARD_HEIGHT)) {
+            return;
+        }
+
         gc.setFill(colorFor(card));
         gc.fillRoundRect(x, y, SMALL_CARD_WIDTH, SMALL_CARD_HEIGHT, 10, 10);
         gc.setStroke(Color.rgb(20, 24, 34));
@@ -257,9 +269,39 @@ public class OnlinePlayWindow extends Stage {
         gc.setFill(Color.rgb(20, 24, 34));
         gc.setFont(Font.font("Arial", 9));
         gc.setTextAlign(TextAlignment.CENTER);
-        gc.fillText(property ? card.propertyColor() : card.title(), x + 30, y + 24);
+        gc.fillText(property ? card.displayPropertyColor() : card.title(), x + 30, y + 24);
         gc.setFont(Font.font("Arial", 13));
         gc.fillText(card.value + "M", x + 30, y + 66);
+    }
+
+    private boolean drawCardImage(GraphicsContext gc, CardInfo card, double x, double y, double width, double height) {
+        if (card.imagePath == null || card.imagePath.isBlank()) {
+            return false;
+        }
+
+        Image image = loadImage(card.imagePath);
+        if (image == null || image.isError()) {
+            return false;
+        }
+
+        gc.drawImage(image, x, y, width, height);
+        return true;
+    }
+
+    private Image loadImage(String path) {
+        if (imageCache.containsKey(path)) {
+            return imageCache.get(path);
+        }
+
+        InputStream inputStream = OnlinePlayWindow.class.getResourceAsStream(path);
+        if (inputStream == null) {
+            imageCache.put(path, null);
+            return null;
+        }
+
+        Image image = new Image(inputStream);
+        imageCache.put(path, image);
+        return image;
     }
 
     private Color colorFor(CardInfo card) {
@@ -574,7 +616,9 @@ public class OnlinePlayWindow extends Stage {
 
     private void handleServerMessage(NetworkMessage message) {
         appendLog(message.getType() + ": " + message.getBody());
-        if ("WELCOME".equals(message.getType())) {
+        if ("FULL".equals(message.getType())) {
+            connectionText = "Rejected";
+        } else if ("WELCOME".equals(message.getType())) {
             state.you = parsePlayerId(message.getBody());
         } else if ("PLAYER_LIST".equals(message.getType()) && !started) {
             state.players.clear();
@@ -635,19 +679,64 @@ public class OnlinePlayWindow extends Stage {
         UNKNOWN
     }
 
-    private record CardInfo(int index, String raw, CardKind kind, String actionType, int value) {
+    private record CardInfo(int index,
+                            String raw,
+                            CardKind kind,
+                            String actionType,
+                            String propertyType,
+                            String propertyColor,
+                            String imagePath,
+                            int value) {
         static CardInfo parse(int index, String raw) {
+            if (raw.startsWith("MONEY:") || raw.startsWith("ACTION:") || raw.startsWith("PROPERTY:")) {
+                return parseColonFormat(index, raw);
+            }
+
             if (raw.startsWith("MONEY_")) {
-                return new CardInfo(index, raw, CardKind.MONEY, "", trailingValue(raw));
+                int value = trailingValue(raw);
+                return new CardInfo(index, raw, CardKind.MONEY, "", "", "", "/images/money/money_" + value + ".png", value);
             }
             if (raw.startsWith("ACTION_")) {
                 String actionType = raw.substring("ACTION_".length(), raw.lastIndexOf('_'));
-                return new CardInfo(index, raw, CardKind.ACTION, actionType, trailingValue(raw));
+                return new CardInfo(index, raw, CardKind.ACTION, actionType, "", "", actionImagePath(actionType), trailingValue(raw));
             }
             if (raw.startsWith("PROPERTY_")) {
-                return new CardInfo(index, raw, CardKind.PROPERTY, "", trailingValue(raw));
+                return new CardInfo(index, raw, CardKind.PROPERTY, "", "", "", "", trailingValue(raw));
             }
-            return new CardInfo(index, raw, CardKind.UNKNOWN, "", 0);
+            return new CardInfo(index, raw, CardKind.UNKNOWN, "", "", "", "", 0);
+        }
+
+        private static CardInfo parseColonFormat(int index, String raw) {
+            String[] parts = raw.split(":", -1);
+
+            if ("MONEY".equals(parts[0]) && parts.length >= 2) {
+                int value = parseInt(parts[1]);
+                return new CardInfo(index, raw, CardKind.MONEY, "", "", "", "/images/money/money_" + value + ".png", value);
+            }
+
+            if ("ACTION".equals(parts[0]) && parts.length >= 3) {
+                String actionType = parts[1];
+                int value = parseInt(parts[2]);
+                return new CardInfo(index, raw, CardKind.ACTION, actionType, "", "", actionImagePath(actionType), value);
+            }
+
+            if ("PROPERTY".equals(parts[0]) && parts.length >= 5) {
+                String propertyType = parts[1];
+                String color = parts[2];
+                String imageFileName = parts[3];
+                int value = parseInt(parts[4]);
+                String folder = propertyType.startsWith("WILD_") ? "property_wildcards" : "property";
+                return new CardInfo(index, raw, CardKind.PROPERTY, "", propertyType, color,
+                        "/images/" + folder + "/" + imageFileName, value);
+            }
+
+            return new CardInfo(index, raw, CardKind.UNKNOWN, "", "", "", "", 0);
+        }
+
+        private static String actionImagePath(String actionType) {
+            String fileName = actionType.toLowerCase() + ".png";
+            String folder = actionType.startsWith("RENT_WITH") ? "rent" : "action";
+            return "/images/" + folder + "/" + fileName;
         }
 
         private static int trailingValue(String raw) {
@@ -662,9 +751,23 @@ public class OnlinePlayWindow extends Stage {
             }
         }
 
+        private static int parseInt(String text) {
+            try {
+                return Integer.parseInt(text);
+            } catch (NumberFormatException e) {
+                return 0;
+            }
+        }
+
         String title() {
             if (kind == CardKind.MONEY) {
                 return "Money " + value;
+            }
+            if (kind == CardKind.ACTION && !actionType.isBlank()) {
+                return actionType.replace("_", " ");
+            }
+            if (kind == CardKind.PROPERTY && !propertyType.isBlank()) {
+                return propertyType.replace("_", " ");
             }
             String cleaned = raw.replace("ACTION_", "").replace("PROPERTY_", "");
             int last = cleaned.lastIndexOf('_');
@@ -674,7 +777,11 @@ public class OnlinePlayWindow extends Stage {
             return cleaned.replace("_", " ");
         }
 
-        String propertyColor() {
+        String displayPropertyColor() {
+            if (!propertyColor.isBlank()) {
+                return propertyColor.replace("_", " ");
+            }
+
             if (!raw.startsWith("PROPERTY_")) {
                 return title();
             }
