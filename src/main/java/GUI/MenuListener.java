@@ -59,13 +59,11 @@ public class MenuListener {
     }
 
     private void startGame() {
-        gameScreen.setShow(true);
-        ruleScreen.setShow(false);
         menu.setShow(false);
+        ruleScreen.setShow(false);
+        gameScreen.setShow(true);
 
-        gameScreen.startShuffleAnimation(() -> {
-            game.startGame();
-        });
+        game.startGame();
     }
 
     private void returnToMenu() {

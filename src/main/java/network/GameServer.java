@@ -367,6 +367,37 @@ public class GameServer {
         sendGameStateToAll();
     }
 
+    private synchronized void setPropertyColorIfValid(ClientHandler requester, String body) {
+        if (!isGameStarted()) {
+            requester.send(new NetworkMessage("SERVER", "Game has not started yet").encode());
+            return;
+        }
+
+        String[] args = body.trim().split("\\s+");
+        if (args.length < 2) {
+            requester.send(new NetworkMessage("SERVER", "Use SET_PROPERTY_COLOR <propertyNo> <color>").encode());
+            return;
+        }
+
+        Player player = game.getPlayers().get(requester.getPlayerId() - 1);
+        PropertiesCards property = getPropertyByOneBasedNumber(player, args[0]);
+        PropertyColor color = parseColor(args[1]);
+
+        if (property == null || color == null) {
+            requester.send(new NetworkMessage("SERVER", "Invalid property or color").encode());
+            return;
+        }
+
+        if (!property.isWildCard() || !property.getType().getColors().contains(color)) {
+            requester.send(new NetworkMessage("SERVER", "That property cannot use color " + args[1]).encode());
+            return;
+        }
+
+        property.setCurrentColor(color);
+        broadcast(new NetworkMessage("BROADCAST", "Player " + requester.getPlayerId() + " changed a wild card to " + color));
+        sendGameStateToAll();
+    }
+
     private ArrayList<Card> parsePaymentCards(Player payer, String paymentText) {
         ArrayList<Card> selectedCards = new ArrayList<>();
         String[] tokens = paymentText.trim().split("[,\\s]+");
@@ -713,7 +744,31 @@ public class GameServer {
             appendProperties(builder, game.getPlayers().get(playerIndex).getPropertyCards());
         }
 
+        builder.append(";publicBanks=");
+        appendPublicCardsByPlayer(builder, false);
+        builder.append(";publicProperties=");
+        appendPublicCardsByPlayer(builder, true);
+
         return builder.toString();
+    }
+
+    private void appendPublicCardsByPlayer(StringBuilder builder, boolean properties) {
+        for (int i = 0; i < game.getPlayers().size(); i++) {
+            if (i > 0) {
+                builder.append("|");
+            }
+
+            Player player = game.getPlayers().get(i);
+            builder.append("P").append(i + 1).append("[");
+
+            if (properties) {
+                appendPropertiesWithSeparator(builder, player.getPropertyCards(), "~");
+            } else {
+                appendCardsWithSeparator(builder, player.getBankCards(), "~");
+            }
+
+            builder.append("]");
+        }
     }
 
     private void appendPaymentState(StringBuilder builder, int playerId) {
@@ -739,9 +794,13 @@ public class GameServer {
     }
 
     private void appendCards(StringBuilder builder, List<? extends Card> cards) {
+        appendCardsWithSeparator(builder, cards, ",");
+    }
+
+    private void appendCardsWithSeparator(StringBuilder builder, List<? extends Card> cards, String separator) {
         for (int i = 0; i < cards.size(); i++) {
             if (i > 0) {
-                builder.append(",");
+                builder.append(separator);
             }
 
             builder.append(cardToText(cards.get(i)));
@@ -749,9 +808,13 @@ public class GameServer {
     }
 
     private void appendProperties(StringBuilder builder, List<PropertiesCards> cards) {
+        appendPropertiesWithSeparator(builder, cards, ",");
+    }
+
+    private void appendPropertiesWithSeparator(StringBuilder builder, List<PropertiesCards> cards, String separator) {
         for (int i = 0; i < cards.size(); i++) {
             if (i > 0) {
-                builder.append(",");
+                builder.append(separator);
             }
 
             builder.append(propertyToText(cards.get(i)));
@@ -847,6 +910,8 @@ public class GameServer {
                 payIfValid(this, message.getBody());
             } else if ("JUST_SAY_NO".equals(message.getType())) {
                 justSayNoIfValid(this);
+            } else if ("SET_PROPERTY_COLOR".equals(message.getType())) {
+                setPropertyColorIfValid(this, message.getBody());
             } else if (isActionCommand(message.getType())) {
                 finishActionIfValid(this, message.getType(), message.getBody());
             } else if ("END_TURN".equals(message.getType())) {
