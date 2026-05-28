@@ -15,6 +15,7 @@ import model.PropertyColor;
 
 import java.util.ArrayList;
 
+// Displays detailed information for a selected player.
 public class PlayerDetailPopupPanel {
     private final Game game;
 
@@ -48,10 +49,12 @@ public class PlayerDetailPopupPanel {
     private final double propertyNextX = 810;
     private final double propertyButtonY = 405;
 
+    // Creates the popup panel with game data.
     public PlayerDetailPopupPanel(Game game) {
         this.game = game;
     }
 
+    // Opens the popup for the selected player.
     public void showPlayer(int playerIndex) {
         if (playerIndex < 0 || playerIndex >= game.getPlayers().size()) {
             return;
@@ -62,22 +65,26 @@ public class PlayerDetailPopupPanel {
         propertyPage = 0;
     }
 
+    // Closes the popup and resets pages.
     public void close() {
         selectedPlayerIndex = -1;
         bankPage = 0;
         propertyPage = 0;
     }
 
+    // Checks whether the popup is currently visible.
     public boolean isShowing() {
         return selectedPlayerIndex != -1;
     }
 
+    // Checks whether the close button was clicked.
     public boolean isCloseClicked(double mouseX, double mouseY) {
         return isShowing()
                 && mouseX >= closeX && mouseX <= closeX + closeWidth
                 && mouseY >= closeY && mouseY <= closeY + closeHeight;
     }
 
+    // Handles page switching for bank and property areas.
     public boolean handlePageButtonClick(double mouseX, double mouseY) {
         if (!isShowing()) {
             return false;
@@ -132,11 +139,13 @@ public class PlayerDetailPopupPanel {
         return isInside(mouseX, mouseY, propertyNextX, propertyButtonY, pageButtonWidth, pageButtonHeight);
     }
 
+    // Checks whether the mouse position is inside a rectangle.
     private boolean isInside(double mouseX, double mouseY, double x, double y, double width, double height) {
         return mouseX >= x && mouseX <= x + width
                 && mouseY >= y && mouseY <= y + height;
     }
 
+    // Draws the whole player detail popup.
     public void draw(GraphicsContext gc) {
         if (!isShowing()) {
             return;
@@ -154,6 +163,7 @@ public class PlayerDetailPopupPanel {
         drawPropertyArea(gc, player);
     }
 
+    // Keeps bank and property pages inside valid ranges.
     private void keepPageInRange(Player player) {
         int maxBankPage = getMaxPage(player.getBankCards().size());
         int maxPropertyPage = getMaxPage(player.getPropertyCards().size());
@@ -175,6 +185,7 @@ public class PlayerDetailPopupPanel {
         }
     }
 
+    // Calculates the last page index for cards.
     private int getMaxPage(int size) {
         if (size <= 0) {
             return 0;
@@ -183,11 +194,13 @@ public class PlayerDetailPopupPanel {
         return (size - 1) / cardsPerPage;
     }
 
+    // Draws the dark background overlay.
     private void drawOverlay(GraphicsContext gc) {
         gc.setFill(Color.rgb(0, 0, 0, 0.72));
         gc.fillRect(0, 0, Game.SCREEN_WIDTH, Game.SCREEN_HEIGHT);
     }
 
+    // Draws the popup container.
     private void drawPopupBox(GraphicsContext gc) {
         gc.setFill(Color.rgb(18, 24, 35));
         gc.fillRoundRect(popupX, popupY, popupWidth, popupHeight, 24, 24);
@@ -198,6 +211,7 @@ public class PlayerDetailPopupPanel {
         gc.setLineWidth(1);
     }
 
+    // Draws the popup title text.
     private void drawTitle(GraphicsContext gc, Player player) {
         gc.setFill(Color.rgb(255, 232, 180));
         gc.setFont(Font.font("Arial", 28));
@@ -210,6 +224,7 @@ public class PlayerDetailPopupPanel {
         gc.fillText("Hand, bank area and property area overview", popupX + 30, popupY + 62);
     }
 
+    // Draws the close button.
     private void drawCloseButton(GraphicsContext gc) {
         gc.setFill(Color.rgb(255, 184, 77));
         gc.fillRoundRect(closeX, closeY, closeWidth, closeHeight, 10, 10);
@@ -226,6 +241,7 @@ public class PlayerDetailPopupPanel {
         gc.setTextBaseline(VPos.TOP);
     }
 
+    // Draws hand, bank, and completed set information.
     private void drawBasicInfo(GraphicsContext gc, Player player) {
         double x = popupX + 30;
         double y = popupY + 100;
@@ -238,6 +254,7 @@ public class PlayerDetailPopupPanel {
         drawInfoBadge(gc, x + 350, y, 155, "Completed Sets", completedSets + "/3");
     }
 
+    // Draws one information badge.
     private void drawInfoBadge(GraphicsContext gc, double x, double y, double width, String title, String value) {
         gc.setFill(Color.rgb(35, 45, 63));
         gc.fillRoundRect(x, y, width, 58, 14, 14);
@@ -256,6 +273,7 @@ public class PlayerDetailPopupPanel {
         gc.fillText(value, x + width / 2, y + 29);
     }
 
+    // Draws the selected player bank area.
     private void drawBankArea(GraphicsContext gc, Player player) {
         double titleX = popupX + 30;
         double titleY = popupY + 178;
@@ -280,6 +298,7 @@ public class PlayerDetailPopupPanel {
         );
     }
 
+    // Draws the selected player property area.
     private void drawPropertyArea(GraphicsContext gc, Player player) {
         double titleX = popupX + 30;
         double titleY = popupY + 335;
@@ -304,6 +323,7 @@ public class PlayerDetailPopupPanel {
         );
     }
 
+    // Draws a section title.
     private void drawAreaTitle(GraphicsContext gc, String title, double x, double y) {
         gc.setFill(Color.WHITE);
         gc.setFont(Font.font("Arial", 19));
@@ -312,6 +332,7 @@ public class PlayerDetailPopupPanel {
         gc.fillText(title, x, y);
     }
 
+    // Draws cards for the current page only.
     private void drawCardsByPage(GraphicsContext gc, ArrayList<? extends Card> cards, double startX, double startY, int page) {
         int startIndex = page * cardsPerPage;
         int endIndex = Math.min(startIndex + cardsPerPage, cards.size());
@@ -326,6 +347,7 @@ public class PlayerDetailPopupPanel {
         }
     }
 
+    // Draws page buttons and page number.
     private void drawPageController(GraphicsContext gc, double prevX, double nextX, double y, int currentPage, int maxPage) {
         drawPageButton(gc, prevX, y, "<", currentPage > 0);
         drawPageButton(gc, nextX, y, ">", currentPage < maxPage);
@@ -339,6 +361,7 @@ public class PlayerDetailPopupPanel {
         gc.setTextBaseline(VPos.TOP);
     }
 
+    // Draws a single page button.
     private void drawPageButton(GraphicsContext gc, double x, double y, String text, boolean enabled) {
         if (enabled) {
             gc.setFill(Color.rgb(255, 184, 77));
@@ -370,6 +393,7 @@ public class PlayerDetailPopupPanel {
         gc.setTextBaseline(VPos.TOP);
     }
 
+    // Draws text when an area has no cards.
     private void drawEmptyText(GraphicsContext gc, String text, double x, double y) {
         gc.setFill(Color.rgb(170, 180, 195));
         gc.setFont(Font.font("Arial", 15));
@@ -378,6 +402,7 @@ public class PlayerDetailPopupPanel {
         gc.fillText(text, x, y);
     }
 
+    // Draws a small card preview.
     private void drawSmallCard(GraphicsContext gc, Card card, double x, double y) {
         if (CardImageHelper.drawCardImage(gc, card, x, y, cardWidth, cardHeight)) {
             return;
@@ -403,6 +428,7 @@ public class PlayerDetailPopupPanel {
         ScreenDrawHelper.drawWrappedText(gc, detail, x + 5, y + 32, cardWidth - 10, 12);
     }
 
+    // Gets the card type title for display.
     private String getCardTitle(Card card) {
         if (card instanceof MoneyCards) {
             return "Money";
@@ -415,6 +441,7 @@ public class PlayerDetailPopupPanel {
         return "Card";
     }
 
+    // Gets the card detail text for display.
     private String getCardDetail(Card card) {
         if (card instanceof MoneyCards) {
             return card.getValue() + "M";
@@ -427,6 +454,7 @@ public class PlayerDetailPopupPanel {
         return card.getValue() + "M";
     }
 
+    // Gets the fallback card color.
     private Color getCardFillColor(Card card) {
         if (card instanceof MoneyCards) {
             return Color.GOLD;
@@ -439,6 +467,7 @@ public class PlayerDetailPopupPanel {
         return Color.WHITE;
     }
 
+    // Converts enum color names into readable text.
     private String getDisplayColorName(PropertyColor color) {
         if (color == null) {
             return "No Color";

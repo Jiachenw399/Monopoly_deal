@@ -11,6 +11,7 @@ import model.ActionCards;
 import model.Player;
 import model.PropertyColor;
 
+// Handles the selection UI for multi-color rent cards.
 public class MultipleColorRentSelectionPanel {
     private final Game game;
     private final RentCalculator rentCalculator;
@@ -25,6 +26,7 @@ public class MultipleColorRentSelectionPanel {
     private final double buttonWidth = 165;
     private final double buttonHeight = 42;
 
+    // Creates the panel and resets all selection values.
     public MultipleColorRentSelectionPanel(Game game) {
         this.game = game;
         this.rentCalculator = new RentCalculator();
@@ -34,6 +36,7 @@ public class MultipleColorRentSelectionPanel {
         this.useDoubleRent = false;
     }
 
+    // Starts the multi-color rent selection process.
     public void startSelection(ActionCards card) {
         pendingCard = card;
         selectedTarget = null;
@@ -41,6 +44,7 @@ public class MultipleColorRentSelectionPanel {
         useDoubleRent = false;
     }
 
+    // Cancels the current selection and clears saved choices.
     public void cancelSelection() {
         pendingCard = null;
         selectedTarget = null;
@@ -48,6 +52,7 @@ public class MultipleColorRentSelectionPanel {
         useDoubleRent = false;
     }
 
+    // Checks whether the panel is currently active.
     public boolean isSelecting() {
         return pendingCard != null;
     }
@@ -80,10 +85,12 @@ public class MultipleColorRentSelectionPanel {
         useDoubleRent = !useDoubleRent;
     }
 
+    // Checks whether both target player and color have been selected.
     public boolean canConfirm() {
         return selectedTarget != null && selectedColor != null;
     }
 
+    // Checks whether the Double the Rent option was clicked.
     public boolean isDoubleRentClicked(double mouseX, double mouseY) {
         return isSelecting()
                 && game.hasDoubleTheRentCard(game.getCurrentPlayer())
@@ -104,6 +111,7 @@ public class MultipleColorRentSelectionPanel {
                 && mouseY >= 535 && mouseY <= 575;
     }
 
+    // Returns the target player clicked by the user.
     public Player getClickedTarget(double mouseX, double mouseY) {
         if (!isSelecting()) {
             return null;
@@ -133,6 +141,7 @@ public class MultipleColorRentSelectionPanel {
         return null;
     }
 
+    // Returns the rent color clicked by the user.
     public PropertyColor getClickedColor(double mouseX, double mouseY) {
         if (!isSelecting()) {
             return null;
@@ -170,6 +179,7 @@ public class MultipleColorRentSelectionPanel {
         return null;
     }
 
+    // Draws the whole multi-color rent selection panel.
     public void draw(GraphicsContext gc) {
         if (!isSelecting()) {
             return;
@@ -191,11 +201,13 @@ public class MultipleColorRentSelectionPanel {
         ScreenDrawHelper.drawButton(gc, 690, 535, 140, 40, "CANCEL");
     }
 
+    // Draws the dark background overlay.
     private void drawOverlay(GraphicsContext gc) {
         gc.setFill(Color.rgb(0, 0, 0, 0.76));
         gc.fillRect(0, 0, Game.SCREEN_WIDTH, Game.SCREEN_HEIGHT);
     }
 
+    // Draws the panel title and instruction text.
     private void drawTitle(GraphicsContext gc) {
         gc.setFill(Color.WHITE);
         gc.setFont(Font.font("Arial", 26));
@@ -208,6 +220,7 @@ public class MultipleColorRentSelectionPanel {
                 Game.SCREEN_WIDTH / 2, 70);
     }
 
+    // Draws target player buttons.
     private void drawTargets(GraphicsContext gc) {
         double x = panelX;
         double y = panelY + 80;
@@ -252,6 +265,7 @@ public class MultipleColorRentSelectionPanel {
         gc.setTextBaseline(VPos.TOP);
     }
 
+    // Draws available rent color buttons.
     private void drawColors(GraphicsContext gc) {
         Player currentPlayer = game.getCurrentPlayer();
 
@@ -311,6 +325,7 @@ public class MultipleColorRentSelectionPanel {
         gc.setTextBaseline(VPos.TOP);
     }
 
+    // Draws the current selection status and rent preview.
     private void drawStatus(GraphicsContext gc) {
         gc.setFill(Color.WHITE);
         gc.setFont(Font.font("Arial", 16));
@@ -342,6 +357,7 @@ public class MultipleColorRentSelectionPanel {
         }
     }
 
+    // Draws the optional Double the Rent checkbox.
     private void drawDoubleRentOption(GraphicsContext gc) {
         if (!game.hasDoubleTheRentCard(game.getCurrentPlayer())
                 || game.getCurrentPlayer().getUseCardTimes() > 1) {
@@ -374,6 +390,7 @@ public class MultipleColorRentSelectionPanel {
         gc.setTextBaseline(VPos.TOP);
     }
 
+    // Calculates the displayed rent amount before confirming.
     private int calculatePreviewRent(Player player, PropertyColor color) {
         int rent = rentCalculator.calculateRent(player, color);
 
@@ -384,6 +401,7 @@ public class MultipleColorRentSelectionPanel {
         return rent;
     }
 
+    // Converts enum color names into readable text.
     private String getDisplayColorName(PropertyColor color) {
         if (color == null) {
             return "No Color";

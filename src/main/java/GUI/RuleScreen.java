@@ -9,6 +9,7 @@ import javafx.scene.text.TextAlignment;
 import logic.Game;
 
 
+// Draws the rule screen for the game.
 public class RuleScreen {
     private final Canvas canvas;
     private boolean isShow;
@@ -24,11 +25,13 @@ public class RuleScreen {
             "8. The first player to complete 3 property sets wins."
     };
 
+    // Creates the rule screen canvas.
     public RuleScreen() {
         canvas = new Canvas(GuiScale.canvasWidth(), GuiScale.canvasHeight());
         isShow = false;
     }
 
+    // Draws the whole rule screen.
     public void paint() {
         GraphicsContext gc = canvas.getGraphicsContext2D();
         GuiScale.prepare(gc);
@@ -39,15 +42,18 @@ public class RuleScreen {
         drawFooter(gc);
     }
 
+    // Clears the rule screen canvas.
     public void clear() {
         GuiScale.clear(canvas);
     }
 
+    // Draws the background and main panel.
     private void drawBackground(GraphicsContext gc) {
         ScreenDrawHelper.drawPageBackground(gc, Game.SCREEN_WIDTH, Game.SCREEN_HEIGHT);
         ScreenDrawHelper.drawPanel(gc, 170, 70, 695, 455);
     }
 
+    // Draws the title and subtitle.
     private void drawTitle(GraphicsContext gc) {
         gc.setFill(ScreenDrawHelper.ACCENT);
         gc.setFont(Font.font("Arial", 38));
@@ -60,6 +66,7 @@ public class RuleScreen {
         gc.fillText("Quick guide for the current local game mode", Game.SCREEN_WIDTH / 2, 153);
     }
 
+    // Draws all rule lines.
     private void drawRules(GraphicsContext gc) {
         double x = 235;
         double y = 205;
@@ -78,6 +85,7 @@ public class RuleScreen {
         }
     }
 
+    // Draws the return instruction text.
     private void drawFooter(GraphicsContext gc) {
         gc.setFill(ScreenDrawHelper.ACCENT);
         gc.setFont(Font.font("Arial", 22));
@@ -85,14 +93,17 @@ public class RuleScreen {
         gc.fillText("Press ESC to return to main menu", Game.SCREEN_WIDTH / 2, 555);
     }
 
+    // Returns the canvas used by this screen.
     public Canvas getCanvas() {
         return canvas;
     }
 
+    // Checks whether the rule screen is visible.
     public boolean isShow() {
         return isShow;
     }
 
+    // Sets whether the rule screen should be visible.
     public void setShow(boolean show) {
         isShow = show;
     }
