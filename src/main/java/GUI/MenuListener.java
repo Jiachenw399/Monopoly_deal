@@ -26,21 +26,27 @@ public class MenuListener {
     private void handleKeyPressed(Scene scene, KeyCode code) {
         switch (code) {
             case N:
-                showRuleScreen();
+                if (menu.isShow()) {
+                    showRuleScreen();
+                }
                 break;
 
             case A:
-                startGame();
+                if (menu.isShow()) {
+                    startGame();
+                }
                 break;
 
             case L:
-                if (scene.getWindow() instanceof Stage stage) {
+                if (menu.isShow() && scene.getWindow() instanceof Stage stage) {
                     OnlineLauncher.openLanMenu(stage);
                 }
                 break;
 
             case X:
-                System.exit(0);
+                if (menu.isShow()) {
+                    System.exit(0);
+                }
                 break;
 
             case ESCAPE:
@@ -59,6 +65,10 @@ public class MenuListener {
     }
 
     private void startGame() {
+        if (!menu.isShow()) {
+            return;
+        }
+
         menu.setShow(false);
         ruleScreen.setShow(false);
         gameScreen.setShow(true);
