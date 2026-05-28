@@ -230,6 +230,9 @@ public class OnlinePlayWindow extends Stage {
         if (!game.isPaymentSelecting()) {
             return false;
         }
+        if (playerNumber(game.getCurrentPaymentRequest().getPayer()) != myPlayerId) {
+            return true;
+        }
         if (gameScreen.isPaymentJustSayNoClicked(x, y)) {
             send("JUST_SAY_NO", "");
             gameScreen.clearPaymentSelection();
@@ -435,7 +438,9 @@ public class OnlinePlayWindow extends Stage {
         if (gameScreen.isEndTurnClicked(x, y)) {
             gameScreen.clearSelectedWildCard();
             gameScreen.closeActionCardChoice();
-            send("END_TURN", "");
+            if (game.getCurrentPlayerIndex() + 1 == myPlayerId) {
+                send("END_TURN", "");
+            }
             return true;
         }
         if (gameScreen.isBackMenuClicked(x, y)) {
@@ -634,10 +639,10 @@ public class OnlinePlayWindow extends Stage {
             snapshot.win = Boolean.parseBoolean(fields.getOrDefault("win", "false"));
 
             Map<Integer, Integer> usedCounts = parseUsedCounts(fields.get("players"));
-            Map<Integer, List<Card>> hands = parseCardGroups(fields.get("allHands"));
+            List<Card> yourHand = parseCards(fields.get("yourHand"), ",");
             Map<Integer, List<Card>> banks = parseCardGroups(fields.get("publicBanks"));
             Map<Integer, List<Card>> properties = parseCardGroups(fields.get("publicProperties"));
-            int playerCount = Math.max(Math.max(hands.size(), banks.size()), properties.size());
+            int playerCount = Math.max(Math.max(usedCounts.size(), banks.size()), properties.size());
 
             DrawPileAndDiscardPile drawPile = new DrawPileAndDiscardPile();
             for (int i = 1; i <= playerCount; i++) {
@@ -645,7 +650,9 @@ public class OnlinePlayWindow extends Stage {
                 player.getHandCards().clear();
                 player.getBankCards().clear();
                 player.getPropertyCards().clear();
-                player.getHandCards().addAll(hands.getOrDefault(i, List.of()));
+                if (i == snapshot.you) {
+                    player.getHandCards().addAll(yourHand);
+                }
                 player.getBankCards().addAll(banks.getOrDefault(i, List.of()));
                 for (Card card : properties.getOrDefault(i, List.of())) {
                     if (card instanceof PropertiesCards propertyCard) {
