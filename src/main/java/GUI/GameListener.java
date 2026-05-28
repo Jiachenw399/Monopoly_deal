@@ -59,6 +59,10 @@ public class GameListener {
             return;
         }
 
+        if (gameScreen.isShuffleAnimating()) {
+            return;
+        }
+
         handleHandCardClick(x, y);
     }
 

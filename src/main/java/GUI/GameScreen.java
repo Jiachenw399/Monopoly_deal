@@ -5,6 +5,8 @@ import javafx.scene.canvas.GraphicsContext;
 import logic.Game;
 import java.util.ArrayList;
 import model.*;
+import javafx.scene.paint.Color;
+import javafx.scene.text.Font;
 
 
 public class GameScreen {
@@ -36,6 +38,11 @@ public class GameScreen {
     private final double handAreaWidth =
             ScreenDrawHelper.tableContentWidth(Game.SCREEN_WIDTH, 760) - 8;
     private double handStartY = Game.SCREEN_HEIGHT - 150;
+
+    private boolean shuffleAnimating = false;
+    private long shuffleStartTime = 0;
+    private Runnable afterShuffleAction;
+    private final long shuffleDuration = 2_000_000_000L;
 
 
     public GameScreen(Game game) {
@@ -84,6 +91,10 @@ public class GameScreen {
         forcedDealPanel.draw(canvas.getGraphicsContext2D());
         playerDetailPopupPanel.draw(canvas.getGraphicsContext2D());
         actionCardChoicePanel.draw(canvas.getGraphicsContext2D());
+
+        if (shuffleAnimating) {
+            drawShuffleAnimation(canvas.getGraphicsContext2D());
+        }
     }
 
     private void syncViewedPlayerWithCurrentTurn() {
@@ -555,5 +566,65 @@ public class GameScreen {
 
     public boolean canUseSelectedActionCardAsAction() {
         return actionCardChoicePanel.canUseAsAction();
+    }
+
+    public void startShuffleAnimation(Runnable afterShuffleAction) {
+        this.shuffleAnimating = true;
+        this.shuffleStartTime = System.nanoTime();
+        this.afterShuffleAction = afterShuffleAction;
+    }
+
+    public boolean isShuffleAnimating() {
+        return shuffleAnimating;
+    }
+
+    private void drawShuffleAnimation(GraphicsContext gc) {
+        long now = System.nanoTime();
+        double progress = (double) (now - shuffleStartTime) / shuffleDuration;
+
+        if (progress >= 1) {
+            shuffleAnimating = false;
+
+            if (afterShuffleAction != null) {
+                Runnable action = afterShuffleAction;
+                afterShuffleAction = null;
+                action.run();
+            }
+
+            return;
+        }
+
+        gc.setFill(Color.rgb(0, 0, 0, 0.55));
+        gc.fillRect(0, 0, Game.SCREEN_WIDTH, Game.SCREEN_HEIGHT);
+
+        gc.setFill(Color.WHITE);
+        gc.setFont(Font.font(34));
+        gc.fillText("Shuffling Cards...", 360, 180);
+
+        double centerX = Game.SCREEN_WIDTH / 2.0;
+        double centerY = Game.SCREEN_HEIGHT / 2.0;
+
+        for (int i = 0; i < 8; i++) {
+            double angle = progress * 360 + i * 45;
+            double radius = 90 + Math.sin(progress * Math.PI * 6 + i) * 20;
+
+            double x = centerX + Math.cos(Math.toRadians(angle)) * radius;
+            double y = centerY + Math.sin(Math.toRadians(angle)) * radius;
+
+            gc.save();
+            gc.translate(x, y);
+            gc.rotate(angle);
+
+            gc.setFill(Color.WHITE);
+            gc.fillRoundRect(-35, -50, 70, 100, 12, 12);
+
+            gc.setStroke(Color.DARKRED);
+            gc.strokeRoundRect(-35, -50, 70, 100, 12, 12);
+
+            gc.setFill(Color.DARKRED);
+            gc.fillText("$", -8, 10);
+
+            gc.restore();
+        }
     }
 }
