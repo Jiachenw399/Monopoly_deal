@@ -175,7 +175,7 @@ public class GameServer {
             return;
         }
 
-        client.send(new NetworkMessage("GAME_STATE", buildGameStateTextForPlayer(client.getPlayerId())).encode());
+        client.send(new NetworkMessage("GAME_STATE", GameStateCodec.encode(game, client.getPlayerId())).encode());
     }
 
     private synchronized void playCardIfValid(ClientHandler requester, String cardNumberText) {
@@ -702,124 +702,7 @@ public class GameServer {
         }
 
         for (ClientHandler client : clients) {
-            client.send(new NetworkMessage("GAME_STATE", buildGameStateTextForPlayer(client.getPlayerId())).encode());
-        }
-    }
-
-    private synchronized String buildGameStateTextForPlayer(int playerId) {
-        if (game == null) {
-            return "NO_GAME";
-        }
-
-        StringBuilder builder = new StringBuilder();
-        int playerIndex = playerId - 1;
-
-        builder.append("you=").append(playerId);
-        builder.append(";");
-        builder.append("currentPlayer=").append(game.getCurrentPlayerIndex() + 1);
-        builder.append(";discardPhase=").append(game.isDiscard());
-        appendPaymentState(builder, playerId);
-        builder.append(";players=");
-
-        for (int i = 0; i < game.getPlayers().size(); i++) {
-            Player player = game.getPlayers().get(i);
-
-            if (i > 0) {
-                builder.append(",");
-            }
-
-            builder.append("P").append(i + 1);
-            builder.append("(hand=").append(player.getHandCards().size());
-            builder.append(",bank=").append(player.getBankCards().size());
-            builder.append(",properties=").append(player.getPropertyCards().size());
-            builder.append(",used=").append(player.getUseCardTimes());
-            builder.append(")");
-        }
-
-        if (playerIndex >= 0 && playerIndex < game.getPlayers().size()) {
-            builder.append(";yourHand=");
-            appendCards(builder, game.getPlayers().get(playerIndex).getHandCards());
-            builder.append(";yourBank=");
-            appendCards(builder, game.getPlayers().get(playerIndex).getBankCards());
-            builder.append(";yourProperties=");
-            appendProperties(builder, game.getPlayers().get(playerIndex).getPropertyCards());
-        }
-
-        builder.append(";publicBanks=");
-        appendPublicCardsByPlayer(builder, false);
-        builder.append(";publicProperties=");
-        appendPublicCardsByPlayer(builder, true);
-        builder.append(";win=").append(game.isWin());
-
-        return builder.toString();
-    }
-
-    private void appendPublicCardsByPlayer(StringBuilder builder, boolean properties) {
-        for (int i = 0; i < game.getPlayers().size(); i++) {
-            if (i > 0) {
-                builder.append("|");
-            }
-
-            Player player = game.getPlayers().get(i);
-            builder.append("P").append(i + 1).append("[");
-
-            if (properties) {
-                appendPropertiesWithSeparator(builder, player.getPropertyCards(), "~");
-            } else {
-                appendCardsWithSeparator(builder, player.getBankCards(), "~");
-            }
-
-            builder.append("]");
-        }
-    }
-
-    private void appendPaymentState(StringBuilder builder, int playerId) {
-        builder.append(";payment=");
-
-        if (!game.isPaymentSelecting()) {
-            builder.append("none");
-            return;
-        }
-
-        Game.PaymentRequest request = game.getCurrentPaymentRequest();
-        int receiverId = game.getPlayers().indexOf(request.getReceiver()) + 1;
-        int payerId = game.getPlayers().indexOf(request.getPayer()) + 1;
-
-        builder.append("payer=").append(payerId);
-        builder.append(",receiver=").append(receiverId);
-        builder.append(",amount=").append(request.getAmount());
-
-        if (playerId == payerId) {
-            builder.append(",youMustPay=true");
-            builder.append(",canJustSayNo=").append(game.canCurrentPaymentUseJustSayNo());
-        }
-    }
-
-    private void appendCards(StringBuilder builder, List<? extends Card> cards) {
-        appendCardsWithSeparator(builder, cards, ",");
-    }
-
-    private void appendCardsWithSeparator(StringBuilder builder, List<? extends Card> cards, String separator) {
-        for (int i = 0; i < cards.size(); i++) {
-            if (i > 0) {
-                builder.append(separator);
-            }
-
-            builder.append(cardToText(cards.get(i)));
-        }
-    }
-
-    private void appendProperties(StringBuilder builder, List<PropertiesCards> cards) {
-        appendPropertiesWithSeparator(builder, cards, ",");
-    }
-
-    private void appendPropertiesWithSeparator(StringBuilder builder, List<PropertiesCards> cards, String separator) {
-        for (int i = 0; i < cards.size(); i++) {
-            if (i > 0) {
-                builder.append(separator);
-            }
-
-            builder.append(propertyToText(cards.get(i)));
+            client.send(new NetworkMessage("GAME_STATE", GameStateCodec.encode(game, client.getPlayerId())).encode());
         }
     }
 

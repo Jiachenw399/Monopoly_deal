@@ -112,6 +112,23 @@ public class Game {
         return finishAction(cardPlayService.playCard(getCurrentPlayer(), card));
     }
 
+    public boolean playActionCardAsMoney(ActionCards card) {
+        Player currentPlayer = getCurrentPlayer();
+
+        if (currentPlayer == null || card == null || !currentPlayer.getHandCards().contains(card)) {
+            return false;
+        }
+
+        if (currentPlayer.getUseCardTimes() >= 3) {
+            return false;
+        }
+
+        currentPlayer.getHandCards().remove(card);
+        currentPlayer.getBankCards().add(card);
+        currentPlayer.setUseCardTimes(currentPlayer.getUseCardTimes() + 1);
+        return true;
+    }
+
     public boolean finishPassGo(ActionCards passGoCard) {
         return finishAction(actionCardService.finishPassGo(getCurrentPlayer(), passGoCard));
     }

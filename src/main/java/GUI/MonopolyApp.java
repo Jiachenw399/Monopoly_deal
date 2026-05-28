@@ -6,12 +6,10 @@ import javafx.scene.Group;
 import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
 import javafx.stage.Stage;
-import logic.Game;
 
 public class MonopolyApp extends Application {
     private MainMenu menu;
-    private Game game;
-    private GameScreen gameScreen;
+    private GameSession session;
     private RuleScreen ruleScreen;
 
     @Override
@@ -30,8 +28,7 @@ public class MonopolyApp extends Application {
 
     private void initializeScreens() {
         menu = new MainMenu();
-        game = new Game();
-        gameScreen = new GameScreen(game);
+        session = new GameSession();
         ruleScreen = new RuleScreen();
     }
 
@@ -40,7 +37,7 @@ public class MonopolyApp extends Application {
 
         root.getChildren().addAll(
                 menu.getCanvas(),
-                gameScreen.getCanvas(),
+                session.getGameScreen().getCanvas(),
                 ruleScreen.getCanvas()
         );
 
@@ -48,10 +45,15 @@ public class MonopolyApp extends Application {
     }
 
     private void registerListeners(Scene scene) {
-        MenuListener menuListener = new MenuListener(menu, game, gameScreen, ruleScreen);
+        MenuListener menuListener = new MenuListener(
+                menu,
+                session.getGame(),
+                session.getGameScreen(),
+                ruleScreen
+        );
         menuListener.addListener(scene);
 
-        GameListener gameListener = new GameListener(menu, gameScreen, game);
+        GameListener gameListener = new GameListener(menu, session.getGameScreen(), session.getGame());
         gameListener.addListener(scene);
     }
 
@@ -62,11 +64,12 @@ public class MonopolyApp extends Application {
     }
 
     private void startRenderLoop() {
+        GameScreen gameScreen = session.getGameScreen();
         new AnimationTimer() {
             @Override
             public void handle(long now) {
                 renderMenu();
-                renderGameScreen();
+                renderGameScreen(gameScreen);
                 renderRuleScreen();
             }
         }.start();
@@ -76,7 +79,7 @@ public class MonopolyApp extends Application {
         renderCanvas(menu.isShow(), menu.getCanvas(), menu::paint, menu::clear);
     }
 
-    private void renderGameScreen() {
+    private void renderGameScreen(GameScreen gameScreen) {
         renderCanvas(gameScreen.isShow(), gameScreen.getCanvas(), gameScreen::paint, gameScreen::clear);
     }
 
