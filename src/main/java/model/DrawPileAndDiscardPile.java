@@ -6,6 +6,7 @@ import java.util.Collections;
 public class DrawPileAndDiscardPile {
     private ArrayList<Card> DrawPile;
     private ArrayList<Card> DiscardPile;
+
     public DrawPileAndDiscardPile() {
         DrawPile = new ArrayList<>();
         DiscardPile = new ArrayList<>();
@@ -19,62 +20,67 @@ public class DrawPileAndDiscardPile {
         Collections.shuffle(DrawPile);
     }
 
-    public void shuffle(){
-        if(DrawPile.isEmpty()){
+    public void shuffle() {
+        if (DrawPile.isEmpty()) {
             DrawPile.addAll(DiscardPile);
             DiscardPile.clear();
             shuffleDrawCards();
         }
     }
 
-    public ArrayList<Card> getDrawPile() {return DrawPile;}
+    public ArrayList<Card> getDrawPile() {
+        return DrawPile;
+    }
 
-    public ArrayList<Card> getDiscardPile() {return DiscardPile;}
+    public ArrayList<Card> getDiscardPile() {
+        return DiscardPile;
+    }
 
-    private void addMoneyCards(){
+    private void addMoneyCards() {
         int[] moneyValues = {
-                1,1,1,1,1,1,
-                2,2,2,2,2,
-                3,4,3,4,3,4,
-                5,5,
-                10};
+                1, 1, 1, 1, 1, 1,
+                2, 2, 2, 2, 2,
+                3, 4, 3, 4, 3, 4,
+                5, 5,
+                10
+        };
+
         for (int value : moneyValues) {
-            DrawPile.add(new MoneyCards(value));
+            DrawPile.add(CardFactory.createMoneyCard(value));
         }
     }
 
-    private void addActionCards(){
-        int [] amount={
-            3,3,3,3,3,3,3,
-            2,2,2,2,2,2,2,2,
-            10,
+    private void addActionCards() {
+        int[] amount = {
+                3, 3, 3, 3, 3, 3, 3,
+                2, 2, 2, 2, 2, 2, 2, 2,
+                10
         };
 
-        ActionCardType [] actionCardType={
-            ActionCardType.SLY_DEAL,
-            ActionCardType.RENT_WITH_MULTIPLE_COLOR,
-            ActionCardType.HOUSE,
-            ActionCardType.FORCED_DEAL,
-            ActionCardType.BIRTHDAY,
-            ActionCardType.JUST_SAY_NO,
-            ActionCardType.DEBT_COLLECTOR,
+        ActionCardType[] actionCardType = {
+                ActionCardType.SLY_DEAL,
+                ActionCardType.RENT_WITH_MULTIPLE_COLOR,
+                ActionCardType.HOUSE,
+                ActionCardType.FORCED_DEAL,
+                ActionCardType.BIRTHDAY,
+                ActionCardType.JUST_SAY_NO,
+                ActionCardType.DEBT_COLLECTOR,
 
-            ActionCardType.DOUBLE_THE_RENT,
-            ActionCardType.HOTEL,
-            ActionCardType.DEAL_BREAKER,
-            ActionCardType.RENT_WITH_DARK_BLUE_AND_DARK_GREEN,
-            ActionCardType.RENT_WITH_BROWN_AND_LIGHT_BLUE,
-            ActionCardType.RENT_WITH_BLACK_AND_LIGHT_GREEN,
-            ActionCardType.RENT_WITH_RED_AND_YELLOW,
-            ActionCardType.RENT_WITH_ORANGE_AND_PINK,
+                ActionCardType.DOUBLE_THE_RENT,
+                ActionCardType.HOTEL,
+                ActionCardType.DEAL_BREAKER,
+                ActionCardType.RENT_WITH_DARK_BLUE_AND_DARK_GREEN,
+                ActionCardType.RENT_WITH_BROWN_AND_LIGHT_BLUE,
+                ActionCardType.RENT_WITH_BLACK_AND_LIGHT_GREEN,
+                ActionCardType.RENT_WITH_RED_AND_YELLOW,
+                ActionCardType.RENT_WITH_ORANGE_AND_PINK,
 
-            ActionCardType.PASS_GO,
+                ActionCardType.PASS_GO
         };
 
         for (int i = 0; i < actionCardType.length; i++) {
             for (int j = 0; j < amount[i]; j++) {
-                ActionCards ac = new ActionCards(actionCardType[i]);
-                DrawPile.add(ac);
+                DrawPile.add(CardFactory.createActionCard(actionCardType[i]));
             }
         }
     }
@@ -85,51 +91,41 @@ public class DrawPileAndDiscardPile {
     }
 
     private void addNormalPropertyCards() {
-        // DARK BLUE
         addPropertyCard(PropertiesCardsType.DARK_BLUE, "Boardwalk", "boardwalk.png");
         addPropertyCard(PropertiesCardsType.DARK_BLUE, "Park Place", "park_place.png");
 
-        // BROWN
         addPropertyCard(PropertiesCardsType.BROWN, "Baltic Avenue", "baltic_avenue.png");
         addPropertyCard(PropertiesCardsType.BROWN, "Mediterranean Avenue", "mediterranean_avenue.png");
 
-        // LIGHT BLUE
         addPropertyCard(PropertiesCardsType.LIGHT_BLUE, "Connecticut Avenue", "connecticut_avenue.png");
         addPropertyCard(PropertiesCardsType.LIGHT_BLUE, "Oriental Avenue", "oriental_avenue.png");
         addPropertyCard(PropertiesCardsType.LIGHT_BLUE, "Vermont Avenue", "vermont_avenue.png");
 
-        // PINK
         addPropertyCard(PropertiesCardsType.PINK, "St. Charles Place", "st_charles_place.png");
         addPropertyCard(PropertiesCardsType.PINK, "States Avenue", "states_avenue.png");
         addPropertyCard(PropertiesCardsType.PINK, "Virginia Avenue", "virginia_avenue.png");
 
-        // ORANGE
         addPropertyCard(PropertiesCardsType.ORANGE, "New York Avenue", "new_york_avenue.png");
         addPropertyCard(PropertiesCardsType.ORANGE, "St. James Place", "st_james_place.png");
         addPropertyCard(PropertiesCardsType.ORANGE, "Tennessee Avenue", "tennessee_avenue.png");
 
-        // RED
         addPropertyCard(PropertiesCardsType.RED, "Illinois Avenue", "illinois_avenue.png");
         addPropertyCard(PropertiesCardsType.RED, "Indiana Avenue", "indiana_avenue.png");
         addPropertyCard(PropertiesCardsType.RED, "Kentucky Avenue", "kentucky_avenue.png");
 
-        // YELLOW
         addPropertyCard(PropertiesCardsType.YELLOW, "Atlantic Avenue", "atlantic_avenue.png");
         addPropertyCard(PropertiesCardsType.YELLOW, "Marvin Gardens", "marvin_gardens.png");
         addPropertyCard(PropertiesCardsType.YELLOW, "Ventnor Avenue", "ventnor_avenue.png");
 
-        // DARK GREEN
         addPropertyCard(PropertiesCardsType.DARK_GREEN, "North Carolina Avenue", "north_carolina_avenue.png");
         addPropertyCard(PropertiesCardsType.DARK_GREEN, "Pacific Avenue", "pacific_avenue.png");
         addPropertyCard(PropertiesCardsType.DARK_GREEN, "Pennsylvania Avenue", "pennsylvania_avenue.png");
 
-        // BLACK / RAILROAD
         addPropertyCard(PropertiesCardsType.BLACK, "B&O Railroad", "b_and_o_railroad.png");
         addPropertyCard(PropertiesCardsType.BLACK, "Pennsylvania Railroad", "pennsylvania_railroad.png");
         addPropertyCard(PropertiesCardsType.BLACK, "Reading Railroad", "reading_railroad.png");
         addPropertyCard(PropertiesCardsType.BLACK, "Short Line", "short_line.png");
 
-        // LIGHT GREEN / UTILITY
         addPropertyCard(PropertiesCardsType.LIGHT_GREEN, "Electric Company", "electric_company.png");
         addPropertyCard(PropertiesCardsType.LIGHT_GREEN, "Water Works", "water_works.png");
     }
@@ -146,13 +142,12 @@ public class DrawPileAndDiscardPile {
     }
 
     private void addPropertyCard(PropertiesCardsType type, String propertyName, String imageFileName) {
-        DrawPile.add(new PropertiesCards(type, propertyName, imageFileName));
+        DrawPile.add(CardFactory.createPropertyCard(type, propertyName, imageFileName));
     }
 
     private void addSeveralPropertyCards(PropertiesCardsType type, int amount) {
         for (int i = 0; i < amount; i++) {
-            DrawPile.add(new PropertiesCards(type));
+            DrawPile.add(CardFactory.createPropertyCard(type));
         }
     }
-
 }
