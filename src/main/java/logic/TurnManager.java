@@ -82,6 +82,20 @@ public class TurnManager {
         return isDiscard;
     }
 
+    public void applyOnlineState(int currentPlayerIndex, boolean isDiscard) {
+        if (players.isEmpty()) {
+            this.currentPlayerIndex = 0;
+        } else if (currentPlayerIndex < 0) {
+            this.currentPlayerIndex = 0;
+        } else if (currentPlayerIndex >= players.size()) {
+            this.currentPlayerIndex = players.size() - 1;
+        } else {
+            this.currentPlayerIndex = currentPlayerIndex;
+        }
+
+        this.isDiscard = isDiscard;
+    }
+
     private int getDrawNumberAtTurnStart(Player player) {
         if (player.getHandCards().isEmpty()) {
             return 5;

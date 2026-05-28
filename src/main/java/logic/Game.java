@@ -254,6 +254,22 @@ public class Game {
         return players;
     }
 
+    public void applyOnlineState(ArrayList<Player> snapshotPlayers,
+                                 int currentPlayerIndex,
+                                 boolean discard,
+                                 PaymentRequest paymentRequest,
+                                 boolean win) {
+        players.clear();
+
+        if (snapshotPlayers != null) {
+            players.addAll(snapshotPlayers);
+        }
+
+        turnManager.applyOnlineState(currentPlayerIndex, discard);
+        paymentManager.applyOnlineState(paymentRequest);
+        isWin = win;
+    }
+
     public DrawPileAndDiscardPile getDrawCards() {
         return drawCards;
     }

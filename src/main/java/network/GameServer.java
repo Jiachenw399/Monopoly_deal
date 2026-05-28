@@ -732,6 +732,7 @@ public class GameServer {
             builder.append("(hand=").append(player.getHandCards().size());
             builder.append(",bank=").append(player.getBankCards().size());
             builder.append(",properties=").append(player.getPropertyCards().size());
+            builder.append(",used=").append(player.getUseCardTimes());
             builder.append(")");
         }
 
@@ -744,12 +745,28 @@ public class GameServer {
             appendProperties(builder, game.getPlayers().get(playerIndex).getPropertyCards());
         }
 
+        builder.append(";allHands=");
+        appendHandsByPlayer(builder);
         builder.append(";publicBanks=");
         appendPublicCardsByPlayer(builder, false);
         builder.append(";publicProperties=");
         appendPublicCardsByPlayer(builder, true);
+        builder.append(";win=").append(game.isWin());
 
         return builder.toString();
+    }
+
+    private void appendHandsByPlayer(StringBuilder builder) {
+        for (int i = 0; i < game.getPlayers().size(); i++) {
+            if (i > 0) {
+                builder.append("|");
+            }
+
+            Player player = game.getPlayers().get(i);
+            builder.append("P").append(i + 1).append("[");
+            appendCardsWithSeparator(builder, player.getHandCards(), "~");
+            builder.append("]");
+        }
     }
 
     private void appendPublicCardsByPlayer(StringBuilder builder, boolean properties) {
@@ -840,7 +857,8 @@ public class GameServer {
     private String propertyToText(PropertiesCards card) {
         String currentColor = card.getCurrentColor() == null ? "NO_COLOR" : card.getCurrentColor().name();
         return "PROPERTY:" + card.getType().name() + ":" + currentColor + ":"
-                + card.getImageFileName() + ":" + card.getValue();
+                + card.getImageFileName() + ":" + card.getValue() + ":"
+                + card.hasHouse() + ":" + card.hasHotel();
     }
 
     private class ClientHandler extends Thread {
