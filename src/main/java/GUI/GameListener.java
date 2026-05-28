@@ -192,23 +192,82 @@ public class GameListener {
             return false;
         }
 
-        if (gameScreen.isForcedDealCancelClicked(x, y)) {
-            gameScreen.cancelForcedDealSelection();
+        if (handleForcedDealDetailClick(x, y)) {
             return true;
         }
 
-        if (gameScreen.isForcedDealBackClicked(x, y)) {
-            gameScreen.setSelectedForcedDealTarget(null);
+        if (handleForcedDealPageClick(x, y)) {
             return true;
         }
 
+        if (handleForcedDealTargetClick(x, y)) {
+            return true;
+        }
+
+        if (handleForcedDealPropertyClick(x, y)) {
+            return true;
+        }
+
+        return handleForcedDealConfirmOrCancel(x, y);
+    }
+
+    private boolean handleForcedDealDetailClick(double x, double y) {
+        if (gameScreen.isForcedDealDetailCloseClicked(x, y)
+                || gameScreen.isForcedDealDetailBackClicked(x, y)) {
+            gameScreen.showForcedDealTargetDetail(null);
+            return true;
+        }
+
+        if (gameScreen.isForcedDealDetailConfirmClicked(x, y)) {
+            Player target = gameScreen.getForcedDealDetailTarget();
+
+            if (target != null) {
+                gameScreen.setSelectedForcedDealTarget(target);
+                gameScreen.showForcedDealTargetDetail(null);
+            }
+
+            return true;
+        }
+
+        return gameScreen.handleForcedDealDetailPageButtonClick(x, y);
+    }
+
+    private boolean handleForcedDealPageClick(double x, double y) {
+        if (gameScreen.isForcedDealMyPrevPageClicked(x, y)) {
+            gameScreen.previousForcedDealMyPage();
+            return true;
+        }
+
+        if (gameScreen.isForcedDealMyNextPageClicked(x, y)) {
+            gameScreen.nextForcedDealMyPage();
+            return true;
+        }
+
+        if (gameScreen.isForcedDealTargetPrevPageClicked(x, y)) {
+            gameScreen.previousForcedDealTargetPage();
+            return true;
+        }
+
+        if (gameScreen.isForcedDealTargetNextPageClicked(x, y)) {
+            gameScreen.nextForcedDealTargetPage();
+            return true;
+        }
+
+        return false;
+    }
+
+    private boolean handleForcedDealTargetClick(double x, double y) {
         Player targetPlayer = gameScreen.getClickedForcedDealTarget(x, y);
 
         if (targetPlayer != null) {
-            gameScreen.setSelectedForcedDealTarget(targetPlayer);
+            gameScreen.showForcedDealTargetDetail(targetPlayer);
             return true;
         }
 
+        return false;
+    }
+
+    private boolean handleForcedDealPropertyClick(double x, double y) {
         PropertiesCards myCard = gameScreen.getClickedForcedDealMyProperty(x, y);
 
         if (myCard != null) {
@@ -220,6 +279,20 @@ public class GameListener {
 
         if (targetCard != null) {
             gameScreen.setSelectedForcedDealTargetProperty(targetCard);
+            return true;
+        }
+
+        return false;
+    }
+
+    private boolean handleForcedDealConfirmOrCancel(double x, double y) {
+        if (gameScreen.isForcedDealCancelClicked(x, y)) {
+            gameScreen.cancelForcedDealSelection();
+            return true;
+        }
+
+        if (gameScreen.isForcedDealBackClicked(x, y)) {
+            gameScreen.setSelectedForcedDealTarget(null);
             return true;
         }
 
@@ -251,6 +324,16 @@ public class GameListener {
             return true;
         }
 
+        if (gameScreen.isSlyDealPrevPageClicked(x, y)) {
+            gameScreen.previousSlyDealPage();
+            return true;
+        }
+
+        if (gameScreen.isSlyDealNextPageClicked(x, y)) {
+            gameScreen.nextSlyDealPage();
+            return true;
+        }
+
         GameScreen.SlyDealChoice choice = gameScreen.getClickedSlyDealChoice(x, y);
 
         if (choice != null) {
@@ -271,18 +354,43 @@ public class GameListener {
             return false;
         }
 
-        if (gameScreen.isMultipleColorRentCancelClicked(x, y)) {
-            gameScreen.cancelMultipleColorRentSelection();
+        if (handleMultipleColorRentDetailClick(x, y)) {
             return true;
         }
 
-        Player targetPlayer = gameScreen.getClickedMultipleColorRentTarget(x, y);
-
-        if (targetPlayer != null) {
-            gameScreen.setSelectedMultipleColorRentTarget(targetPlayer);
+        if (handleMultipleColorRentOptionClick(x, y)) {
             return true;
         }
 
+        if (handleMultipleColorRentTargetClick(x, y)) {
+            return true;
+        }
+
+        return handleMultipleColorRentConfirmOrCancel(x, y);
+    }
+
+    private boolean handleMultipleColorRentDetailClick(double x, double y) {
+        if (gameScreen.isMultipleColorRentDetailCloseClicked(x, y)
+                || gameScreen.isMultipleColorRentDetailBackClicked(x, y)) {
+            gameScreen.showMultipleColorRentTargetDetail(null);
+            return true;
+        }
+
+        if (gameScreen.isMultipleColorRentDetailConfirmClicked(x, y)) {
+            Player target = gameScreen.getMultipleColorRentDetailTarget();
+
+            if (target != null) {
+                gameScreen.setSelectedMultipleColorRentTarget(target);
+                gameScreen.showMultipleColorRentTargetDetail(null);
+            }
+
+            return true;
+        }
+
+        return gameScreen.handleMultipleColorRentDetailPageButtonClick(x, y);
+    }
+
+    private boolean handleMultipleColorRentOptionClick(double x, double y) {
         if (gameScreen.isMultipleColorDoubleRentClicked(x, y)) {
             gameScreen.toggleMultipleColorDoubleRent();
             return true;
@@ -292,6 +400,26 @@ public class GameListener {
 
         if (selectedColor != null) {
             gameScreen.setSelectedMultipleColorRentColor(selectedColor);
+            return true;
+        }
+
+        return false;
+    }
+
+    private boolean handleMultipleColorRentTargetClick(double x, double y) {
+        Player targetPlayer = gameScreen.getClickedMultipleColorRentTarget(x, y);
+
+        if (targetPlayer != null) {
+            gameScreen.showMultipleColorRentTargetDetail(targetPlayer);
+            return true;
+        }
+
+        return false;
+    }
+
+    private boolean handleMultipleColorRentConfirmOrCancel(double x, double y) {
+        if (gameScreen.isMultipleColorRentCancelClicked(x, y)) {
+            gameScreen.cancelMultipleColorRentSelection();
             return true;
         }
 
@@ -323,15 +451,35 @@ public class GameListener {
             return true;
         }
 
+        if (gameScreen.isDebtCollectorBackClicked(x, y)) {
+            gameScreen.setSelectedDebtCollectorTarget(null);
+            return true;
+        }
+
+        if (gameScreen.isDebtCollectorConfirmClicked(x, y)) {
+            Player selectedTarget = gameScreen.getSelectedDebtCollectorTarget();
+
+            if (selectedTarget != null) {
+                game.finishDebtCollector(
+                        gameScreen.getPendingDebtCollectorCard(),
+                        selectedTarget
+                );
+
+                gameScreen.cancelDebtCollectorSelection();
+            }
+
+            return true;
+        }
+
+        if (gameScreen.handleDebtCollectorDetailPageButtonClick(x, y)) {
+            return true;
+        }
+
         Player targetPlayer = gameScreen.getClickedDebtCollectorTarget(x, y);
 
         if (targetPlayer != null) {
-            game.finishDebtCollector(
-                    gameScreen.getPendingDebtCollectorCard(),
-                    targetPlayer
-            );
-
-            gameScreen.cancelDebtCollectorSelection();
+            gameScreen.setSelectedDebtCollectorTarget(targetPlayer);
+            return true;
         }
 
         return true;
@@ -342,21 +490,52 @@ public class GameListener {
             return false;
         }
 
+        if (gameScreen.isDealBreakerDetailCloseClicked(x, y)
+                || gameScreen.isDealBreakerDetailBackClicked(x, y)) {
+            gameScreen.showDealBreakerDetailChoice(null);
+            return true;
+        }
+
         if (gameScreen.isDealBreakerCancelClicked(x, y)) {
             gameScreen.cancelDealBreakerSelection();
+            return true;
+        }
+
+        if (gameScreen.isDealBreakerDetailConfirmClicked(x, y)) {
+            GameScreen.DealBreakerChoice choice = gameScreen.getDealBreakerDetailChoice();
+
+            if (choice != null) {
+                game.finishDealBreaker(
+                        gameScreen.getPendingDealBreakerCard(),
+                        choice.getTargetPlayer(),
+                        choice.getSelectedSet()
+                );
+
+                gameScreen.cancelDealBreakerSelection();
+            }
+
+            return true;
+        }
+
+        if (gameScreen.handleDealBreakerDetailPageButtonClick(x, y)) {
+            return true;
+        }
+
+        if (gameScreen.isDealBreakerPrevPageClicked(x, y)) {
+            gameScreen.previousDealBreakerPage();
+            return true;
+        }
+
+        if (gameScreen.isDealBreakerNextPageClicked(x, y)) {
+            gameScreen.nextDealBreakerPage();
             return true;
         }
 
         GameScreen.DealBreakerChoice choice = gameScreen.getClickedDealBreakerChoice(x, y);
 
         if (choice != null) {
-            game.finishDealBreaker(
-                    gameScreen.getPendingDealBreakerCard(),
-                    choice.getTargetPlayer(),
-                    choice.getSelectedSet()
-            );
-
-            gameScreen.cancelDealBreakerSelection();
+            gameScreen.showDealBreakerDetailChoice(choice);
+            return true;
         }
 
         return true;

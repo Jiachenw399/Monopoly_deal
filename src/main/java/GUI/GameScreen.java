@@ -191,6 +191,22 @@ public class GameScreen {
         }
     }
 
+    public boolean isSlyDealPrevPageClicked(double mouseX, double mouseY) {
+        return slyDealPanel.isPrevPageClicked(mouseX, mouseY);
+    }
+
+    public boolean isSlyDealNextPageClicked(double mouseX, double mouseY) {
+        return slyDealPanel.isNextPageClicked(mouseX, mouseY);
+    }
+
+    public void previousSlyDealPage() {
+        slyDealPanel.previousPage();
+    }
+
+    public void nextSlyDealPage() {
+        slyDealPanel.nextPage();
+    }
+
     public void startDebtCollectorSelection(ActionCards card) {
         debtCollectorPanel.startSelection(card);
         wildCardSelectionPanel.clearSelection();
@@ -554,5 +570,149 @@ public class GameScreen {
 
     public boolean canUseSelectedActionCardAsAction() {
         return actionCardChoicePanel.canUseAsAction();
+    }
+
+    public boolean isDealBreakerPrevPageClicked(double mouseX, double mouseY) {
+        return dealBreakerPanel.isPrevPageClicked(mouseX, mouseY);
+    }
+
+    public boolean isDealBreakerNextPageClicked(double mouseX, double mouseY) {
+        return dealBreakerPanel.isNextPageClicked(mouseX, mouseY);
+    }
+
+    public void previousDealBreakerPage() {
+        dealBreakerPanel.previousPage();
+    }
+
+    public void nextDealBreakerPage() {
+        dealBreakerPanel.nextPage();
+    }
+
+    public boolean isForcedDealMyPrevPageClicked(double mouseX, double mouseY) {
+        return forcedDealPanel.isMyPrevPageClicked(mouseX, mouseY);
+    }
+
+    public boolean isForcedDealMyNextPageClicked(double mouseX, double mouseY) {
+        return forcedDealPanel.isMyNextPageClicked(mouseX, mouseY);
+    }
+
+    public boolean isForcedDealTargetPrevPageClicked(double mouseX, double mouseY) {
+        return forcedDealPanel.isTargetPrevPageClicked(mouseX, mouseY);
+    }
+
+    public boolean isForcedDealTargetNextPageClicked(double mouseX, double mouseY) {
+        return forcedDealPanel.isTargetNextPageClicked(mouseX, mouseY);
+    }
+
+    public void previousForcedDealMyPage() {
+        forcedDealPanel.previousMyPage();
+    }
+
+    public void nextForcedDealMyPage() {
+        forcedDealPanel.nextMyPage();
+    }
+
+    public void previousForcedDealTargetPage() {
+        forcedDealPanel.previousTargetPage();
+    }
+
+    public void nextForcedDealTargetPage() {
+        forcedDealPanel.nextTargetPage();
+    }
+
+    public Player getSelectedDebtCollectorTarget() {
+        return debtCollectorPanel.getSelectedTarget();
+    }
+
+    public void setSelectedDebtCollectorTarget(Player player) {
+        debtCollectorPanel.setSelectedTarget(player);
+    }
+
+    public boolean isDebtCollectorBackClicked(double mouseX, double mouseY) {
+        return debtCollectorPanel.isBackClicked(mouseX, mouseY);
+    }
+
+    public boolean isDebtCollectorConfirmClicked(double mouseX, double mouseY) {
+        return debtCollectorPanel.isConfirmClicked(mouseX, mouseY);
+    }
+
+    public boolean handleDebtCollectorDetailPageButtonClick(double mouseX, double mouseY) {
+        return debtCollectorPanel.handleDetailPageButtonClick(mouseX, mouseY);
+    }
+
+    public boolean isMultipleColorRentDetailShowing() {
+        return multipleColorRentSelectionPanel.isDetailShowing();
+    }
+
+    public void showMultipleColorRentTargetDetail(Player player) {
+        multipleColorRentSelectionPanel.showTargetDetail(player);
+    }
+
+    public Player getMultipleColorRentDetailTarget() {
+        return multipleColorRentSelectionPanel.getDetailTarget();
+    }
+
+    public boolean handleMultipleColorRentDetailPageButtonClick(double mouseX, double mouseY) {
+        return multipleColorRentSelectionPanel.handleDetailPageButtonClick(mouseX, mouseY);
+    }
+
+    public boolean isMultipleColorRentDetailConfirmClicked(double mouseX, double mouseY) {
+        return multipleColorRentSelectionPanel.isDetailConfirmClicked(mouseX, mouseY);
+    }
+
+    public boolean isMultipleColorRentDetailBackClicked(double mouseX, double mouseY) {
+        return multipleColorRentSelectionPanel.isDetailBackClicked(mouseX, mouseY);
+    }
+
+    public void showDealBreakerDetailChoice(DealBreakerChoice choice) {
+        dealBreakerPanel.showDetailChoice(choice);
+    }
+
+    public DealBreakerChoice getDealBreakerDetailChoice() {
+        return dealBreakerPanel.getDetailChoice();
+    }
+
+    public boolean isDealBreakerDetailCloseClicked(double mouseX, double mouseY) {
+        return dealBreakerPanel.isDetailCloseClicked(mouseX, mouseY);
+    }
+
+    public boolean isDealBreakerDetailBackClicked(double mouseX, double mouseY) {
+        return dealBreakerPanel.isDetailBackClicked(mouseX, mouseY);
+    }
+
+    public boolean isDealBreakerDetailConfirmClicked(double mouseX, double mouseY) {
+        return dealBreakerPanel.isDetailConfirmClicked(mouseX, mouseY);
+    }
+
+    public boolean handleDealBreakerDetailPageButtonClick(double mouseX, double mouseY) {
+        return dealBreakerPanel.handleDetailPageButtonClick(mouseX, mouseY);
+    }
+
+    public void showForcedDealTargetDetail(Player player) {
+        forcedDealPanel.showTargetDetail(player);
+    }
+
+    public Player getForcedDealDetailTarget() {
+        return forcedDealPanel.getDetailTargetPlayer();
+    }
+
+    public boolean isForcedDealDetailCloseClicked(double mouseX, double mouseY) {
+        return forcedDealPanel.isDetailCloseClicked(mouseX, mouseY);
+    }
+
+    public boolean isForcedDealDetailBackClicked(double mouseX, double mouseY) {
+        return forcedDealPanel.isDetailBackClicked(mouseX, mouseY);
+    }
+
+    public boolean isForcedDealDetailConfirmClicked(double mouseX, double mouseY) {
+        return forcedDealPanel.isDetailConfirmClicked(mouseX, mouseY);
+    }
+
+    public boolean handleForcedDealDetailPageButtonClick(double mouseX, double mouseY) {
+        return forcedDealPanel.handleDetailPageButtonClick(mouseX, mouseY);
+    }
+
+    public boolean isMultipleColorRentDetailCloseClicked(double mouseX, double mouseY) {
+        return multipleColorRentSelectionPanel.isDetailCloseClicked(mouseX, mouseY);
     }
 }

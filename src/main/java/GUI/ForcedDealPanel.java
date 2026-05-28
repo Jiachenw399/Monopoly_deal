@@ -11,6 +11,8 @@ import model.ActionCards;
 import model.Player;
 import model.PropertiesCards;
 
+import java.util.ArrayList;
+
 public class ForcedDealPanel {
     private final Game game;
 
@@ -26,8 +28,31 @@ public class ForcedDealPanel {
     private final double cardHeight = 120;
     private final double cardGap = 15;
 
+    private int myPageIndex = 0;
+    private int targetPageIndex = 0;
+    private final int cardsPerPage = 8;
+
+    private final double myPrevX = 170;
+    private final double myNextX = 270;
+    private final double targetPrevX = 620;
+    private final double targetNextX = 720;
+    private final double pageButtonY = 465;
+    private final double pageButtonWidth = 80;
+    private final double pageButtonHeight = 32;
+
+    private final PlayerDetailPopupPanel detailPopupPanel;
+    private Player detailTargetPlayer;
+
+    private final double detailConfirmX = 390;
+    private final double detailBackX = 555;
+    private final double detailCancelX = 720;
+    private final double detailButtonY = 550;
+    private final double detailButtonWidth = 140;
+    private final double detailButtonHeight = 40;
+
     public ForcedDealPanel(Game game) {
         this.game = game;
+        this.detailPopupPanel = new PlayerDetailPopupPanel(game);
     }
 
     public void startSelection(ActionCards card) {
@@ -35,6 +60,10 @@ public class ForcedDealPanel {
         selectedTargetPlayer = null;
         selectedMyCard = null;
         selectedTargetCard = null;
+        detailTargetPlayer = null;
+        detailPopupPanel.close();
+        myPageIndex = 0;
+        targetPageIndex = 0;
     }
 
     public void cancelSelection() {
@@ -42,6 +71,10 @@ public class ForcedDealPanel {
         selectedTargetPlayer = null;
         selectedMyCard = null;
         selectedTargetCard = null;
+        detailTargetPlayer = null;
+        detailPopupPanel.close();
+        myPageIndex = 0;
+        targetPageIndex = 0;
     }
 
     public boolean isSelecting() {
@@ -67,6 +100,7 @@ public class ForcedDealPanel {
     public void setSelectedTargetPlayer(Player targetPlayer) {
         selectedTargetPlayer = targetPlayer;
         selectedTargetCard = null;
+        targetPageIndex = 0;
     }
 
     public void setSelectedMyCard(PropertiesCards card) {
@@ -84,8 +118,18 @@ public class ForcedDealPanel {
     }
 
     public boolean isCancelClicked(double mouseX, double mouseY) {
-        return isSelecting()
-                && mouseX >= 720 && mouseX <= 860
+        if (!isSelecting()) {
+            return false;
+        }
+
+        if (detailTargetPlayer != null) {
+            return mouseX >= detailCancelX
+                    && mouseX <= detailCancelX + detailButtonWidth
+                    && mouseY >= detailButtonY
+                    && mouseY <= detailButtonY + detailButtonHeight;
+        }
+
+        return mouseX >= 720 && mouseX <= 860
                 && mouseY >= 505 && mouseY <= 545;
     }
 
@@ -153,28 +197,36 @@ public class ForcedDealPanel {
     }
 
     private PropertiesCards getClickedProperty(Player player, double startX, double mouseX, double mouseY) {
-        int displayIndex = 0;
+        ArrayList<PropertiesCards> cards = getExchangeableProperties(player);
 
-        for (PropertiesCards card : player.getPropertyCards()) {
-            if (!PlayerInfoHelper.canBeStolenBySlyDeal(player, card)) {
-                continue;
-            }
+        int page = startX == myPanelX ? myPageIndex : targetPageIndex;
+        int startIndex = page * cardsPerPage;
+        int endIndex = Math.min(startIndex + cardsPerPage, cards.size());
+
+        for (int i = startIndex; i < endIndex; i++) {
+            int displayIndex = i - startIndex;
 
             double x = startX + (displayIndex % 4) * (cardWidth + cardGap);
             double y = cardStartY + (displayIndex / 4) * (cardHeight + 32);
 
             if (mouseX >= x && mouseX <= x + cardWidth
                     && mouseY >= y && mouseY <= y + cardHeight) {
-                return card;
+                return cards.get(i);
             }
-
-            displayIndex++;
         }
 
         return null;
     }
 
     public void draw(GraphicsContext gc) {
+        if (detailTargetPlayer != null) {
+            detailPopupPanel.draw(gc);
+            ScreenDrawHelper.drawButton(gc, detailConfirmX, detailButtonY, detailButtonWidth, detailButtonHeight, "CONFIRM");
+            ScreenDrawHelper.drawButton(gc, detailBackX, detailButtonY, detailButtonWidth, detailButtonHeight, "BACK");
+            ScreenDrawHelper.drawButton(gc, detailCancelX, detailButtonY, detailButtonWidth, detailButtonHeight, "CANCEL");
+            return;
+        }
+
         if (!isSelecting()) {
             return;
         }
@@ -299,26 +351,39 @@ public class ForcedDealPanel {
                                    Player player,
                                    double startX,
                                    PropertiesCards selectedCard) {
-        int displayIndex = 0;
+        ArrayList<PropertiesCards> cards = getExchangeableProperties(player);
 
-        for (PropertiesCards card : player.getPropertyCards()) {
-            if (!PlayerInfoHelper.canBeStolenBySlyDeal(player, card)) {
-                continue;
-            }
+        int page = startX == myPanelX ? myPageIndex : targetPageIndex;
+        int maxPage = getMaxPage(cards.size());
+
+        if (startX == myPanelX) {
+            myPageIndex = keepPageInRange(myPageIndex, maxPage);
+            page = myPageIndex;
+        } else {
+            targetPageIndex = keepPageInRange(targetPageIndex, maxPage);
+            page = targetPageIndex;
+        }
+
+        int startIndex = page * cardsPerPage;
+        int endIndex = Math.min(startIndex + cardsPerPage, cards.size());
+
+        for (int i = startIndex; i < endIndex; i++) {
+            int displayIndex = i - startIndex;
 
             double x = startX + (displayIndex % 4) * (cardWidth + cardGap);
             double y = cardStartY + (displayIndex / 4) * (cardHeight + 32);
 
-            drawPropertyCard(gc, card, x, y, card == selectedCard);
-            displayIndex++;
+            drawPropertyCard(gc, cards.get(i), x, y, cards.get(i) == selectedCard);
         }
 
-        if (displayIndex == 0) {
+        if (cards.isEmpty()) {
             gc.setFill(Color.LIGHTYELLOW);
             gc.setFont(Font.font("Arial", 17));
             gc.setTextAlign(TextAlignment.CENTER);
             gc.fillText("No exchangeable property", startX + 195, cardStartY + 90);
         }
+
+        drawPropertyPageButtons(gc, startX, cards.size(), page, maxPage);
     }
 
     private void drawPropertyCard(GraphicsContext gc,
@@ -379,5 +444,168 @@ public class ForcedDealPanel {
         }
 
         ScreenDrawHelper.drawButton(gc, 720, 505, 140, 40, "CANCEL");
+    }
+
+    private ArrayList<PropertiesCards> getExchangeableProperties(Player player) {
+        ArrayList<PropertiesCards> cards = new ArrayList<>();
+
+        for (PropertiesCards card : player.getPropertyCards()) {
+            if (PlayerInfoHelper.canBeStolenBySlyDeal(player, card)) {
+                cards.add(card);
+            }
+        }
+
+        return cards;
+    }
+
+    private int getMaxPage(int size) {
+        if (size <= 0) {
+            return 0;
+        }
+
+        return (size - 1) / cardsPerPage;
+    }
+
+    private int keepPageInRange(int currentPage, int maxPage) {
+        if (currentPage < 0) {
+            return 0;
+        }
+
+        if (currentPage > maxPage) {
+            return maxPage;
+        }
+
+        return currentPage;
+    }
+
+    public boolean isMyPrevPageClicked(double mouseX, double mouseY) {
+        return isSelecting()
+                && selectedTargetPlayer != null
+                && mouseX >= myPrevX && mouseX <= myPrevX + pageButtonWidth
+                && mouseY >= pageButtonY && mouseY <= pageButtonY + pageButtonHeight;
+    }
+
+    public boolean isMyNextPageClicked(double mouseX, double mouseY) {
+        return isSelecting()
+                && selectedTargetPlayer != null
+                && mouseX >= myNextX && mouseX <= myNextX + pageButtonWidth
+                && mouseY >= pageButtonY && mouseY <= pageButtonY + pageButtonHeight;
+    }
+
+    public boolean isTargetPrevPageClicked(double mouseX, double mouseY) {
+        return isSelecting()
+                && selectedTargetPlayer != null
+                && mouseX >= targetPrevX && mouseX <= targetPrevX + pageButtonWidth
+                && mouseY >= pageButtonY && mouseY <= pageButtonY + pageButtonHeight;
+    }
+
+    public boolean isTargetNextPageClicked(double mouseX, double mouseY) {
+        return isSelecting()
+                && selectedTargetPlayer != null
+                && mouseX >= targetNextX && mouseX <= targetNextX + pageButtonWidth
+                && mouseY >= pageButtonY && mouseY <= pageButtonY + pageButtonHeight;
+    }
+
+    public void previousMyPage() {
+        if (myPageIndex > 0) {
+            myPageIndex--;
+        }
+    }
+
+    public void nextMyPage() {
+        int maxPage = getMaxPage(getExchangeableProperties(game.getCurrentPlayer()).size());
+
+        if (myPageIndex < maxPage) {
+            myPageIndex++;
+        }
+    }
+
+    public void previousTargetPage() {
+        if (targetPageIndex > 0) {
+            targetPageIndex--;
+        }
+    }
+
+    public void nextTargetPage() {
+        if (selectedTargetPlayer == null) {
+            return;
+        }
+
+        int maxPage = getMaxPage(getExchangeableProperties(selectedTargetPlayer).size());
+
+        if (targetPageIndex < maxPage) {
+            targetPageIndex++;
+        }
+    }
+
+    private void drawPropertyPageButtons(GraphicsContext gc,
+                                         double startX,
+                                         int totalCards,
+                                         int currentPage,
+                                         int maxPage) {
+        if (totalCards <= cardsPerPage) {
+            return;
+        }
+
+        double prevButtonX = startX == myPanelX ? myPrevX : targetPrevX;
+        double nextButtonX = startX == myPanelX ? myNextX : targetNextX;
+
+        if (currentPage > 0) {
+            ScreenDrawHelper.drawButton(gc, prevButtonX, pageButtonY, pageButtonWidth, pageButtonHeight, "Prev");
+        } else {
+            ScreenDrawHelper.drawDisabledButton(gc, prevButtonX, pageButtonY, pageButtonWidth, pageButtonHeight, "Prev");
+        }
+
+        if (currentPage < maxPage) {
+            ScreenDrawHelper.drawButton(gc, nextButtonX, pageButtonY, pageButtonWidth, pageButtonHeight, "Next");
+        } else {
+            ScreenDrawHelper.drawDisabledButton(gc, nextButtonX, pageButtonY, pageButtonWidth, pageButtonHeight, "Next");
+        }
+
+        gc.setFill(Color.WHITE);
+        gc.setFont(Font.font("Arial", 13));
+        gc.setTextAlign(TextAlignment.CENTER);
+        gc.setTextBaseline(VPos.CENTER);
+        gc.fillText("Page " + (currentPage + 1) + "/" + (maxPage + 1),
+                prevButtonX + 90,
+                pageButtonY + pageButtonHeight / 2);
+
+        gc.setTextBaseline(VPos.TOP);
+    }
+
+    public void showTargetDetail(Player player) {
+        detailTargetPlayer = player;
+
+        if (player == null) {
+            detailPopupPanel.close();
+            return;
+        }
+
+        int index = game.getPlayers().indexOf(player);
+        detailPopupPanel.showPlayer(index);
+    }
+
+    public Player getDetailTargetPlayer() {
+        return detailTargetPlayer;
+    }
+
+    public boolean isDetailCloseClicked(double mouseX, double mouseY) {
+        return detailTargetPlayer != null && detailPopupPanel.isCloseClicked(mouseX, mouseY);
+    }
+
+    public boolean handleDetailPageButtonClick(double mouseX, double mouseY) {
+        return detailTargetPlayer != null && detailPopupPanel.handlePageButtonClick(mouseX, mouseY);
+    }
+
+    public boolean isDetailConfirmClicked(double mouseX, double mouseY) {
+        return detailTargetPlayer != null
+                && mouseX >= detailConfirmX && mouseX <= detailConfirmX + detailButtonWidth
+                && mouseY >= detailButtonY && mouseY <= detailButtonY + detailButtonHeight;
+    }
+
+    public boolean isDetailBackClicked(double mouseX, double mouseY) {
+        return detailTargetPlayer != null
+                && mouseX >= detailBackX && mouseX <= detailBackX + detailButtonWidth
+                && mouseY >= detailButtonY && mouseY <= detailButtonY + detailButtonHeight;
     }
 }

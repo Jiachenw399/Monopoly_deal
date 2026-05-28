@@ -25,16 +25,42 @@ public class DealBreakerPanel {
     private final double cardHeight = 120;
     private final double cardGap = 20;
 
+    private int pageIndex = 0;
+    private final int setsPerPage = 10;
+
+    private final double prevX = 330;
+    private final double nextX = 565;
+    private final double pageY = 505;
+    private final double pageButtonWidth = 90;
+    private final double pageButtonHeight = 40;
+
+    private final PlayerDetailPopupPanel detailPopupPanel;
+    private GameScreen.DealBreakerChoice detailChoice;
+
+    private final double detailConfirmX = 390;
+    private final double detailBackX = 555;
+    private final double detailCancelX = 720;
+    private final double detailButtonY = 550;
+    private final double detailButtonWidth = 140;
+    private final double detailButtonHeight = 40;
+
     public DealBreakerPanel(Game game) {
         this.game = game;
+        this.detailPopupPanel = new PlayerDetailPopupPanel(game);
     }
 
     public void startSelection(ActionCards card) {
         pendingDealBreakerCard = card;
+        pageIndex = 0;
+        detailChoice = null;
+        detailPopupPanel.close();
     }
 
     public void cancelSelection() {
         pendingDealBreakerCard = null;
+        pageIndex = 0;
+        detailChoice = null;
+        detailPopupPanel.close();
     }
 
     public boolean isSelecting() {
@@ -46,8 +72,18 @@ public class DealBreakerPanel {
     }
 
     public boolean isCancelClicked(double mouseX, double mouseY) {
-        return isSelecting()
-                && mouseX >= 720 && mouseX <= 860
+        if (!isSelecting()) {
+            return false;
+        }
+
+        if (detailChoice != null) {
+            return mouseX >= detailCancelX
+                    && mouseX <= detailCancelX + detailButtonWidth
+                    && mouseY >= detailButtonY
+                    && mouseY <= detailButtonY + detailButtonHeight;
+        }
+
+        return mouseX >= 720 && mouseX <= 860
                 && mouseY >= 505 && mouseY <= 545;
     }
 
@@ -56,31 +92,20 @@ public class DealBreakerPanel {
             return null;
         }
 
-        int displayIndex = 0;
+        ArrayList<GameScreen.DealBreakerChoice> choices = getAllChoices();
 
-        for (int playerIndex = 0; playerIndex < game.getPlayers().size(); playerIndex++) {
-            if (playerIndex == game.getCurrentPlayerIndex()) {
-                continue;
-            }
+        int startIndex = pageIndex * setsPerPage;
+        int endIndex = Math.min(startIndex + setsPerPage, choices.size());
 
-            Player targetPlayer = game.getPlayers().get(playerIndex);
+        for (int i = startIndex; i < endIndex; i++) {
+            int displayIndex = i - startIndex;
 
-            for (PropertyColor color : PropertyColor.values()) {
-                ArrayList<PropertiesCards> completeSet = PlayerInfoHelper.getCompleteSetByColor(targetPlayer, color);
+            double x = panelX + (displayIndex % 5) * (cardWidth + cardGap);
+            double y = panelY + (displayIndex / 5) * (cardHeight + 35);
 
-                if (completeSet.isEmpty()) {
-                    continue;
-                }
-
-                double x = panelX + (displayIndex % 5) * (cardWidth + cardGap);
-                double y = panelY + (displayIndex / 5) * (cardHeight + 35);
-
-                if (mouseX >= x && mouseX <= x + cardWidth
-                        && mouseY >= y && mouseY <= y + cardHeight) {
-                    return new GameScreen.DealBreakerChoice(targetPlayer, completeSet);
-                }
-
-                displayIndex++;
+            if (mouseX >= x && mouseX <= x + cardWidth
+                    && mouseY >= y && mouseY <= y + cardHeight) {
+                return choices.get(i);
             }
         }
 
@@ -88,6 +113,14 @@ public class DealBreakerPanel {
     }
 
     public void draw(GraphicsContext gc) {
+        if (detailChoice != null) {
+            detailPopupPanel.draw(gc);
+            ScreenDrawHelper.drawButton(gc, detailConfirmX, detailButtonY, detailButtonWidth, detailButtonHeight, "CONFIRM");
+            ScreenDrawHelper.drawButton(gc, detailBackX, detailButtonY, detailButtonWidth, detailButtonHeight, "BACK");
+            ScreenDrawHelper.drawButton(gc, detailCancelX, detailButtonY, detailButtonWidth, detailButtonHeight, "CANCEL");
+            return;
+        }
+
         if (!isSelecting()) {
             return;
         }
@@ -115,33 +148,33 @@ public class DealBreakerPanel {
     }
 
     private void drawCompletedSets(GraphicsContext gc) {
-        int displayIndex = 0;
+        ArrayList<GameScreen.DealBreakerChoice> choices = getAllChoices();
 
-        for (int playerIndex = 0; playerIndex < game.getPlayers().size(); playerIndex++) {
-            if (playerIndex == game.getCurrentPlayerIndex()) {
-                continue;
-            }
+        int maxPage = getMaxPage(choices.size());
+        pageIndex = keepPageInRange(pageIndex, maxPage);
 
-            Player targetPlayer = game.getPlayers().get(playerIndex);
+        int startIndex = pageIndex * setsPerPage;
+        int endIndex = Math.min(startIndex + setsPerPage, choices.size());
 
-            for (PropertyColor color : PropertyColor.values()) {
-                ArrayList<PropertiesCards> completeSet = PlayerInfoHelper.getCompleteSetByColor(targetPlayer, color);
+        for (int i = startIndex; i < endIndex; i++) {
+            int displayIndex = i - startIndex;
 
-                if (completeSet.isEmpty()) {
-                    continue;
-                }
+            GameScreen.DealBreakerChoice choice = choices.get(i);
+            Player targetPlayer = choice.getTargetPlayer();
+            int playerIndex = game.getPlayers().indexOf(targetPlayer);
+            PropertyColor color = choice.getSelectedSet().get(0).getCurrentColor();
 
-                double x = panelX + (displayIndex % 5) * (cardWidth + cardGap);
-                double y = panelY + (displayIndex / 5) * (cardHeight + 35);
+            double x = panelX + (displayIndex % 5) * (cardWidth + cardGap);
+            double y = panelY + (displayIndex / 5) * (cardHeight + 35);
 
-                drawCompletedSetCard(gc, playerIndex, color, completeSet, x, y);
-                displayIndex++;
-            }
+            drawCompletedSetCard(gc, playerIndex, color, choice.getSelectedSet(), x, y);
         }
 
-        if (displayIndex == 0) {
+        if (choices.isEmpty()) {
             drawNoCompletedSetMessage(gc);
         }
+
+        drawPageButtons(gc, choices.size(), maxPage);
     }
 
     private void drawCompletedSetCard(GraphicsContext gc,
@@ -176,5 +209,138 @@ public class DealBreakerPanel {
         gc.setTextAlign(TextAlignment.CENTER);
         gc.fillText("No player has a completed property set.", Game.SCREEN_WIDTH / 2, 260);
         gc.fillText("This Deal Breaker card cannot be used now.", Game.SCREEN_WIDTH / 2, 295);
+    }
+
+    private ArrayList<GameScreen.DealBreakerChoice> getAllChoices() {
+        ArrayList<GameScreen.DealBreakerChoice> choices = new ArrayList<>();
+
+        for (int playerIndex = 0; playerIndex < game.getPlayers().size(); playerIndex++) {
+            if (playerIndex == game.getCurrentPlayerIndex()) {
+                continue;
+            }
+
+            Player targetPlayer = game.getPlayers().get(playerIndex);
+
+            for (PropertyColor color : PropertyColor.values()) {
+                ArrayList<PropertiesCards> completeSet =
+                        PlayerInfoHelper.getCompleteSetByColor(targetPlayer, color);
+
+                if (!completeSet.isEmpty()) {
+                    choices.add(new GameScreen.DealBreakerChoice(targetPlayer, completeSet));
+                }
+            }
+        }
+
+        return choices;
+    }
+
+    private int getMaxPage(int size) {
+        if (size <= 0) {
+            return 0;
+        }
+
+        return (size - 1) / setsPerPage;
+    }
+
+    private int keepPageInRange(int currentPage, int maxPage) {
+        if (currentPage < 0) {
+            return 0;
+        }
+
+        if (currentPage > maxPage) {
+            return maxPage;
+        }
+
+        return currentPage;
+    }
+
+    public boolean isPrevPageClicked(double mouseX, double mouseY) {
+        return isSelecting()
+                && mouseX >= prevX && mouseX <= prevX + pageButtonWidth
+                && mouseY >= pageY && mouseY <= pageY + pageButtonHeight;
+    }
+
+    public boolean isNextPageClicked(double mouseX, double mouseY) {
+        return isSelecting()
+                && mouseX >= nextX && mouseX <= nextX + pageButtonWidth
+                && mouseY >= pageY && mouseY <= pageY + pageButtonHeight;
+    }
+
+    public void previousPage() {
+        if (pageIndex > 0) {
+            pageIndex--;
+        }
+    }
+
+    public void nextPage() {
+        int maxPage = getMaxPage(getAllChoices().size());
+
+        if (pageIndex < maxPage) {
+            pageIndex++;
+        }
+    }
+
+    private void drawPageButtons(GraphicsContext gc, int totalChoices, int maxPage) {
+        if (totalChoices <= setsPerPage) {
+            return;
+        }
+
+        if (pageIndex > 0) {
+            ScreenDrawHelper.drawButton(gc, prevX, pageY, pageButtonWidth, pageButtonHeight, "Prev");
+        } else {
+            ScreenDrawHelper.drawDisabledButton(gc, prevX, pageY, pageButtonWidth, pageButtonHeight, "Prev");
+        }
+
+        if (pageIndex < maxPage) {
+            ScreenDrawHelper.drawButton(gc, nextX, pageY, pageButtonWidth, pageButtonHeight, "Next");
+        } else {
+            ScreenDrawHelper.drawDisabledButton(gc, nextX, pageY, pageButtonWidth, pageButtonHeight, "Next");
+        }
+
+        gc.setFill(Color.WHITE);
+        gc.setFont(Font.font("Arial", 15));
+        gc.setTextAlign(TextAlignment.CENTER);
+        gc.setTextBaseline(VPos.CENTER);
+        gc.fillText("Page " + (pageIndex + 1) + "/" + (maxPage + 1),
+                Game.SCREEN_WIDTH / 2,
+                pageY + pageButtonHeight / 2);
+
+        gc.setTextBaseline(VPos.TOP);
+    }
+
+    public void showDetailChoice(GameScreen.DealBreakerChoice choice) {
+        detailChoice = choice;
+
+        if (choice == null) {
+            detailPopupPanel.close();
+            return;
+        }
+
+        int index = game.getPlayers().indexOf(choice.getTargetPlayer());
+        detailPopupPanel.showPlayer(index);
+    }
+
+    public GameScreen.DealBreakerChoice getDetailChoice() {
+        return detailChoice;
+    }
+
+    public boolean isDetailCloseClicked(double mouseX, double mouseY) {
+        return detailChoice != null && detailPopupPanel.isCloseClicked(mouseX, mouseY);
+    }
+
+    public boolean handleDetailPageButtonClick(double mouseX, double mouseY) {
+        return detailChoice != null && detailPopupPanel.handlePageButtonClick(mouseX, mouseY);
+    }
+
+    public boolean isDetailConfirmClicked(double mouseX, double mouseY) {
+        return detailChoice != null
+                && mouseX >= detailConfirmX && mouseX <= detailConfirmX + detailButtonWidth
+                && mouseY >= detailButtonY && mouseY <= detailButtonY + detailButtonHeight;
+    }
+
+    public boolean isDetailBackClicked(double mouseX, double mouseY) {
+        return detailChoice != null
+                && mouseX >= detailBackX && mouseX <= detailBackX + detailButtonWidth
+                && mouseY >= detailButtonY && mouseY <= detailButtonY + detailButtonHeight;
     }
 }

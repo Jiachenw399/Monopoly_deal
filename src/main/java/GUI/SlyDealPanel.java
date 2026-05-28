@@ -11,6 +11,8 @@ import model.ActionCards;
 import model.Player;
 import model.PropertiesCards;
 
+import java.util.ArrayList;
+
 public class SlyDealPanel {
     private final Game game;
     private ActionCards pendingCard;
@@ -21,16 +23,27 @@ public class SlyDealPanel {
     private final double cardHeight = 120;
     private final double gap = 15;
 
+    private int pageIndex = 0;
+    private final int cardsPerPage = 14;
+
+    private final double prevX = 330;
+    private final double nextX = 565;
+    private final double pageY = 505;
+    private final double pageButtonWidth = 90;
+    private final double pageButtonHeight = 40;
+
     public SlyDealPanel(Game game) {
         this.game = game;
     }
 
     public void startSelection(ActionCards card) {
         pendingCard = card;
+        pageIndex = 0;
     }
 
     public void cancelSelection() {
         pendingCard = null;
+        pageIndex = 0;
     }
 
     public boolean isSelecting() {
@@ -52,32 +65,23 @@ public class SlyDealPanel {
             return null;
         }
 
-        int displayIndex = 0;
+        ArrayList<GameScreen.SlyDealChoice> choices = getAllChoices();
 
-        for (int playerIndex = 0; playerIndex < game.getPlayers().size(); playerIndex++) {
-            if (playerIndex == game.getCurrentPlayerIndex()) {
-                continue;
-            }
+        int startIndex = pageIndex * cardsPerPage;
+        int endIndex = Math.min(startIndex + cardsPerPage, choices.size());
 
-            Player targetPlayer = game.getPlayers().get(playerIndex);
+        for (int i = startIndex; i < endIndex; i++) {
+            int displayIndex = i - startIndex;
 
-            for (PropertiesCards card : targetPlayer.getPropertyCards()) {
-                if (!PlayerInfoHelper.canBeStolenBySlyDeal(targetPlayer, card)) {
-                    continue;
-                }
+            int col = displayIndex % 7;
+            int row = displayIndex / 7;
 
-                int col = displayIndex % 7;
-                int row = displayIndex / 7;
+            double x = panelX + col * (cardWidth + gap);
+            double y = panelY + row * (cardHeight + 35);
 
-                double x = panelX + col * (cardWidth + gap);
-                double y = panelY + row * (cardHeight + 35);
-
-                if (mouseX >= x && mouseX <= x + cardWidth
-                        && mouseY >= y && mouseY <= y + cardHeight) {
-                    return new GameScreen.SlyDealChoice(targetPlayer, card);
-                }
-
-                displayIndex++;
+            if (mouseX >= x && mouseX <= x + cardWidth
+                    && mouseY >= y && mouseY <= y + cardHeight) {
+                return choices.get(i);
             }
         }
 
@@ -113,34 +117,34 @@ public class SlyDealPanel {
     }
 
     private void drawChoices(GraphicsContext gc) {
-        int displayIndex = 0;
+        ArrayList<GameScreen.SlyDealChoice> choices = getAllChoices();
 
-        for (int playerIndex = 0; playerIndex < game.getPlayers().size(); playerIndex++) {
-            if (playerIndex == game.getCurrentPlayerIndex()) {
-                continue;
-            }
+        int maxPage = getMaxPage(choices.size());
+        pageIndex = keepPageInRange(pageIndex, maxPage);
 
-            Player targetPlayer = game.getPlayers().get(playerIndex);
+        int startIndex = pageIndex * cardsPerPage;
+        int endIndex = Math.min(startIndex + cardsPerPage, choices.size());
 
-            for (PropertiesCards card : targetPlayer.getPropertyCards()) {
-                if (!PlayerInfoHelper.canBeStolenBySlyDeal(targetPlayer, card)) {
-                    continue;
-                }
+        for (int i = startIndex; i < endIndex; i++) {
+            int displayIndex = i - startIndex;
 
-                int col = displayIndex % 7;
-                int row = displayIndex / 7;
+            int col = displayIndex % 7;
+            int row = displayIndex / 7;
 
-                double x = panelX + col * (cardWidth + gap);
-                double y = panelY + row * (cardHeight + 35);
+            double x = panelX + col * (cardWidth + gap);
+            double y = panelY + row * (cardHeight + 35);
 
-                drawChoiceCard(gc, playerIndex, card, x, y);
-                displayIndex++;
-            }
+            GameScreen.SlyDealChoice choice = choices.get(i);
+            int playerIndex = game.getPlayers().indexOf(choice.getTargetPlayer());
+
+            drawChoiceCard(gc, playerIndex, choice.getSelectedCard(), x, y);
         }
 
-        if (displayIndex == 0) {
+        if (choices.isEmpty()) {
             drawEmptyMessage(gc);
         }
+
+        drawPageButtons(gc, choices.size(), maxPage);
     }
 
     private void drawChoiceCard(GraphicsContext gc,
@@ -148,32 +152,17 @@ public class SlyDealPanel {
                                 PropertiesCards card,
                                 double x,
                                 double y) {
-        if (CardImageHelper.drawCardImage(gc, card, x, y, cardWidth, cardHeight)) {
-            drawOwnerBadge(gc, playerIndex, x, y);
-            return;
+        drawCardShadow(gc, x, y, cardWidth, cardHeight);
+
+        if (!CardImageHelper.drawCardImage(gc, card, x, y, cardWidth, cardHeight)) {
+            drawFallbackPropertyCard(gc, card, x, y);
         }
 
-        gc.setFill(Color.LIGHTBLUE);
-        gc.fillRoundRect(x, y, cardWidth, cardHeight, 15, 15);
-
-        gc.setStroke(Color.WHITE);
-        gc.strokeRoundRect(x, y, cardWidth, cardHeight, 15, 15);
-
-        gc.setFill(Color.BLACK);
-        gc.setFont(Font.font("Arial", 12));
-        gc.setTextAlign(TextAlignment.CENTER);
-        gc.setTextBaseline(VPos.TOP);
-
-        gc.fillText("Player " + (playerIndex + 1), x + cardWidth / 2, y + 10);
-        gc.fillText(card.getValue() + "M", x + cardWidth / 2, y + 32);
-
-        String colorText = card.getCurrentColor() == null ? "NO COLOR" : card.getCurrentColor().name();
-        ScreenDrawHelper.drawWrappedText(gc, colorText, x + 8, y + 55, cardWidth - 16, 12);
+        drawOwnerBadge(gc, playerIndex, x, y);
+        drawCurrentColorBadge(gc, card, x, y + cardHeight - 28);
 
         if (card.isWildCard()) {
-            gc.setFill(Color.RED);
-            gc.setFont(Font.font("Arial", 11));
-            gc.fillText("WILD", x + cardWidth / 2, y + 100);
+            drawWildBadge(gc, x + cardWidth - 45, y + 6);
         }
     }
 
@@ -198,5 +187,172 @@ public class SlyDealPanel {
         gc.setFont(Font.font("Arial", 22));
         gc.setTextAlign(TextAlignment.CENTER);
         gc.fillText("No property can be stolen.", Game.SCREEN_WIDTH / 2, 280);
+    }
+
+    private void drawCardShadow(GraphicsContext gc, double x, double y, double width, double height) {
+        gc.setFill(Color.rgb(0, 0, 0, 0.35));
+        gc.fillRoundRect(x + 4, y + 5, width, height, 15, 15);
+    }
+
+    private void drawFallbackPropertyCard(GraphicsContext gc, PropertiesCards card, double x, double y) {
+        gc.setFill(Color.rgb(225, 241, 255));
+        gc.fillRoundRect(x, y, cardWidth, cardHeight, 15, 15);
+
+        gc.setStroke(Color.WHITE);
+        gc.strokeRoundRect(x, y, cardWidth, cardHeight, 15, 15);
+
+        gc.setFill(Color.rgb(25, 35, 50));
+        gc.setFont(Font.font("Arial", 12));
+        gc.setTextAlign(TextAlignment.CENTER);
+        gc.setTextBaseline(VPos.TOP);
+
+        gc.fillText(card.getValue() + "M", x + cardWidth / 2, y + 35);
+
+        String colorText = card.getCurrentColor() == null ? "NO COLOR" : card.getCurrentColor().name();
+        ScreenDrawHelper.drawWrappedText(gc, colorText, x + 8, y + 58, cardWidth - 16, 12);
+    }
+
+    private void drawCurrentColorBadge(GraphicsContext gc, PropertiesCards card, double x, double y) {
+        String colorText = card.getCurrentColor() == null
+                ? "No Color"
+                : getShortColorName(card.getCurrentColor());
+
+        gc.setFill(Color.rgb(18, 24, 35, 0.86));
+        gc.fillRoundRect(x + 6, y, cardWidth - 12, 22, 8, 8);
+
+        gc.setStroke(Color.rgb(255, 255, 255, 0.65));
+        gc.strokeRoundRect(x + 6, y, cardWidth - 12, 22, 8, 8);
+
+        gc.setFill(Color.WHITE);
+        gc.setFont(Font.font("Arial", 10));
+        gc.setTextAlign(TextAlignment.CENTER);
+        gc.setTextBaseline(VPos.CENTER);
+        gc.fillText(colorText, x + cardWidth / 2, y + 11);
+
+        gc.setTextBaseline(VPos.TOP);
+    }
+
+    private void drawWildBadge(GraphicsContext gc, double x, double y) {
+        gc.setFill(Color.rgb(255, 80, 80));
+        gc.fillRoundRect(x, y, 38, 18, 8, 8);
+
+        gc.setFill(Color.WHITE);
+        gc.setFont(Font.font("Arial", 9));
+        gc.setTextAlign(TextAlignment.CENTER);
+        gc.setTextBaseline(VPos.CENTER);
+        gc.fillText("WILD", x + 19, y + 9);
+
+        gc.setTextBaseline(VPos.TOP);
+    }
+
+    private String getShortColorName(model.PropertyColor color) {
+        return switch (color) {
+            case DARK_BLUE -> "Dark Blue";
+            case ORANGE -> "Orange";
+            case BLACK -> "Black";
+            case RED -> "Red";
+            case DARK_GREEN -> "Dark Green";
+            case BROWN -> "Brown";
+            case PINK -> "Pink";
+            case LIGHT_BLUE -> "Light Blue";
+            case LIGHT_GREEN -> "Light Green";
+            case YELLOW -> "Yellow";
+        };
+    }
+
+    private ArrayList<GameScreen.SlyDealChoice> getAllChoices() {
+        ArrayList<GameScreen.SlyDealChoice> choices = new ArrayList<>();
+
+        for (int playerIndex = 0; playerIndex < game.getPlayers().size(); playerIndex++) {
+            if (playerIndex == game.getCurrentPlayerIndex()) {
+                continue;
+            }
+
+            Player targetPlayer = game.getPlayers().get(playerIndex);
+
+            for (PropertiesCards card : targetPlayer.getPropertyCards()) {
+                if (!PlayerInfoHelper.canBeStolenBySlyDeal(targetPlayer, card)) {
+                    continue;
+                }
+
+                choices.add(new GameScreen.SlyDealChoice(targetPlayer, card));
+            }
+        }
+
+        return choices;
+    }
+
+    private int getMaxPage(int size) {
+        if (size <= 0) {
+            return 0;
+        }
+
+        return (size - 1) / cardsPerPage;
+    }
+
+    private int keepPageInRange(int currentPage, int maxPage) {
+        if (currentPage < 0) {
+            return 0;
+        }
+
+        if (currentPage > maxPage) {
+            return maxPage;
+        }
+
+        return currentPage;
+    }
+
+    public boolean isPrevPageClicked(double mouseX, double mouseY) {
+        return isSelecting()
+                && mouseX >= prevX && mouseX <= prevX + pageButtonWidth
+                && mouseY >= pageY && mouseY <= pageY + pageButtonHeight;
+    }
+
+    public boolean isNextPageClicked(double mouseX, double mouseY) {
+        return isSelecting()
+                && mouseX >= nextX && mouseX <= nextX + pageButtonWidth
+                && mouseY >= pageY && mouseY <= pageY + pageButtonHeight;
+    }
+
+    public void previousPage() {
+        if (pageIndex > 0) {
+            pageIndex--;
+        }
+    }
+
+    public void nextPage() {
+        int maxPage = getMaxPage(getAllChoices().size());
+
+        if (pageIndex < maxPage) {
+            pageIndex++;
+        }
+    }
+
+    private void drawPageButtons(GraphicsContext gc, int totalChoices, int maxPage) {
+        if (totalChoices <= cardsPerPage) {
+            return;
+        }
+
+        if (pageIndex > 0) {
+            ScreenDrawHelper.drawButton(gc, prevX, pageY, pageButtonWidth, pageButtonHeight, "Prev");
+        } else {
+            ScreenDrawHelper.drawDisabledButton(gc, prevX, pageY, pageButtonWidth, pageButtonHeight, "Prev");
+        }
+
+        if (pageIndex < maxPage) {
+            ScreenDrawHelper.drawButton(gc, nextX, pageY, pageButtonWidth, pageButtonHeight, "Next");
+        } else {
+            ScreenDrawHelper.drawDisabledButton(gc, nextX, pageY, pageButtonWidth, pageButtonHeight, "Next");
+        }
+
+        gc.setFill(Color.WHITE);
+        gc.setFont(Font.font("Arial", 15));
+        gc.setTextAlign(TextAlignment.CENTER);
+        gc.setTextBaseline(VPos.CENTER);
+        gc.fillText("Page " + (pageIndex + 1) + "/" + (maxPage + 1),
+                Game.SCREEN_WIDTH / 2,
+                pageY + pageButtonHeight / 2);
+
+        gc.setTextBaseline(VPos.TOP);
     }
 }
