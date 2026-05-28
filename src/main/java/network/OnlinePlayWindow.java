@@ -61,6 +61,8 @@ public class OnlinePlayWindow extends Stage {
     private OnlineState state = OnlineState.empty();
     private String connectionText = "Connecting...";
     private boolean started;
+    private double paymentButtonY = -1;
+    private double justSayNoButtonY = -1;
 
     public OnlinePlayWindow(Stage owner, String host) {
         this.host = host;
@@ -188,6 +190,8 @@ public class OnlinePlayWindow extends Stage {
     }
 
     private void drawPayment(GraphicsContext gc, double y) {
+        paymentButtonY = -1;
+        justSayNoButtonY = -1;
         drawSideText(gc, "Payment", 795, y);
         if (!state.payment.active) {
             drawMuted(gc, "No payment due", 795, y + 28);
@@ -197,8 +201,10 @@ public class OnlinePlayWindow extends Stage {
         drawMuted(gc, "P" + state.payment.payer + " pays P" + state.payment.receiver
                 + ": " + state.payment.amount + "M", 795, y + 28);
         if (state.payment.youMustPay) {
+            paymentButtonY = y + 58;
             ScreenDrawHelper.drawButton(gc, 795, y + 58, 160, 38, "Select Payment");
             if (state.payment.canJustSayNo) {
+                justSayNoButtonY = y + 106;
                 ScreenDrawHelper.drawButton(gc, 795, y + 106, 160, 38, "Just Say No");
             }
         } else {
@@ -340,12 +346,21 @@ public class OnlinePlayWindow extends Stage {
             send("END_TURN", "");
             return;
         }
-        if (state.payment.youMustPay && isRect(x, y, 795, 268, 160, 38)) {
+        if (state.payment.youMustPay && paymentButtonY > 0 && isRect(x, y, 795, paymentButtonY, 160, 38)) {
             showPaymentDialog();
             return;
         }
-        if (state.payment.youMustPay && state.payment.canJustSayNo && isRect(x, y, 795, 316, 160, 38)) {
+        if (state.payment.youMustPay && state.payment.canJustSayNo
+                && justSayNoButtonY > 0 && isRect(x, y, 795, justSayNoButtonY, 160, 38)) {
             send("JUST_SAY_NO", "");
+            return;
+        }
+        int propertyIndex = clickedOwnPropertyIndex(x, y);
+        if (propertyIndex != -1 && propertyIndex <= state.yourProperties.size()) {
+            CardInfo property = state.yourProperties.get(propertyIndex - 1);
+            if (property.isWild()) {
+                showWildColorDialog(property);
+            }
             return;
         }
         int handIndex = clickedHandIndex(x, y);
@@ -382,22 +397,59 @@ public class OnlinePlayWindow extends Stage {
         return -1;
     }
 
+    private int clickedOwnPropertyIndex(double x, double y) {
+        for (CardInfo card : state.yourProperties) {
+            int displayIndex = card.index - 1;
+            double cx = 32 + displayIndex * 75;
+            if (displayIndex < 8 && isRect(x, y, cx, 302, SMALL_CARD_WIDTH, SMALL_CARD_HEIGHT)) {
+                return card.index;
+            }
+        }
+        return -1;
+    }
+
+    private void showWildColorDialog(CardInfo property) {
+        Stage dialog = createDialog("Choose wild card color");
+        VBox root = new VBox(10);
+        root.setPadding(new Insets(12));
+        root.getChildren().add(new Label(property.title()));
+
+        ChoiceBox<String> colorChoice = new ChoiceBox<>(FXCollections.observableArrayList(property.allowedColors()));
+        colorChoice.getSelectionModel().selectFirst();
+        root.getChildren().add(colorChoice);
+
+        Button confirm = new Button("Set Color");
+        confirm.setOnAction(e -> {
+            if (colorChoice.getValue() != null) {
+                send("SET_PROPERTY_COLOR", property.index + " " + colorChoice.getValue());
+                dialog.close();
+            }
+        });
+        root.getChildren().add(confirm);
+
+        dialog.setScene(new Scene(root, 300, 160));
+        dialog.showAndWait();
+    }
+
     private void showActionDialog(CardInfo card) {
         Stage dialog = createDialog("Play " + card.title());
         VBox root = new VBox(10);
         root.setPadding(new Insets(12));
 
         ChoiceBox<Integer> targetChoice = new ChoiceBox<>(FXCollections.observableArrayList(otherPlayerIds()));
-        ChoiceBox<Integer> propertyChoice = new ChoiceBox<>();
-        ChoiceBox<Integer> myPropertyChoice = new ChoiceBox<>(FXCollections.observableArrayList(cardIndexes(state.yourProperties)));
+        ChoiceBox<CardChoice> propertyChoice = new ChoiceBox<>();
+        ChoiceBox<CardChoice> myPropertyChoice = new ChoiceBox<>(FXCollections.observableArrayList(cardChoices(state.yourProperties)));
         ChoiceBox<String> colorChoice = new ChoiceBox<>(FXCollections.observableArrayList(COLORS));
         CheckBox doubleRent = new CheckBox("Use Double The Rent");
         targetChoice.getSelectionModel().selectFirst();
-        colorChoice.getSelectionModel().selectFirst();
         updateTargetProperties(targetChoice, propertyChoice);
-        targetChoice.setOnAction(e -> updateTargetProperties(targetChoice, propertyChoice));
 
         String command = commandForAction(card.actionType);
+        updateActionColors(command, card, targetChoice.getValue(), colorChoice);
+        targetChoice.setOnAction(e -> {
+            updateTargetProperties(targetChoice, propertyChoice);
+            updateActionColors(command, card, targetChoice.getValue(), colorChoice);
+        });
         root.getChildren().add(new Label(card.title()));
         root.getChildren().add(new Button("Bank as money") {{
             setOnAction(e -> {
@@ -479,14 +531,9 @@ public class OnlinePlayWindow extends Stage {
         return dialog;
     }
 
-    private void updateTargetProperties(ChoiceBox<Integer> targetChoice, ChoiceBox<Integer> propertyChoice) {
+    private void updateTargetProperties(ChoiceBox<Integer> targetChoice, ChoiceBox<CardChoice> propertyChoice) {
         int target = targetChoice.getValue() == null ? -1 : targetChoice.getValue();
-        int count = state.propertyCountForPlayer(target);
-        ArrayList<Integer> propertyNumbers = new ArrayList<>();
-        for (int i = 1; i <= count; i++) {
-            propertyNumbers.add(i);
-        }
-        propertyChoice.setItems(FXCollections.observableArrayList(propertyNumbers));
+        propertyChoice.setItems(FXCollections.observableArrayList(cardChoices(state.publicProperties.get(target))));
         propertyChoice.getSelectionModel().selectFirst();
     }
 
@@ -500,12 +547,15 @@ public class OnlinePlayWindow extends Stage {
         return ids;
     }
 
-    private List<Integer> cardIndexes(List<CardInfo> cards) {
-        ArrayList<Integer> indexes = new ArrayList<>();
-        for (CardInfo card : cards) {
-            indexes.add(card.index);
+    private List<CardChoice> cardChoices(List<CardInfo> cards) {
+        ArrayList<CardChoice> choices = new ArrayList<>();
+        if (cards == null) {
+            return choices;
         }
-        return indexes;
+        for (CardInfo card : cards) {
+            choices.add(new CardChoice(card.index, card.title() + " / " + card.displayPropertyColor()));
+        }
+        return choices;
     }
 
     private String commandForAction(String actionType) {
@@ -533,8 +583,86 @@ public class OnlinePlayWindow extends Stage {
                 || "HOUSE".equals(command) || "HOTEL".equals(command);
     }
 
-    private String buildActionBody(String command, int handIndex, Integer target, Integer targetProperty,
-                                   Integer myProperty, String color, boolean doubleRent) {
+    private void updateActionColors(String command,
+                                    CardInfo actionCard,
+                                    Integer targetPlayer,
+                                    ChoiceBox<String> colorChoice) {
+        List<String> colors = colorOptionsForCommand(command, actionCard, targetPlayer);
+        colorChoice.setItems(FXCollections.observableArrayList(colors));
+        colorChoice.getSelectionModel().selectFirst();
+    }
+
+    private List<String> colorOptionsForCommand(String command, CardInfo actionCard, Integer targetPlayer) {
+        if ("RENT".equals(command)) {
+            return switch (actionCard.actionType) {
+                case "RENT_WITH_DARK_BLUE_AND_DARK_GREEN" -> ownPlayableColors(List.of("DARK_BLUE", "DARK_GREEN"));
+                case "RENT_WITH_BROWN_AND_LIGHT_BLUE" -> ownPlayableColors(List.of("BROWN", "LIGHT_BLUE"));
+                case "RENT_WITH_BLACK_AND_LIGHT_GREEN" -> ownPlayableColors(List.of("BLACK", "LIGHT_GREEN"));
+                case "RENT_WITH_RED_AND_YELLOW" -> ownPlayableColors(List.of("RED", "YELLOW"));
+                case "RENT_WITH_ORANGE_AND_PINK" -> ownPlayableColors(List.of("ORANGE", "PINK"));
+                default -> ownPlayableColors(COLORS);
+            };
+        }
+
+        if ("RENT_ANY".equals(command) || "HOUSE".equals(command) || "HOTEL".equals(command)) {
+            return ownPlayableColors(COLORS);
+        }
+
+        if ("DEAL_BREAKER".equals(command)) {
+            return playerPropertyColors(targetPlayer);
+        }
+
+        return COLORS;
+    }
+
+    private List<String> ownPlayableColors(List<String> candidates) {
+        ArrayList<String> colors = new ArrayList<>();
+        for (String color : candidates) {
+            if (playerHasPropertyColor(state.you, color)) {
+                colors.add(color);
+            }
+        }
+        return colors.isEmpty() ? candidates : colors;
+    }
+
+    private List<String> playerPropertyColors(Integer playerId) {
+        ArrayList<String> colors = new ArrayList<>();
+        if (playerId == null) {
+            return COLORS;
+        }
+
+        List<CardInfo> properties = state.publicProperties.get(playerId);
+        if (properties == null) {
+            return COLORS;
+        }
+
+        for (CardInfo property : properties) {
+            if (!property.propertyColor.isBlank() && !"NO_COLOR".equals(property.propertyColor)
+                    && !colors.contains(property.propertyColor)) {
+                colors.add(property.propertyColor);
+            }
+        }
+
+        return colors.isEmpty() ? COLORS : colors;
+    }
+
+    private boolean playerHasPropertyColor(int playerId, String color) {
+        List<CardInfo> properties = state.publicProperties.get(playerId);
+        if (properties == null) {
+            properties = state.yourProperties;
+        }
+
+        for (CardInfo property : properties) {
+            if (color.equals(property.propertyColor)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private String buildActionBody(String command, int handIndex, Integer target, CardChoice targetProperty,
+                                   CardChoice myProperty, String color, boolean doubleRent) {
         ArrayList<String> parts = new ArrayList<>();
         parts.add(Integer.toString(handIndex));
         switch (command) {
@@ -549,7 +677,7 @@ public class OnlinePlayWindow extends Stage {
                     return "";
                 }
                 parts.add(Integer.toString(target));
-                parts.add(Integer.toString(targetProperty));
+                parts.add(Integer.toString(targetProperty.index));
             }
             case "DEAL_BREAKER", "RENT_ANY" -> {
                 if (target == null || color == null) {
@@ -563,8 +691,8 @@ public class OnlinePlayWindow extends Stage {
                     return "";
                 }
                 parts.add(Integer.toString(target));
-                parts.add(Integer.toString(myProperty));
-                parts.add(Integer.toString(targetProperty));
+                parts.add(Integer.toString(myProperty.index));
+                parts.add(Integer.toString(targetProperty.index));
             }
             case "RENT", "HOUSE", "HOTEL" -> {
                 if (color == null) {
@@ -679,6 +807,13 @@ public class OnlinePlayWindow extends Stage {
         UNKNOWN
     }
 
+    private record CardChoice(int index, String label) {
+        @Override
+        public String toString() {
+            return index + ". " + label;
+        }
+    }
+
     private record CardInfo(int index,
                             String raw,
                             CardKind kind,
@@ -791,6 +926,24 @@ public class OnlinePlayWindow extends Stage {
             }
             return title();
         }
+
+        boolean isWild() {
+            return propertyType.startsWith("WILD_");
+        }
+
+        List<String> allowedColors() {
+            return switch (propertyType) {
+                case "WILD_PINK_ORANGE" -> List.of("PINK", "ORANGE");
+                case "WILD_RED_YELLOW" -> List.of("RED", "YELLOW");
+                case "WILD_BLACK_DARK_GREEN" -> List.of("BLACK", "DARK_GREEN");
+                case "WILD_BLACK_LIGHT_BLUE" -> List.of("BLACK", "LIGHT_BLUE");
+                case "WILD_BLACK_LIGHT_GREEN" -> List.of("BLACK", "LIGHT_GREEN");
+                case "WILD_LIGHT_BLUE_BROWN" -> List.of("LIGHT_BLUE", "BROWN");
+                case "WILD_DARK_BLUE_DARK_GREEN" -> List.of("DARK_BLUE", "DARK_GREEN");
+                case "WILD_ALL" -> COLORS;
+                default -> propertyColor.isBlank() ? COLORS : List.of(propertyColor);
+            };
+        }
     }
 
     private record PlayerSummary(int id, int hand, int bank, int properties) {
@@ -825,6 +978,8 @@ public class OnlinePlayWindow extends Stage {
         private final ArrayList<CardInfo> yourHand = new ArrayList<>();
         private final ArrayList<CardInfo> yourBank = new ArrayList<>();
         private final ArrayList<CardInfo> yourProperties = new ArrayList<>();
+        private final Map<Integer, List<CardInfo>> publicBanks = new LinkedHashMap<>();
+        private final Map<Integer, List<CardInfo>> publicProperties = new LinkedHashMap<>();
 
         static OnlineState empty() {
             return new OnlineState();
@@ -841,10 +996,16 @@ public class OnlinePlayWindow extends Stage {
             state.yourHand.addAll(parseCards(fields.get("yourHand")));
             state.yourBank.addAll(parseCards(fields.get("yourBank")));
             state.yourProperties.addAll(parseCards(fields.get("yourProperties")));
+            state.publicBanks.putAll(parsePublicCards(fields.get("publicBanks")));
+            state.publicProperties.putAll(parsePublicCards(fields.get("publicProperties")));
             return state;
         }
 
         int propertyCountForPlayer(int playerId) {
+            if (publicProperties.containsKey(playerId)) {
+                return publicProperties.get(playerId).size();
+            }
+
             for (PlayerSummary player : players) {
                 if (player.id == playerId) {
                     return player.properties;
@@ -920,12 +1081,37 @@ public class OnlinePlayWindow extends Stage {
             return players;
         }
 
+        private static Map<Integer, List<CardInfo>> parsePublicCards(String text) {
+            Map<Integer, List<CardInfo>> result = new LinkedHashMap<>();
+            if (text == null || text.isBlank()) {
+                return result;
+            }
+
+            for (String playerToken : text.split("\\|")) {
+                int open = playerToken.indexOf('[');
+                int close = playerToken.lastIndexOf(']');
+
+                if (!playerToken.startsWith("P") || open < 0 || close < open) {
+                    continue;
+                }
+
+                int playerId = parseInt(playerToken.substring(1, open));
+                result.put(playerId, parseCards(playerToken.substring(open + 1, close), "~"));
+            }
+
+            return result;
+        }
+
         private static List<CardInfo> parseCards(String text) {
+            return parseCards(text, ",");
+        }
+
+        private static List<CardInfo> parseCards(String text, String separator) {
             if (text == null || text.isBlank()) {
                 return List.of();
             }
             ArrayList<CardInfo> cards = new ArrayList<>();
-            String[] rawCards = text.split(",");
+            String[] rawCards = text.split(java.util.regex.Pattern.quote(separator));
             for (int i = 0; i < rawCards.length; i++) {
                 cards.add(CardInfo.parse(i + 1, rawCards[i]));
             }
