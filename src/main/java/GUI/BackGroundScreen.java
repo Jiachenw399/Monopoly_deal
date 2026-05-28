@@ -18,17 +18,6 @@ import model.PropertyColor;
 import java.util.ArrayList;
 
 public class BackGroundScreen {
-    private static final double RIGHT_COLUMN_X = 760;
-    private static final double CONTENT_X = ScreenDrawHelper.tableContentX();
-    private static final double CONTENT_Y = ScreenDrawHelper.tableContentY();
-    private static final double CONTENT_WIDTH =
-            ScreenDrawHelper.tableContentWidth(Game.SCREEN_WIDTH, RIGHT_COLUMN_X);
-
-    private static final double DECK_CENTER_X = 858;
-    private static final double DECK_CENTER_Y = 372;
-    private static final double DECK_CARD_WIDTH = 54;
-    private static final double DECK_CARD_HEIGHT = 72;
-
     private final Game game;
 
     private final double smallCardWidth = 60;
@@ -41,13 +30,13 @@ public class BackGroundScreen {
 
     private final int cardsPerPage = 8;
 
-    private final double bankPrevX = CONTENT_X + 629;
-    private final double bankNextX = CONTENT_X + 679;
-    private final double bankArrowY = 136;
+    private final double bankPrevX = 645;
+    private final double bankNextX = 695;
+    private final double bankArrowY = 130;
 
-    private final double propertyPrevX = CONTENT_X + 629;
-    private final double propertyNextX = CONTENT_X + 679;
-    private final double propertyArrowY = 278;
+    private final double propertyPrevX = 645;
+    private final double propertyNextX = 695;
+    private final double propertyArrowY = 272;
 
     private final double arrowWidth = 34;
     private final double arrowHeight = 28;
@@ -60,7 +49,6 @@ public class BackGroundScreen {
         resetPageWhenPlayerChanged();
         drawBackground(canvas);
         drawCurrentPlayer(canvas);
-        drawDrawPile(canvas);
         drawBankCards(canvas);
         drawPropertyCards(canvas, selectedWildCard);
         drawHandCards(canvas);
@@ -82,86 +70,81 @@ public class BackGroundScreen {
     //Draw game background
     private void drawBackground(Canvas canvas) {
         GraphicsContext gc = canvas.getGraphicsContext2D();
-        ScreenDrawHelper.drawGameTableBackground(gc, Game.SCREEN_WIDTH, Game.SCREEN_HEIGHT);
+        ScreenDrawHelper.drawPageBackground(gc, Game.SCREEN_WIDTH, Game.SCREEN_HEIGHT);
     }
 
     private void drawCurrentPlayer(Canvas canvas) {
         GraphicsContext gc = canvas.getGraphicsContext2D();
         Player currentPlayer = game.getCurrentPlayer();
 
-        ScreenDrawHelper.drawPanel(gc, CONTENT_X, CONTENT_Y, CONTENT_WIDTH, 94);
-
-        double textX = CONTENT_X + 20;
-        double badgeY = CONTENT_Y + 48;
+        ScreenDrawHelper.drawPanel(gc, 16, 14, 735, 94);
 
         gc.setTextAlign(TextAlignment.LEFT);
         gc.setTextBaseline(VPos.TOP);
 
         gc.setFill(ScreenDrawHelper.TEXT);
         gc.setFont(Font.font("Arial", 22));
-        gc.fillText("Player " + (game.getCurrentPlayerIndex() + 1) + "'s Turn", textX, CONTENT_Y + 14);
+        gc.fillText("Player " + (game.getCurrentPlayerIndex() + 1) + "'s Turn", 36, 28);
 
-        ScreenDrawHelper.drawBadge(gc, textX, badgeY, 145, 28,
+        ScreenDrawHelper.drawBadge(gc, 36, 62, 145, 28,
                 "Played " + currentPlayer.getUseCardTimes() + "/3",
                 Color.rgb(255, 226, 166));
 
         int completedSets = PlayerInfoHelper.getCompletedSetCount(currentPlayer);
-        ScreenDrawHelper.drawBadge(gc, textX + 159, badgeY, 155, 28,
+        ScreenDrawHelper.drawBadge(gc, 195, 62, 155, 28,
                 "Sets " + completedSets + "/3",
                 Color.rgb(167, 243, 208));
+
+        drawDeckInfoBesideSets(gc);
 
         if (game.isDiscard()) {
             gc.setFill(ScreenDrawHelper.DANGER);
             gc.setFont(Font.font("Arial", 15));
-            gc.fillText("Discard Phase: discard " + (currentPlayer.getHandCards().size() - 7) + " card(s)",
-                    CONTENT_X + CONTENT_WIDTH - 310, CONTENT_Y + 53);
+            gc.fillText("Discard Phase: discard " + (currentPlayer.getHandCards().size() - 7) + " card(s)", 520, 67);
         }
     }
 
-    private void drawDrawPile(Canvas canvas) {
-        GraphicsContext gc = canvas.getGraphicsContext2D();
+    //Draw 'Draw pile'
+    private void drawDeckInfoBesideSets(GraphicsContext gc) {
         int remainingCards = game.getDrawCards().getDrawPile().size();
 
-        double deckX = DECK_CENTER_X - DECK_CARD_WIDTH / 2;
-        double deckY = DECK_CENTER_Y - DECK_CARD_HEIGHT / 2 - 12;
+        double deckX = 375;
+        double deckY = 42;
+        double deckWidth = 34;
+        double deckHeight = 44;
 
         int thickness = Math.max(1, Math.min(6, remainingCards / 15 + 1));
 
         for (int i = thickness - 1; i >= 0; i--) {
-            double offset = i * 3;
+            double offset = i * 2.2;
 
             gc.setFill(Color.rgb(240, 245, 255));
-            gc.fillRoundRect(deckX - offset, deckY + offset, DECK_CARD_WIDTH, DECK_CARD_HEIGHT, 8, 8);
+            gc.fillRoundRect(deckX - offset, deckY + offset, deckWidth, deckHeight, 6, 6);
 
             gc.setStroke(Color.rgb(70, 85, 110));
-            gc.strokeRoundRect(deckX - offset, deckY + offset, DECK_CARD_WIDTH, DECK_CARD_HEIGHT, 8, 8);
+            gc.strokeRoundRect(deckX - offset, deckY + offset, deckWidth, deckHeight, 6, 6);
         }
 
-        gc.setFill(ScreenDrawHelper.ACCENT_DARK);
-        gc.setFont(Font.font("Arial", 18));
+        gc.setFill(ScreenDrawHelper.ACCENT);
+        gc.setFont(Font.font("Arial", 13));
         gc.setTextAlign(TextAlignment.CENTER);
         gc.setTextBaseline(VPos.CENTER);
-        gc.fillText(String.valueOf(remainingCards), deckX + DECK_CARD_WIDTH / 2, deckY + DECK_CARD_HEIGHT / 2);
-
-        double labelY = deckY + DECK_CARD_HEIGHT + 14;
-        gc.setFill(ScreenDrawHelper.TEXT);
-        gc.setFont(Font.font("Arial", 16));
-        gc.setTextAlign(TextAlignment.CENTER);
-        gc.setTextBaseline(VPos.TOP);
-        gc.fillText("Draw Pile", DECK_CENTER_X, labelY);
+        gc.fillText(String.valueOf(remainingCards), deckX + deckWidth / 2, deckY + deckHeight / 2);
 
         gc.setFill(ScreenDrawHelper.MUTED_TEXT);
-        gc.setFont(Font.font("Arial", 14));
-        gc.fillText(remainingCards + " left", DECK_CENTER_X, labelY + 22);
+        gc.setFont(Font.font("Arial", 13));
+        gc.setTextAlign(TextAlignment.LEFT);
+        gc.setTextBaseline(VPos.TOP);
+        gc.fillText("Draw Pile", deckX + 48, deckY + 3);
+        gc.fillText(remainingCards + " left", deckX + 48, deckY + 23);
     }
 
     private void drawBankCards(Canvas canvas) {
         GraphicsContext gc = canvas.getGraphicsContext2D();
         Player currentPlayer = game.getCurrentPlayer();
 
-        double bankY = CONTENT_Y + 112;
-        ScreenDrawHelper.drawPanel(gc, CONTENT_X, bankY, CONTENT_WIDTH, 128);
-        ScreenDrawHelper.drawSectionTitle(gc, "Bank Area", CONTENT_X + 16, bankY + 14);
+        ScreenDrawHelper.drawPanel(gc, 16, 118, 735, 128);
+        ScreenDrawHelper.drawSectionTitle(gc, "Bank Area", 32, 132);
 
         int total = PlayerInfoHelper.getBankTotal(currentPlayer);
         int cardCount = currentPlayer.getBankCards().size();
@@ -171,13 +154,13 @@ public class BackGroundScreen {
 
         gc.setFont(Font.font("Arial", 15));
         gc.setFill(ScreenDrawHelper.ACCENT);
-        gc.fillText("Total Money: " + total + "M", CONTENT_X + 174, bankY + 16);
+        gc.fillText("Total Money: " + total + "M", 190, 134);
 
-        drawPageText(gc, bankPageIndex, maxPage, CONTENT_X + 504, bankY + 16);
+        drawPageText(gc, bankPageIndex, maxPage, 520, 134);
         drawArrowButtons(gc, bankPrevX, bankNextX, bankArrowY, bankPageIndex, maxPage);
 
-        double startX = CONTENT_X + 16;
-        double startY = bankY + 42;
+        double startX = 32;
+        double startY = 160;
         double cardGap = 75;
 
         int startIndex = bankPageIndex * cardsPerPage;
@@ -200,20 +183,19 @@ public class BackGroundScreen {
         GraphicsContext gc = canvas.getGraphicsContext2D();
         Player currentPlayer = game.getCurrentPlayer();
 
-        double propertyY = CONTENT_Y + 254;
-        ScreenDrawHelper.drawPanel(gc, CONTENT_X, propertyY, CONTENT_WIDTH, 128);
-        ScreenDrawHelper.drawSectionTitle(gc, "Property Area", CONTENT_X + 16, propertyY + 14);
+        ScreenDrawHelper.drawPanel(gc, 16, 260, 735, 128);
+        ScreenDrawHelper.drawSectionTitle(gc, "Property Area", 32, 274);
 
         int cardCount = currentPlayer.getPropertyCards().size();
         int maxPage = getMaxPage(cardCount);
 
         propertyPageIndex = keepPageInRange(propertyPageIndex, maxPage);
 
-        drawPageText(gc, propertyPageIndex, maxPage, CONTENT_X + 504, propertyY + 16);
+        drawPageText(gc, propertyPageIndex, maxPage, 520, 276);
         drawArrowButtons(gc, propertyPrevX, propertyNextX, propertyArrowY, propertyPageIndex, maxPage);
 
-        double startX = CONTENT_X + 16;
-        double startY = propertyY + 42;
+        double startX = 32;
+        double startY = 302;
         double cardGap = 75;
 
         int startIndex = propertyPageIndex * cardsPerPage;
@@ -251,7 +233,7 @@ public class BackGroundScreen {
             drawPropertyBuildingLabel(gc, card, x, y);
         }
 
-        drawWildColorButtons(gc, selectedWildCard, propertyY);
+        drawWildColorButtons(gc, selectedWildCard);
     }
 
     private int getMaxPage(int cardCount) {
@@ -326,13 +308,13 @@ public class BackGroundScreen {
         }
     }
 
-    private void drawWildColorButtons(GraphicsContext gc, PropertiesCards selectedWildCard, double propertyPanelY) {
+    private void drawWildColorButtons(GraphicsContext gc, PropertiesCards selectedWildCard) {
         if (selectedWildCard == null) {
             return;
         }
 
-        double x = CONTENT_X + 488;
-        double y = propertyPanelY - 5;
+        double x = 520;
+        double y = 255;
         double w = 115;
         double h = 28;
         double gapX = 10;
@@ -374,10 +356,19 @@ public class BackGroundScreen {
         Player currentPlayer = game.getCurrentPlayer();
         ArrayList<Card> handCards = currentPlayer.getHandCards();
 
+        double titleY = Game.SCREEN_HEIGHT - 180;
+        ScreenDrawHelper.drawPanel(gc, 16, titleY - 14, 745, 165);
+
+        gc.setFill(ScreenDrawHelper.TEXT);
+        gc.setFont(Font.font("Arial", 18));
+        gc.setTextAlign(TextAlignment.LEFT);
+        gc.setTextBaseline(VPos.TOP);
+        gc.fillText("Hand Cards", 32, titleY);
+
         double currentGap = getHandCardGap(handCards);
 
         for (int i = 0; i < handCards.size(); i++) {
-            double handStartX = CONTENT_X + 4;
+            double handStartX = 20;
             double x = handStartX + i * (cardWidth + currentGap);
             double y = Game.SCREEN_HEIGHT - 150;
 
@@ -393,7 +384,7 @@ public class BackGroundScreen {
         if (handCards.size() > 1) {
             double totalWidth = handCards.size() * cardWidth + (handCards.size() - 1) * gap;
 
-            double handAreaWidth = CONTENT_WIDTH - 8;
+            double handAreaWidth = 740;
             if (totalWidth > handAreaWidth) {
                 currentGap = (handAreaWidth - handCards.size() * cardWidth) / (handCards.size() - 1);
             }

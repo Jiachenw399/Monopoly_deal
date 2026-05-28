@@ -10,7 +10,7 @@ import logic.Game;
 // Draws buttons used to view each player details.
 public class PlayerViewPanel {
     private static final double BUTTON_X = 760;
-    private static final double BUTTON_Y = ScreenDrawHelper.tableContentY() + 13;
+    private static final double BUTTON_Y = 55;
     private static final double BUTTON_WIDTH = 100;
     private static final double BUTTON_HEIGHT = 35;
     private static final double BUTTON_GAP = 10;

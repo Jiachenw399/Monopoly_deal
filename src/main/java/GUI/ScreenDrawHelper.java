@@ -6,7 +6,6 @@ import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.TextAlignment;
 
-// Provides shared drawing helper methods and colors.
 public class ScreenDrawHelper {
     public static final Color BACKGROUND = Color.rgb(18, 24, 38);
     public static final Color BACKGROUND_LIGHT = Color.rgb(28, 38, 58);
@@ -20,51 +19,6 @@ public class ScreenDrawHelper {
     public static final Color SUCCESS = Color.rgb(99, 230, 156);
     public static final Color WARNING = Color.rgb(255, 210, 93);
     public static final Color DANGER = Color.rgb(255, 112, 112);
-    
-    public static final Color TABLE_FELT = Color.rgb(16, 68, 42);
-    public static final Color TABLE_FELT_HIGHLIGHT = Color.rgb(24, 88, 54, 0.4);
-    public static final Color TABLE_RAIL = Color.rgb(110, 72, 38);
-    public static final Color TABLE_RAIL_DARK = Color.rgb(72, 46, 24);
-    public static final double TABLE_BORDER_WIDTH = 26;
-    public static final double TABLE_CONTENT_PAD = 8;
-
-    public static double tableContentX() {
-        return TABLE_BORDER_WIDTH + TABLE_CONTENT_PAD;
-    }
-
-    public static double tableContentY() {
-        return TABLE_BORDER_WIDTH + TABLE_CONTENT_PAD;
-    }
-
-    public static double tableContentWidth(double screenWidth, double rightColumnX) {
-        return rightColumnX - tableContentX() - TABLE_CONTENT_PAD;
-    }
-
-    public static void drawGameTableBackground(GraphicsContext gc, double width, double height) {
-        gc.clearRect(0, 0, width, height);
-
-        gc.setFill(TABLE_RAIL_DARK);
-        gc.fillRect(0, 0, width, height);
-
-        gc.setFill(TABLE_RAIL);
-        gc.fillRect(4, 4, width - 8, height - 8);
-
-        double inset = TABLE_BORDER_WIDTH;
-        double feltWidth = width - inset * 2;
-        double feltHeight = height - inset * 2;
-
-        gc.setFill(TABLE_FELT);
-        gc.fillRect(inset, inset, feltWidth, feltHeight);
-
-        gc.setFill(TABLE_FELT_HIGHLIGHT);
-        gc.fillOval(inset + feltWidth * 0.15, inset + feltHeight * 0.1, feltWidth * 0.55, feltHeight * 0.45);
-        gc.setFill(Color.rgb(10, 52, 32, 0.25));
-        gc.fillOval(inset + feltWidth * 0.45, inset + feltHeight * 0.45, feltWidth * 0.5, feltHeight * 0.4);
-
-        gc.setStroke(Color.rgb(140, 95, 52, 0.55));
-        gc.setLineWidth(2);
-        gc.strokeRect(inset + 1, inset + 1, feltWidth - 2, feltHeight - 2);
-    }
 
     public static void drawPageBackground(GraphicsContext gc, double width, double height) {
         gc.clearRect(0, 0, width, height);
@@ -81,13 +35,11 @@ public class ScreenDrawHelper {
         gc.fillOval(width - 220, height - 170, 330, 230);
     }
 
-    // Draws a dark overlay over the screen.
     public static void drawOverlay(GraphicsContext gc) {
         gc.setFill(Color.rgb(5, 8, 14, 0.78));
         gc.fillRect(0, 0, 1035, 625);
     }
 
-    // Draws a dark rounded panel.
     public static void drawPanel(GraphicsContext gc,
                                  double x,
                                  double y,
@@ -99,7 +51,6 @@ public class ScreenDrawHelper {
         gc.strokeRoundRect(x, y, width, height, 20, 20);
     }
 
-    // Draws a light rounded panel.
     public static void drawLightPanel(GraphicsContext gc,
                                       double x,
                                       double y,
@@ -111,7 +62,6 @@ public class ScreenDrawHelper {
         gc.strokeRoundRect(x, y, width, height, 20, 20);
     }
 
-    // Draws a section title.
     public static void drawSectionTitle(GraphicsContext gc, String title, double x, double y) {
         gc.setFill(TEXT);
         gc.setFont(Font.font("Arial", 18));
@@ -120,7 +70,6 @@ public class ScreenDrawHelper {
         gc.fillText(title, x, y);
     }
 
-    // Draws a small rounded text badge.
     public static void drawBadge(GraphicsContext gc,
                                  double x,
                                  double y,
@@ -138,7 +87,6 @@ public class ScreenDrawHelper {
         gc.setTextBaseline(VPos.TOP);
     }
 
-    // Draws an active button.
     public static void drawButton(GraphicsContext gc,
                                   double x,
                                   double y,
@@ -162,7 +110,6 @@ public class ScreenDrawHelper {
         gc.setTextBaseline(VPos.TOP);
     }
 
-    // Draws a disabled button.
     public static void drawDisabledButton(GraphicsContext gc,
                                           double x,
                                           double y,
@@ -183,7 +130,6 @@ public class ScreenDrawHelper {
         gc.setTextBaseline(VPos.TOP);
     }
 
-    // Draws the shared Double the Rent checkbox.
     public static void drawDoubleRentOption(GraphicsContext gc,
                                             double x,
                                             double y,
@@ -215,7 +161,6 @@ public class ScreenDrawHelper {
         gc.setTextBaseline(VPos.TOP);
     }
 
-    // Draws a simple small card without image.
     public static void drawSmallCard(GraphicsContext gc,
                                      double x,
                                      double y,
@@ -236,7 +181,6 @@ public class ScreenDrawHelper {
         drawWrappedText(gc, text, x + 5, y + 35, 50, 11);
     }
 
-    // Draws long text across multiple lines.
     public static void drawWrappedText(GraphicsContext gc,
                                        String text,
                                        double x,
