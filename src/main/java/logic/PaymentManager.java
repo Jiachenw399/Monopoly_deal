@@ -68,6 +68,11 @@ public class PaymentManager {
         return currentPaymentRequest;
     }
 
+    public void applyOnlineState(Game.PaymentRequest currentPaymentRequest) {
+        paymentRequests.clear();
+        this.currentPaymentRequest = currentPaymentRequest;
+    }
+
     public boolean canCurrentPaymentUseJustSayNo() {
         return currentPaymentRequest != null
                 && currentPaymentRequest.getPayer().hasActionCard(ActionCardType.JUST_SAY_NO);
