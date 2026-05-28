@@ -112,6 +112,10 @@ public class Game {
         return finishAction(cardPlayService.playCard(getCurrentPlayer(), card));
     }
 
+    public boolean playActionCardAsMoney(ActionCards card) {
+        return finishAction(cardPlayService.playActionCardAsMoney(getCurrentPlayer(), card));
+    }
+
     public boolean finishPassGo(ActionCards passGoCard) {
         return finishAction(actionCardService.finishPassGo(getCurrentPlayer(), passGoCard));
     }
