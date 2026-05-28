@@ -23,13 +23,13 @@ public class PlayerDetailPopupPanel {
     private int bankPage = 0;
     private int propertyPage = 0;
 
-    private final double popupX = 145;
-    private final double popupY = 70;
-    private final double popupWidth = 745;
-    private final double popupHeight = 485;
+    private final double popupX = 95;
+    private final double popupY = 60;
+    private final double popupWidth = 845;
+    private final double popupHeight = 505;
 
-    private final double closeX = 785;
-    private final double closeY = 95;
+    private final double closeX = 830;
+    private final double closeY = 85;
     private final double closeWidth = 80;
     private final double closeHeight = 34;
 
@@ -161,6 +161,7 @@ public class PlayerDetailPopupPanel {
         drawBasicInfo(gc, player);
         drawBankArea(gc, player);
         drawPropertyArea(gc, player);
+        drawColorSummary(gc, player);
     }
 
     // Keeps bank and property pages inside valid ranges.
@@ -486,5 +487,80 @@ public class PlayerDetailPopupPanel {
         }
 
         return result.toString();
+    }
+
+    private void drawColorSummary(GraphicsContext gc, Player player) {
+        double panelX = popupX + 620;
+        double panelY = popupY + 100;
+        double panelWidth = 190;
+        double panelHeight = 365;
+
+        gc.setFill(Color.rgb(25, 34, 50));
+        gc.fillRoundRect(panelX, panelY, panelWidth, panelHeight, 18, 18);
+
+        gc.setStroke(Color.rgb(255, 184, 77, 0.65));
+        gc.strokeRoundRect(panelX, panelY, panelWidth, panelHeight, 18, 18);
+
+        gc.setFill(Color.rgb(255, 232, 180));
+        gc.setFont(Font.font("Arial", 18));
+        gc.setTextAlign(TextAlignment.LEFT);
+        gc.setTextBaseline(VPos.TOP);
+        gc.fillText("Color Summary", panelX + 14, panelY + 14);
+
+        gc.setStroke(Color.rgb(255, 184, 77, 0.6));
+        gc.strokeLine(panelX + 14, panelY + 43, panelX + panelWidth - 14, panelY + 43);
+
+        double y = panelY + 58;
+
+        for (PropertyColor color : PropertyColor.values()) {
+            int count = PlayerInfoHelper.getPropertyCountByCurrentColor(player, color);
+            int required = color.getAmountToCompleteSet();
+
+            gc.setFill(getPropertyDotColor(color));
+            gc.fillOval(panelX + 16, y + 4, 9, 9);
+
+            gc.setFill(Color.rgb(230, 236, 246));
+            gc.setFont(Font.font("Arial", 12));
+            gc.setTextAlign(TextAlignment.LEFT);
+            gc.fillText(getShortColorName(color), panelX + 31, y);
+
+            gc.setTextAlign(TextAlignment.RIGHT);
+            gc.fillText(count + "/" + required, panelX + panelWidth - 16, y);
+
+            y += 22;
+        }
+
+        gc.setTextAlign(TextAlignment.LEFT);
+        gc.setTextBaseline(VPos.TOP);
+    }
+
+    private Color getPropertyDotColor(PropertyColor color) {
+        return switch (color) {
+            case DARK_BLUE -> Color.rgb(25, 76, 140);
+            case ORANGE -> Color.rgb(245, 145, 35);
+            case BLACK -> Color.rgb(50, 50, 50);
+            case RED -> Color.rgb(220, 55, 48);
+            case DARK_GREEN -> Color.rgb(45, 140, 70);
+            case BROWN -> Color.rgb(135, 85, 50);
+            case PINK -> Color.rgb(230, 105, 170);
+            case LIGHT_BLUE -> Color.rgb(75, 180, 230);
+            case LIGHT_GREEN -> Color.rgb(145, 220, 85);
+            case YELLOW -> Color.rgb(245, 200, 35);
+        };
+    }
+
+    private String getShortColorName(PropertyColor color) {
+        return switch (color) {
+            case DARK_BLUE -> "Dark Blue";
+            case ORANGE -> "Orange";
+            case BLACK -> "Black";
+            case RED -> "Red";
+            case DARK_GREEN -> "Dark Green";
+            case BROWN -> "Brown";
+            case PINK -> "Pink";
+            case LIGHT_BLUE -> "Light Blue";
+            case LIGHT_GREEN -> "Light Green";
+            case YELLOW -> "Yellow";
+        };
     }
 }

@@ -8,7 +8,7 @@ public enum PropertyColor {
     DARK_GREEN(3),
     BROWN(2),
     PINK(3),
-    LIGHT_BLUE(2),
+    LIGHT_BLUE(3),
     LIGHT_GREEN(2),
     YELLOW(3);
 
