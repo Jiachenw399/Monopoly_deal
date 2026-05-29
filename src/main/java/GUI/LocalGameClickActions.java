@@ -1,6 +1,6 @@
 package GUI;
 
-import logic.Game;
+import logic.GameFacade;
 import model.ActionCards;
 import model.Card;
 import model.Player;
@@ -9,14 +9,11 @@ import model.PropertyColor;
 
 import java.util.ArrayList;
 
-public class LocalGameClickActions implements GameClickActions {
-    private final Game game;
-    private final GameScreen gameScreen;
+public class LocalGameClickActions extends GameClickActionAdapter {
     private final MainMenu menu;
 
-    public LocalGameClickActions(Game game, GameScreen gameScreen, MainMenu menu) {
-        this.game = game;
-        this.gameScreen = gameScreen;
+    public LocalGameClickActions(GameFacade game, GameScreen gameScreen, MainMenu menu) {
+        super(game, gameScreen);
         this.menu = menu;
     }
 
@@ -139,20 +136,9 @@ public class LocalGameClickActions implements GameClickActions {
     }
 
     @Override
-    public void startActionCardFlow(ActionCards actionCard) {
+    protected void finishImmediateAction(ActionCards actionCard) {
         switch (actionCard.getActionCardType()) {
-            case SLY_DEAL -> gameScreen.startSlyDealSelection(actionCard);
-            case RENT_WITH_MULTIPLE_COLOR -> gameScreen.startMultipleColorRentSelection(actionCard);
-            case HOUSE, HOTEL -> gameScreen.startBuildingSelection(actionCard);
-            case FORCED_DEAL -> gameScreen.startForcedDealSelection(actionCard);
             case BIRTHDAY -> game.finishBirthday(actionCard);
-            case DEBT_COLLECTOR -> gameScreen.startDebtCollectorSelection(actionCard);
-            case DEAL_BREAKER -> gameScreen.startDealBreakerSelection(actionCard);
-            case RENT_WITH_DARK_BLUE_AND_DARK_GREEN,
-                 RENT_WITH_BROWN_AND_LIGHT_BLUE,
-                 RENT_WITH_BLACK_AND_LIGHT_GREEN,
-                 RENT_WITH_RED_AND_YELLOW,
-                 RENT_WITH_ORANGE_AND_PINK -> gameScreen.startTwoColorRentSelection(actionCard);
             case PASS_GO -> game.finishPassGo(actionCard);
             default -> {
             }

@@ -3,16 +3,16 @@ package GUI;
 import javafx.scene.Scene;
 import javafx.scene.input.KeyCode;
 import javafx.stage.Stage;
-import logic.Game;
+import logic.GameFacade;
 import network.OnlineLauncher;
 
 public class MenuListener {
     private final MainMenu menu;
-    private final Game game;
+    private final GameFacade game;
     private final GameScreen gameScreen;
     private final RuleScreen ruleScreen;
 
-    public MenuListener(MainMenu menu, Game game, GameScreen gameScreen, RuleScreen ruleScreen) {
+    public MenuListener(MainMenu menu, GameFacade game, GameScreen gameScreen, RuleScreen ruleScreen) {
         this.menu = menu;
         this.game = game;
         this.gameScreen = gameScreen;

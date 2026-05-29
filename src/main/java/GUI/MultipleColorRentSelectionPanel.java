@@ -452,13 +452,7 @@ public class MultipleColorRentSelectionPanel {
     }
 
     private int calculatePreviewRent(Player player, PropertyColor color) {
-        int rent = rentCalculator.calculateRent(player, color);
-
-        if (useDoubleRent) {
-            rent *= 2;
-        }
-
-        return rent;
+        return rentCalculator.calculateRent(player, color, useDoubleRent);
     }
 
     private String getDisplayColorName(PropertyColor color) {

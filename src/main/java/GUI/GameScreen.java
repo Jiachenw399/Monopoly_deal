@@ -1,13 +1,13 @@
 package GUI;
 
 import javafx.scene.canvas.Canvas;
-import javafx.scene.canvas.GraphicsContext;
 import logic.Game;
+import logic.GameObserver;
 import java.util.ArrayList;
 import model.*;
 
 
-public class GameScreen {
+public class GameScreen implements GameObserver {
     private int viewedPlayerIndex = 0;
     private int lastTurnPlayerIndex = -1;
     private Canvas canvas;
@@ -101,6 +101,11 @@ public class GameScreen {
     public void resetViewedPlayerToCurrentPlayer() {
         viewedPlayerIndex = game.getCurrentPlayerIndex();
         lastTurnPlayerIndex = game.getCurrentPlayerIndex();
+    }
+
+    @Override
+    public void onGameStateChanged() {
+        resetViewedPlayerToCurrentPlayer();
     }
 
 

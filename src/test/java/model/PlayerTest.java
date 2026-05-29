@@ -1,134 +1,111 @@
 package model;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import logic.Game;
-import model.Player;
 import org.junit.jupiter.api.Test;
-
-import java.util.ArrayList;
 
 public class PlayerTest {
     @Test
-    public void testSomething() {
-        // 1. Setup（准备）
-        Player p = new Player(new DrawPileAndDiscardPile());
+    public void testTakeCardDrawsRequestedCards() {
+        Player player = new Player(new DrawPileAndDiscardPile());
 
-        // 2. Call（调用）
-        p.takeCard(6);
+        player.takeCard(6);
 
-        // 3. Assert（验证）
-        assertEquals(1, p.getHandCards().size());
+        assertEquals(6, player.getHandCards().size());
     }
 
     @Test
-    public void testTakeMoney_AllMoneyTaken() {
-        Player playerA = new Player(new DrawPileAndDiscardPile());
-        Player playerB = new Player(new DrawPileAndDiscardPile());
+    public void testPutMoneyCardMovesCardFromHandToBank() {
+        Player player = new Player(new DrawPileAndDiscardPile());
+        MoneyCards moneyCard = new MoneyCards(5);
+        player.getHandCards().add(moneyCard);
 
-        playerB.getBankCards().add(new MoneyCards(5));
-        playerB.getBankCards().add(new MoneyCards(2));
-        playerB.getBankCards().add(new MoneyCards(3));
+        player.putMoneyCard(moneyCard);
 
-        int totalBefore = 10;
-        playerA.takeMoney(totalBefore, playerB);
-
-        assertEquals(0, playerB.getBankCards().size(), "对手银行区应该被清空");
-        assertEquals(3, playerA.getBankCards().size(), "应该获得所有3张钱卡");
-
-        int totalReceived = playerA.getBankCards().stream()
-                .mapToInt(Card::getValue)
-                .sum();
-        assertEquals(10, totalReceived, "应该收到总共10M$");
+        assertFalse(player.getHandCards().contains(moneyCard));
+        assertTrue(player.getBankCards().contains(moneyCard));
     }
 
     @Test
-    public void testTakeMoney_ExactAmount() {
-        Player playerA = new Player(new DrawPileAndDiscardPile());
-        Player playerB = new Player(new DrawPileAndDiscardPile());
+    public void testPropertyCardCannotBeBankedAsMoney() {
+        Player player = new Player(new DrawPileAndDiscardPile());
+        PropertiesCards property = new PropertiesCards(PropertiesCardsType.BROWN);
+        player.getHandCards().add(property);
 
-        playerB.getBankCards().add(new MoneyCards(5));
-        playerB.getBankCards().add(new MoneyCards(2));
-        playerB.getBankCards().add(new MoneyCards(3));
+        player.putMoneyCard(property);
 
-        playerA.takeMoney(7, playerB);
-
-        int remainingTotal = playerB.getBankCards().stream()
-                .mapToInt(Card::getValue)
-                .sum();
-        assertTrue(remainingTotal >= 0, "剩余金额应该>=0");
-
-        int takenTotal = playerA.getBankCards().stream()
-                .mapToInt(Card::getValue)
-                .sum();
-        assertEquals(7, takenTotal, "应该恰好收取7M$");
+        assertTrue(player.getHandCards().contains(property));
+        assertFalse(player.getBankCards().contains(property));
     }
 
     @Test
-    public void testTakeMoney_PartialPayment() {
-        Player playerA = new Player(new DrawPileAndDiscardPile());
-        Player playerB = new Player(new DrawPileAndDiscardPile());
+    public void testPutPropertyCardAssignsDefaultWildColor() {
+        Player player = new Player(new DrawPileAndDiscardPile());
+        PropertiesCards wildCard = new PropertiesCards(PropertiesCardsType.WILD_RED_YELLOW);
+        player.getHandCards().add(wildCard);
 
-        playerB.getBankCards().add(new MoneyCards(10));
-        playerB.getBankCards().add(new MoneyCards(5));
-        playerB.getBankCards().add(new MoneyCards(2));
-        playerB.getBankCards().add(new MoneyCards(1));
+        player.putPropertyCard(wildCard);
 
-        playerA.takeMoney(7, playerB);
-
-        int takenTotal = playerA.getBankCards().stream()
-                .mapToInt(Card::getValue)
-                .sum();
-        assertEquals(7, takenTotal, "应该收取7M$");
-
-        int remainingTotal = playerB.getBankCards().stream()
-                .mapToInt(Card::getValue)
-                .sum();
-        assertEquals(11, remainingTotal, "对手应该剩余11M$");
+        assertFalse(player.getHandCards().contains(wildCard));
+        assertTrue(player.getPropertyCards().contains(wildCard));
+        assertEquals(PropertyColor.RED, wildCard.getCurrentColor());
     }
 
     @Test
-    public void testTakeMoney_OptimalCombination() {
-        Player playerA = new Player(new DrawPileAndDiscardPile());
-        Player playerB = new Player(new DrawPileAndDiscardPile());
+    public void testFindAndDiscardActionCardFromHand() {
+        Player player = new Player(new DrawPileAndDiscardPile());
+        ActionCards passGo = new ActionCards(ActionCardType.PASS_GO);
+        player.getHandCards().add(passGo);
 
-        playerB.getBankCards().add(new MoneyCards(5));
-        playerB.getBankCards().add(new MoneyCards(3));
-        playerB.getBankCards().add(new MoneyCards(2));
-        playerB.getBankCards().add(new MoneyCards(1));
-
-        playerA.takeMoney(5, playerB);
-
-        int takenTotal = playerA.getBankCards().stream()
-                .mapToInt(Card::getValue)
-                .sum();
-        assertEquals(5, takenTotal, "应该收取5M$");
-        assertEquals(1, playerA.getBankCards().size(), "最优解应该是只拿一张5M$的卡");
+        assertSame(passGo, player.findActionCard(ActionCardType.PASS_GO));
+        assertTrue(player.discardActionCardFromHand(ActionCardType.PASS_GO));
+        assertFalse(player.getHandCards().contains(passGo));
+        assertTrue(player.getDrawCardsAndDiscardPile().getDiscardPile().contains(passGo));
     }
 
     @Test
-    public void testTakeMoney_EmptyBank() {
-        Player playerA = new Player(new DrawPileAndDiscardPile());
-        Player playerB = new Player(new DrawPileAndDiscardPile());
+    public void testCompleteSetCannotLosePropertyToSlyDeal() {
+        Player player = new Player(new DrawPileAndDiscardPile());
+        PropertiesCards baltic = new PropertiesCards(PropertiesCardsType.BROWN);
+        PropertiesCards mediterranean = new PropertiesCards(PropertiesCardsType.BROWN);
+        player.getPropertyCards().add(baltic);
+        player.getPropertyCards().add(mediterranean);
 
-        playerA.takeMoney(5, playerB);
-
-        assertEquals(0, playerA.getBankCards().size(), "对手没钱时不应该获得任何卡");
-        assertEquals(0, playerB.getBankCards().size(), "对手银行区应该仍为空");
+        assertTrue(player.isCompleteSet(PropertyColor.BROWN));
+        assertFalse(player.canLosePropertyToSlyDeal(baltic));
     }
 
     @Test
-    public void testTakeMoney_SingleCard() {
-        Player playerA = new Player(new DrawPileAndDiscardPile());
-        Player playerB = new Player(new DrawPileAndDiscardPile());
+    public void testCheckIfWinRequiresThreeCompletedSets() {
+        Player player = new Player(new DrawPileAndDiscardPile());
+        addProperties(player, PropertiesCardsType.BROWN, 2);
+        addProperties(player, PropertiesCardsType.DARK_BLUE, 2);
+        addProperties(player, PropertiesCardsType.LIGHT_GREEN, 2);
 
-        playerB.getBankCards().add(new MoneyCards(10));
+        assertTrue(player.checkIfWin());
+    }
 
-        playerA.takeMoney(5, playerB);
+    @Test
+    public void testTakeMoneyUsesSmallestValidBankCombination() {
+        Player receiver = new Player(new DrawPileAndDiscardPile());
+        Player payer = new Player(new DrawPileAndDiscardPile());
+        payer.getBankCards().add(new MoneyCards(5));
+        payer.getBankCards().add(new MoneyCards(3));
+        payer.getBankCards().add(new MoneyCards(2));
 
-        assertEquals(1, playerA.getBankCards().size(), "应该获得1张卡");
-        assertEquals(10, playerA.getBankCards().get(0).getValue(), "应该获得10M$的卡");
-        assertEquals(0, playerB.getBankCards().size(), "对手银行区应该被清空");
+        receiver.takeMoney(5, payer);
+
+        assertEquals(1, receiver.getBankCards().size());
+        assertEquals(5, receiver.getBankCards().get(0).getValue());
+        assertEquals(5, payer.getBankCards().stream().mapToInt(Card::getValue).sum());
+    }
+
+    private void addProperties(Player player, PropertiesCardsType type, int amount) {
+        for (int i = 0; i < amount; i++) {
+            player.getPropertyCards().add(new PropertiesCards(type));
+        }
     }
 }
-

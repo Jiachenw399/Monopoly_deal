@@ -2,14 +2,22 @@ package logic;
 
 import model.ActionCards;
 import model.Card;
+import model.DeckCardFactory;
 import model.DrawPileAndDiscardPile;
 import model.Player;
 import model.PropertiesCards;
 import model.PropertyColor;
+import model.StandardDeckCardFactory;
 
 import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
 
-public class Game {
+/**
+ * Facade for game rules. UI and network layers use this entry point instead of
+ * coordinating turn, payment, card-play, and action-card services directly.
+ */
+public class Game implements GameFacade {
     public static final double SCREEN_WIDTH = 1035;
     public static final double SCREEN_HEIGHT = 625;
     private static final int DEFAULT_PLAYER_COUNT = 4;
@@ -20,6 +28,8 @@ public class Game {
     private final RentCalculator rentCalculator;
     private final MoneyCardAndPropertyCardPlayService cardPlayService;
     private final GameSetupService gameSetupService;
+    private final List<GameObserver> observers;
+    private final DeckCardFactory cardFactory;
     private final int playerCount;
 
     private DrawPileAndDiscardPile drawCards;
@@ -30,15 +40,21 @@ public class Game {
     private boolean isWin;
 
     public Game() {
-        this(DEFAULT_PLAYER_COUNT);
+        this(DEFAULT_PLAYER_COUNT, new StandardDeckCardFactory());
     }
 
     public Game(int playerCount) {
+        this(playerCount, new StandardDeckCardFactory());
+    }
+
+    public Game(int playerCount, DeckCardFactory cardFactory) {
         this.playerCount = normalizePlayerCount(playerCount);
+        this.cardFactory = Objects.requireNonNull(cardFactory);
         players = new ArrayList<>();
         rentCalculator = new RentCalculator();
         cardPlayService = new MoneyCardAndPropertyCardPlayService();
         gameSetupService = new GameSetupService();
+        observers = new ArrayList<>();
 
         initializeGameObjects();
         setupNewPlayers();
@@ -62,6 +78,7 @@ public class Game {
         resetGame();
         setupNewPlayers();
         turnManager.startFirstTurn();
+        notifyObservers();
     }
 
     private void resetGame() {
@@ -70,7 +87,7 @@ public class Game {
     }
 
     private void initializeGameObjects() {
-        drawCards = new DrawPileAndDiscardPile();
+        drawCards = new DrawPileAndDiscardPile(cardFactory);
         paymentManager = new PaymentManager();
         actionCardService = createActionCardService();
         turnManager = new TurnManager(players, drawCards);
@@ -86,26 +103,31 @@ public class Game {
 
     public void startTurn(Player currentPlayer) {
         turnManager.startTurn(currentPlayer);
+        notifyObservers();
     }
 
     public void guiEndTurn() {
         if (checkCurrentPlayerWin()) {
+            notifyObservers();
             return;
         }
 
         turnManager.endTurn();
+        notifyObservers();
     }
 
     public void forceAdvanceTurnForAbsentPlayer() {
         if (checkCurrentPlayerWin()) {
+            notifyObservers();
             return;
         }
 
         turnManager.forceAdvanceTurnForAbsentPlayer();
+        notifyObservers();
     }
 
     public boolean discard(Card card) {
-        return turnManager.discard(card);
+        return finishAction(turnManager.discard(card));
     }
 
     public boolean playCard(Card card) {
@@ -232,6 +254,7 @@ public class Game {
     private boolean finishAction(boolean success) {
         if (success) {
             checkCurrentPlayerWin();
+            notifyObservers();
         }
 
         return success;
@@ -272,6 +295,7 @@ public class Game {
         turnManager.applyOnlineState(currentPlayerIndex, discard);
         paymentManager.applyOnlineState(paymentRequest);
         isWin = win;
+        notifyObservers();
     }
 
     public DrawPileAndDiscardPile getDrawCards() {
@@ -284,10 +308,27 @@ public class Game {
 
     public void setWin(boolean win) {
         isWin = win;
+        notifyObservers();
     }
 
     public boolean isDiscard() {
         return turnManager.isDiscard();
+    }
+
+    public void addObserver(GameObserver observer) {
+        if (observer != null && !observers.contains(observer)) {
+            observers.add(observer);
+        }
+    }
+
+    public void removeObserver(GameObserver observer) {
+        observers.remove(observer);
+    }
+
+    private void notifyObservers() {
+        for (GameObserver observer : new ArrayList<>(observers)) {
+            observer.onGameStateChanged();
+        }
     }
 
     public static class PaymentRequest {

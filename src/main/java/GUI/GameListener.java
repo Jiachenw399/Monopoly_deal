@@ -1,12 +1,13 @@
 package GUI;
 
 import javafx.scene.Scene;
+import logic.GameFacade;
 
 public class GameListener {
     private final GameScreen gameScreen;
     private final GameClickHandler clickHandler;
 
-    public GameListener(MainMenu menu, GameScreen gameScreen, logic.Game game) {
+    public GameListener(MainMenu menu, GameScreen gameScreen, GameFacade game) {
         this.gameScreen = gameScreen;
         this.clickHandler = new GameClickHandler(
                 game,

@@ -9,6 +9,15 @@ import org.junit.jupiter.api.Test;
 import model.Player;
 
 public class GameTest {
+    private static class CountingObserver implements GameObserver {
+        private int notificationCount;
+
+        @Override
+        public void onGameStateChanged() {
+            notificationCount++;
+        }
+    }
+
     @Test
     public void testGameInitialization() {
         Game game = new Game();
@@ -45,5 +54,15 @@ public class GameTest {
         game.startTurn(currentPlayer);
         //没手牌抓五张
         assertEquals(5, currentPlayer.getHandCards().size());
+    }
+    @Test
+    public void testObserverIsNotifiedWhenGameStateChanges() {
+        Game game = new Game();
+        CountingObserver observer = new CountingObserver();
+
+        game.addObserver(observer);
+        game.startGame();
+
+        assertTrue(observer.notificationCount > 0);
     }
 }

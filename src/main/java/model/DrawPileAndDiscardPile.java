@@ -2,12 +2,19 @@ package model;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Objects;
 
 public class DrawPileAndDiscardPile {
     private ArrayList<Card> DrawPile;
     private ArrayList<Card> DiscardPile;
+    private final DeckCardFactory cardFactory;
 
     public DrawPileAndDiscardPile() {
+        this(new StandardDeckCardFactory());
+    }
+
+    public DrawPileAndDiscardPile(DeckCardFactory cardFactory) {
+        this.cardFactory = Objects.requireNonNull(cardFactory);
         DrawPile = new ArrayList<>();
         DiscardPile = new ArrayList<>();
         addMoneyCards();
@@ -46,7 +53,7 @@ public class DrawPileAndDiscardPile {
         };
 
         for (int value : moneyValues) {
-            DrawPile.add(CardFactory.createMoneyCard(value));
+            DrawPile.add(cardFactory.createMoneyCard(value));
         }
     }
 
@@ -80,7 +87,7 @@ public class DrawPileAndDiscardPile {
 
         for (int i = 0; i < actionCardType.length; i++) {
             for (int j = 0; j < amount[i]; j++) {
-                DrawPile.add(CardFactory.createActionCard(actionCardType[i]));
+                DrawPile.add(cardFactory.createActionCard(actionCardType[i]));
             }
         }
     }
@@ -142,12 +149,12 @@ public class DrawPileAndDiscardPile {
     }
 
     private void addPropertyCard(PropertiesCardsType type, String propertyName, String imageFileName) {
-        DrawPile.add(CardFactory.createPropertyCard(type, propertyName, imageFileName));
+        DrawPile.add(cardFactory.createPropertyCard(type, propertyName, imageFileName));
     }
 
     private void addSeveralPropertyCards(PropertiesCardsType type, int amount) {
         for (int i = 0; i < amount; i++) {
-            DrawPile.add(CardFactory.createPropertyCard(type));
+            DrawPile.add(cardFactory.createPropertyCard(type));
         }
     }
 }

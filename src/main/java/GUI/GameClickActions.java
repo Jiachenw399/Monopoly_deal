@@ -9,7 +9,9 @@ import model.PropertyColor;
 import java.util.ArrayList;
 
 /**
- * Commit hooks for {@link GameClickHandler}; local and online modes implement differently.
+ * Target interface for the Adapter pattern used by {@link GameClickHandler}.
+ * Local and online adapters expose the same click actions while committing them
+ * to different backends.
  */
 public interface GameClickActions {
     void playActionCardAsMoney(ActionCards card);

@@ -35,25 +35,6 @@ public class Player {
         }
     }
 
-    public void putCard(Card card) {
-        switch (card) {
-            case null -> {
-                return;
-            }
-            case MoneyCards moneyCards -> {
-                putMoneyCard(card);
-                useCardTimes++;
-            }
-            case PropertiesCards propertyCard -> {
-                putPropertyCard(propertyCard);
-                useCardTimes++;
-            }
-            default -> {
-            }
-        }
-
-    }
-
     public void putMoneyCard(Card card) {
         if (card == null) {
             return;
@@ -95,10 +76,6 @@ public class Player {
 
     public void increaseUseCardTimes() {
         useCardTimes++;
-    }
-
-    public void resetUseCardTimes() {
-        useCardTimes = 0;
     }
 
     public boolean canLosePropertyToSlyDeal(PropertiesCards card) {

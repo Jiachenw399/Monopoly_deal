@@ -1,8 +1,9 @@
 package network;
 
-import GUI.GameClickActions;
+import GUI.GameClickActionAdapter;
 import GUI.GameScreen;
 import logic.Game;
+import logic.GameFacade;
 import model.ActionCards;
 import model.Card;
 import model.Player;
@@ -15,19 +16,16 @@ import java.util.function.BiConsumer;
 /**
  * Network commit adapter for {@link GUI.GameClickHandler} in {@link OnlinePlayWindow}.
  */
-public class OnlineGameClickActions implements GameClickActions {
-    private final Game game;
-    private final GameScreen gameScreen;
+public class OnlineGameClickActions extends GameClickActionAdapter {
     private int myPlayerId;
     private final BiConsumer<String, String> send;
     private final Runnable onExitToMenu;
 
-    public OnlineGameClickActions(Game game,
+    public OnlineGameClickActions(GameFacade game,
                                   GameScreen gameScreen,
                                   BiConsumer<String, String> send,
                                   Runnable onExitToMenu) {
-        this.game = game;
-        this.gameScreen = gameScreen;
+        super(game, gameScreen);
         this.send = send;
         this.onExitToMenu = onExitToMenu;
     }
@@ -168,20 +166,9 @@ public class OnlineGameClickActions implements GameClickActions {
     }
 
     @Override
-    public void startActionCardFlow(ActionCards actionCard) {
+    protected void finishImmediateAction(ActionCards actionCard) {
         switch (actionCard.getActionCardType()) {
-            case SLY_DEAL -> gameScreen.startSlyDealSelection(actionCard);
-            case RENT_WITH_MULTIPLE_COLOR -> gameScreen.startMultipleColorRentSelection(actionCard);
-            case HOUSE, HOTEL -> gameScreen.startBuildingSelection(actionCard);
-            case FORCED_DEAL -> gameScreen.startForcedDealSelection(actionCard);
             case BIRTHDAY -> send.accept("BIRTHDAY", handNumber(actionCard));
-            case DEBT_COLLECTOR -> gameScreen.startDebtCollectorSelection(actionCard);
-            case DEAL_BREAKER -> gameScreen.startDealBreakerSelection(actionCard);
-            case RENT_WITH_DARK_BLUE_AND_DARK_GREEN,
-                 RENT_WITH_BROWN_AND_LIGHT_BLUE,
-                 RENT_WITH_BLACK_AND_LIGHT_GREEN,
-                 RENT_WITH_RED_AND_YELLOW,
-                 RENT_WITH_ORANGE_AND_PINK -> gameScreen.startTwoColorRentSelection(actionCard);
             case PASS_GO -> send.accept("PASS_GO", handNumber(actionCard));
             default -> {
             }

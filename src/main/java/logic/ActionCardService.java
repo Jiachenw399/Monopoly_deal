@@ -400,13 +400,7 @@ public class ActionCardService {
     }
 
     private int getFinalRent(Player player, PropertyColor selectedColor, boolean canUseDoubleRent) {
-        int rent = rentCalculator.calculateRent(player, selectedColor);
-
-        if (canUseDoubleRent) {
-            rent *= 2;
-        }
-
-        return rent;
+        return rentCalculator.calculateRent(player, selectedColor, canUseDoubleRent);
     }
 
     private void increaseRentUseTimes(Player player, boolean canUseDoubleRent) {

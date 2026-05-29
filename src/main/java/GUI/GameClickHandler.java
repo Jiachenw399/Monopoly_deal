@@ -1,21 +1,18 @@
 package GUI;
 
-import logic.Game;
+import logic.GameFacade;
 import model.ActionCards;
 import model.Card;
 import model.Player;
 import model.PropertiesCards;
 import model.PropertyColor;
 
-/**
- * Shared mouse-click flow for local play; commits go through {@link GameClickActions}.
- */
 public class GameClickHandler {
-    private final Game game;
+    private final GameFacade game;
     private final GameScreen gameScreen;
     private final GameClickActions actions;
 
-    public GameClickHandler(Game game, GameScreen gameScreen, GameClickActions actions) {
+    public GameClickHandler(GameFacade game, GameScreen gameScreen, GameClickActions actions) {
         this.game = game;
         this.gameScreen = gameScreen;
         this.actions = actions;

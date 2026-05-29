@@ -36,29 +36,12 @@ public class GuiScale {
         this.designHeight = designHeight;
     }
 
-    public static GuiScale getDefault() {
-        return DEFAULT;
-    }
-
-    // --- Static facade (GameListener / GameScreen / RuleScreen) ---
-
-    /** Display pixel width of every full-screen canvas (design width × {@link #DISPLAY_SCALE}). */
     public static double canvasWidth() {
         return DEFAULT.s(DEFAULT.designWidth);
     }
 
-    /** Display pixel height of every full-screen canvas (design height × {@link #DISPLAY_SCALE}). */
     public static double canvasHeight() {
         return DEFAULT.s(DEFAULT.designHeight);
-    }
-
-    /** Logical layout width/height used when drawing (1035×625). */
-    public static double designWidth() {
-        return DEFAULT.designWidth;
-    }
-
-    public static double designHeight() {
-        return DEFAULT.designHeight;
     }
 
     public static void prepare(GraphicsContext gc) {
@@ -77,12 +60,9 @@ public class GuiScale {
         gc.clearRect(0, 0, canvas.getWidth(), canvas.getHeight());
     }
 
-    /** Uniform logical coordinate (same scale on X/Y; used by {@code GameListener}). */
     public static double toLogical(double displayCoordinate) {
         return DEFAULT.toLogicalX(displayCoordinate);
     }
-
-    // --- Instance API ---
 
     public void update(double displayWidth, double displayHeight) {
         if (displayWidth <= 0 || displayHeight <= 0) {
@@ -94,32 +74,11 @@ public class GuiScale {
         scaleY = displayHeight / designHeight;
     }
 
-    public double getScaleX() {
-        return scaleX;
-    }
-
-    public double getScaleY() {
-        return scaleY;
-    }
-
-    public double getDesignWidth() {
-        return designWidth;
-    }
-
-    public double getDesignHeight() {
-        return designHeight;
-    }
-
-    /** Scales a design-space value to display space (uses scaleX). */
     public double s(double designValue) {
         return designValue * scaleX;
     }
 
     public double toLogicalX(double displayX) {
         return scaleX == 0 ? displayX : displayX / scaleX;
-    }
-
-    public double toLogicalY(double displayY) {
-        return scaleY == 0 ? displayY : displayY / scaleY;
     }
 }

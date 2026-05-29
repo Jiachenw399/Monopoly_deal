@@ -3,9 +3,6 @@ package GUI;
 import logic.Game;
 import network.GameStateCodec;
 
-/**
- * Facade for a single play session: rules ({@link Game}) and UI ({@link GameScreen}).
- */
 public class GameSession {
     private final Game game;
     private final GameScreen gameScreen;
@@ -17,6 +14,7 @@ public class GameSession {
     public GameSession(Game game) {
         this.game = game;
         this.gameScreen = new GameScreen(game);
+        this.game.addObserver(gameScreen);
     }
 
     public Game getGame() {
@@ -35,6 +33,5 @@ public class GameSession {
                 snapshot.paymentRequest,
                 snapshot.win
         );
-        gameScreen.resetViewedPlayerToCurrentPlayer();
     }
 }
