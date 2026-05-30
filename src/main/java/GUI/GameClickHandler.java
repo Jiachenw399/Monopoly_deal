@@ -672,13 +672,17 @@ public class GameClickHandler {
             return;
         }
 
-        Player currentPlayer = game.getCurrentPlayer();
+        Card selectedCard = gameScreen.getViewedHandCard(handIndex);
 
-        if (handIndex >= currentPlayer.getHandCards().size()) {
+        if (selectedCard == null) {
             return;
         }
 
-        Card selectedCard = currentPlayer.getHandCards().get(handIndex);
+        Player currentPlayer = game.getCurrentPlayer();
+
+        if (!currentPlayer.getHandCards().contains(selectedCard)) {
+            return;
+        }
 
         if (game.isDiscard()) {
             actions.discardHandCard(selectedCard);

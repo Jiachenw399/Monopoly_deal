@@ -73,4 +73,18 @@ public class GameStateCodecTest {
         assertEquals(snapshot.players.get(1), snapshot.paymentRequest.getPayer());
         assertEquals(5, snapshot.paymentRequest.getAmount());
     }
+
+    @Test
+    public void testDecodeOnlyIncludesReceivingPlayersHand() {
+        Game game = new Game(2);
+        game.startGame();
+
+        GameStateCodec.Snapshot snapshotForPlayerTwo = GameStateCodec.decode(GameStateCodec.encode(game, 2));
+
+        assertEquals(2, snapshotForPlayerTwo.you);
+        assertEquals(0, snapshotForPlayerTwo.currentPlayerIndex);
+        assertEquals(0, snapshotForPlayerTwo.players.get(0).getHandCards().size());
+        assertTrue(snapshotForPlayerTwo.players.get(1).getHandCards().size() > 0);
+    }
+
 }

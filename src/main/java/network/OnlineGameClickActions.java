@@ -65,7 +65,7 @@ public class OnlineGameClickActions extends GameClickActionAdapter {
                                  PropertiesCards targetProperty) {
         send.accept("FORCED_DEAL", handNumber(card)
                 + " " + playerNumber(target)
-                + " " + propertyNumber(game.getCurrentPlayer(), myProperty)
+                + " " + propertyNumber(myPlayer(), myProperty)
                 + " " + propertyNumber(target, targetProperty));
     }
 
@@ -136,7 +136,7 @@ public class OnlineGameClickActions extends GameClickActionAdapter {
     @Override
     public void setWildCardColor(PropertiesCards card, PropertyColor color) {
         send.accept("SET_PROPERTY_COLOR",
-                propertyNumber(game.getCurrentPlayer(), card) + " " + color.name());
+                propertyNumber(myPlayer(), card) + " " + color.name());
     }
 
     @Override
@@ -177,7 +177,7 @@ public class OnlineGameClickActions extends GameClickActionAdapter {
     }
 
     private String handNumber(Card card) {
-        return Integer.toString(game.getCurrentPlayer().getHandCards().indexOf(card) + 1);
+        return Integer.toString(myPlayer().getHandCards().indexOf(card) + 1);
     }
 
     private int playerNumber(Player player) {
@@ -186,6 +186,15 @@ public class OnlineGameClickActions extends GameClickActionAdapter {
 
     private int propertyNumber(Player player, PropertiesCards card) {
         return player.getPropertyCards().indexOf(card) + 1;
+    }
+
+    private Player myPlayer() {
+        int index = myPlayerId - 1;
+        if (index < 0 || index >= game.getPlayers().size()) {
+            return game.getCurrentPlayer();
+        }
+
+        return game.getPlayers().get(index);
     }
 
     private String paymentBody(ArrayList<Card> selectedCards) {

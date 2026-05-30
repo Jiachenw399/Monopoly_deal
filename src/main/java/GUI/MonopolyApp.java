@@ -52,7 +52,8 @@ public class MonopolyApp extends Application {
                 menu,
                 session.getGame(),
                 session.getGameScreen(),
-                ruleScreen
+                ruleScreen,
+                musicPlayer
         );
         menuListener.addListener(scene);
 

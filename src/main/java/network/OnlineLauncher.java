@@ -1,5 +1,6 @@
 package network;
 
+import GUI.MusicPlayer;
 import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.ChoiceDialog;
@@ -21,11 +22,16 @@ public final class OnlineLauncher {
 
     private static final Object SERVER_LOCK = new Object();
     private static Thread gameServerThread;
+    private static OnlinePlayWindow activeWindow;
 
     private OnlineLauncher() {
     }
 
-    public static void openLanMenu(Stage owner) {
+    public static void openLanMenu(Stage owner, MusicPlayer musicPlayer) {
+        if (showActiveWindowIfPresent()) {
+            return;
+        }
+
         ChoiceDialog<String> choice = new ChoiceDialog<>("Join", "Join", "Host");
         choice.setTitle("LAN / OnlinePlayWindow");
         choice.setHeaderText("Host starts a server on this PC (port 5555). Join connects to the host's IP.");
@@ -35,12 +41,24 @@ public final class OnlineLauncher {
         if (result.isEmpty()) {
             return;
         }
+
         if ("Host".equals(result.get())) {
             startHostServerIfNeeded();
             showHostInfo(owner);
+            openClient(owner, "127.0.0.1", musicPlayer);
         } else {
-            promptJoin(owner);
+            promptJoin(owner, musicPlayer);
         }
+    }
+
+    private static boolean showActiveWindowIfPresent() {
+        if (activeWindow == null || !activeWindow.isShowing()) {
+            return false;
+        }
+
+        activeWindow.toFront();
+        activeWindow.requestFocus();
+        return true;
     }
 
     private static void startHostServerIfNeeded() {
@@ -48,8 +66,9 @@ public final class OnlineLauncher {
             if (gameServerThread != null && gameServerThread.isAlive()) {
                 return;
             }
+
             gameServerThread = new Thread(() -> new GameServer().start(), "GameServer");
-            gameServerThread.setDaemon(false);
+            gameServerThread.setDaemon(true);
             gameServerThread.start();
         }
     }
@@ -60,20 +79,32 @@ public final class OnlineLauncher {
         alert.initOwner(owner);
         alert.setTitle("LAN host");
         alert.setHeaderText("Server is starting (or already running) on port 5555.");
-        alert.setContentText(
-                "Other computers: main menu → L → Join → enter this computer's IPv4 address.\n\n"
-                        + "On this computer to play as a client: L → Join → 127.0.0.1\n\n"
-                        + "Detected IPv4 addresses:\n"
-                        + ips
-                        + "\n\n"
-                        + "Commands in the online window are the same as the console client "
-                        + "(START_GAME when at least two players are connected, etc.)."
-        );
+        alert.setContentText("This computer will automatically join as Player 1 after you close this dialog.\n\n"
+                + "Other computers: main menu -> L -> Join -> enter this computer's IPv4 address.\n\n"
+                + "Detected IPv4 addresses:\n"
+                + ips
+                + "\n\n"
+                + "Click Start Game in the LAN window when at least two players are connected.");
         alert.getButtonTypes().setAll(ButtonType.OK);
         alert.showAndWait();
     }
 
-    private static void promptJoin(Stage owner) {
+    private static void openClient(Stage owner, String host, MusicPlayer musicPlayer) {
+        if (showActiveWindowIfPresent()) {
+            return;
+        }
+
+        OnlinePlayWindow window = new OnlinePlayWindow(owner, host, musicPlayer);
+        activeWindow = window;
+        window.setOnHidden(event -> {
+            if (activeWindow == window) {
+                activeWindow = null;
+            }
+        });
+        window.show();
+    }
+
+    private static void promptJoin(Stage owner, MusicPlayer musicPlayer) {
         TextInputDialog dialog = new TextInputDialog("127.0.0.1");
         dialog.initOwner(owner);
         dialog.setTitle("Join LAN game");
@@ -84,13 +115,13 @@ public final class OnlineLauncher {
         if (ip.isEmpty()) {
             return;
         }
+
         String host = ip.get().trim();
         if (host.isEmpty()) {
             return;
         }
 
-        OnlinePlayWindow window = new OnlinePlayWindow(owner, host);
-        window.show();
+        openClient(owner, host, musicPlayer);
     }
 
     private static String formatLanAddresses() {
@@ -100,18 +131,21 @@ public final class OnlineLauncher {
                 if (!ni.isUp() || ni.isLoopback()) {
                     continue;
                 }
+
                 for (InterfaceAddress ifAddr : ni.getInterfaceAddresses()) {
                     if (ifAddr.getAddress() instanceof Inet4Address addr && !addr.isLoopbackAddress()) {
-                        lines.add("• " + addr.getHostAddress());
+                        lines.add("- " + addr.getHostAddress());
                     }
                 }
             }
         } catch (SocketException e) {
             lines.add("(Could not list interfaces: " + e.getMessage() + ")");
         }
+
         if (lines.isEmpty()) {
-            lines.add("• (none found — try ipconfig / ifconfig on the host)");
+            lines.add("- (none found; try ipconfig / ifconfig on the host)");
         }
+
         return String.join("\n", lines);
     }
 }

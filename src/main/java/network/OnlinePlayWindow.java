@@ -4,6 +4,7 @@ import GUI.GameClickHandler;
 import GUI.GameScreen;
 import GUI.GameSession;
 import GUI.GuiScale;
+import GUI.MusicPlayer;
 import GUI.ScreenDrawHelper;
 import javafx.animation.AnimationTimer;
 import javafx.application.Platform;
@@ -31,7 +32,7 @@ public class OnlinePlayWindow extends Stage {
     private static final int PORT = 5555;
 
     private final String host;
-    private final GameSession session = new GameSession();
+    private final GameSession session;
     private final OnlineGameClickActions clickActions;
     private final GameClickHandler clickHandler;
     private final Canvas lobbyCanvas = new Canvas(GuiScale.canvasWidth(), GuiScale.canvasHeight());
@@ -44,8 +45,9 @@ public class OnlinePlayWindow extends Stage {
     private int myPlayerId;
     private String connectionText = "Connecting...";
 
-    public OnlinePlayWindow(Stage owner, String host) {
+    public OnlinePlayWindow(Stage owner, String host, MusicPlayer musicPlayer) {
         this.host = host;
+        this.session = new GameSession(new Game(), musicPlayer);
         initOwner(owner);
         setTitle("LAN Game - " + host + ":" + PORT);
 
@@ -177,12 +179,20 @@ public class OnlinePlayWindow extends Stage {
                 clickActions.setMyPlayerId(myPlayerId);
             }
             case "FULL" -> connectionText = "Rejected";
+            case "GAME_STARTED" -> send("STATE", "");
             case "GAME_STATE" -> {
-                GameStateCodec.Snapshot snapshot = GameStateCodec.decode(message.getBody());
-                myPlayerId = snapshot.you;
-                clickActions.setMyPlayerId(myPlayerId);
-                session.applyOnlineSnapshot(snapshot);
-                started = true;
+                try {
+                    GameStateCodec.Snapshot snapshot = GameStateCodec.decode(message.getBody());
+                    myPlayerId = snapshot.you;
+                    clickActions.setMyPlayerId(myPlayerId);
+                    session.applyOnlineSnapshot(snapshot);
+                    session.getGameScreen().lockViewedPlayer(myPlayerId - 1);
+                    started = true;
+                } catch (RuntimeException e) {
+                    connectionText = "State error";
+                    appendLog("Could not load game state: " + e.getMessage());
+                    send("STATE", "");
+                }
             }
             default -> {
             }

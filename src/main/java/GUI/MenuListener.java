@@ -13,12 +13,18 @@ public class MenuListener {
     private final GameFacade game;
     private final GameScreen gameScreen;
     private final RuleScreen ruleScreen;
+    private final MusicPlayer musicPlayer;
 
-    public MenuListener(MainMenu menu, GameFacade game, GameScreen gameScreen, RuleScreen ruleScreen) {
+    public MenuListener(MainMenu menu,
+                        GameFacade game,
+                        GameScreen gameScreen,
+                        RuleScreen ruleScreen,
+                        MusicPlayer musicPlayer) {
         this.menu = menu;
         this.game = game;
         this.gameScreen = gameScreen;
         this.ruleScreen = ruleScreen;
+        this.musicPlayer = musicPlayer;
     }
 
     public void addListener(Scene scene) {
@@ -41,7 +47,7 @@ public class MenuListener {
 
             case L:
                 if (menu.isShow() && scene.getWindow() instanceof Stage stage) {
-                    OnlineLauncher.openLanMenu(stage);
+                    OnlineLauncher.openLanMenu(stage, musicPlayer);
                 }
                 break;
 

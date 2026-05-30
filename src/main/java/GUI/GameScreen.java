@@ -14,6 +14,7 @@ import model.*;
 public class GameScreen implements GameObserver {
     private int viewedPlayerIndex = 0;
     private int lastTurnPlayerIndex = -1;
+    private boolean lockViewToCurrentTurn = true;
     private Canvas canvas;
     private Game game;
     private boolean isShow;
@@ -84,7 +85,11 @@ public class GameScreen implements GameObserver {
     public void paint() {
         GuiScale.prepare(canvas.getGraphicsContext2D());
         syncViewedPlayerWithCurrentTurn();
-        backGroundScreen.drawAllBackground(canvas, wildCardSelectionPanel.getSelectedWildCard());
+        if (lockViewToCurrentTurn) {
+            backGroundScreen.drawAllBackground(canvas, wildCardSelectionPanel.getSelectedWildCard());
+        } else {
+            backGroundScreen.drawAllBackground(canvas, wildCardSelectionPanel.getSelectedWildCard(), viewedPlayerIndex);
+        }
         playerViewPanel.drawPlayerViewButtons(canvas.getGraphicsContext2D(), game, viewedPlayerIndex);
         slyDealPanel.draw(canvas.getGraphicsContext2D());
         debtCollectorPanel.draw(canvas.getGraphicsContext2D());
@@ -211,11 +216,29 @@ public class GameScreen implements GameObserver {
     }
 
     private void syncViewedPlayerWithCurrentTurn() {
+        if (!lockViewToCurrentTurn) {
+            keepViewedPlayerInRange();
+            return;
+        }
+
         int currentTurnPlayerIndex = game.getCurrentPlayerIndex();
 
         if (currentTurnPlayerIndex != lastTurnPlayerIndex) {
             viewedPlayerIndex = currentTurnPlayerIndex;
             lastTurnPlayerIndex = currentTurnPlayerIndex;
+        }
+    }
+
+    private void keepViewedPlayerInRange() {
+        if (game.getPlayers().isEmpty()) {
+            viewedPlayerIndex = 0;
+            return;
+        }
+
+        if (viewedPlayerIndex < 0) {
+            viewedPlayerIndex = 0;
+        } else if (viewedPlayerIndex >= game.getPlayers().size()) {
+            viewedPlayerIndex = game.getPlayers().size() - 1;
         }
     }
 
@@ -228,14 +251,24 @@ public class GameScreen implements GameObserver {
         lastTurnPlayerIndex = game.getCurrentPlayerIndex();
     }
 
+    public void lockViewedPlayer(int playerIndex) {
+        lockViewToCurrentTurn = false;
+        viewedPlayerIndex = playerIndex;
+        keepViewedPlayerInRange();
+    }
+
     @Override
     public void onGameStateChanged() {
-        resetViewedPlayerToCurrentPlayer();
+        if (lockViewToCurrentTurn) {
+            resetViewedPlayerToCurrentPlayer();
+        } else {
+            keepViewedPlayerInRange();
+        }
     }
 
 
     public int getClickedHandCardIndex(double mouseX, double mouseY) {
-        Player currentPlayer = game.getCurrentPlayer();
+        Player currentPlayer = getViewedPlayer();
         ArrayList<Card> handCards = currentPlayer.getHandCards();
 
         double availableWidth = handAreaWidth;
@@ -262,8 +295,22 @@ public class GameScreen implements GameObserver {
         return -1;
     }
 
+    public Card getViewedHandCard(int handIndex) {
+        Player player = getViewedPlayer();
+
+        if (handIndex < 0 || handIndex >= player.getHandCards().size()) {
+            return null;
+        }
+
+        return player.getHandCards().get(handIndex);
+    }
+
     public boolean handleBackgroundPageButtonClick(double mouseX, double mouseY) {
-        return backGroundScreen.handlePageButtonClick(mouseX, mouseY);
+        if (lockViewToCurrentTurn) {
+            return backGroundScreen.handlePageButtonClick(mouseX, mouseY);
+        }
+
+        return backGroundScreen.handlePageButtonClick(mouseX, mouseY, viewedPlayerIndex);
     }
 
     public boolean isEndTurnClicked(double mouseX, double mouseY) {
@@ -504,7 +551,11 @@ public class GameScreen implements GameObserver {
     }
 
     public PropertiesCards getClickedWildCard(double mouseX, double mouseY) {
-        return backGroundScreen.getClickedWildCard(mouseX, mouseY);
+        if (lockViewToCurrentTurn) {
+            return backGroundScreen.getClickedWildCard(mouseX, mouseY);
+        }
+
+        return backGroundScreen.getClickedWildCard(mouseX, mouseY, viewedPlayerIndex);
     }
 
     public PropertyColor getClickedWildColorButton(double mouseX, double mouseY) {
@@ -900,5 +951,10 @@ public class GameScreen implements GameObserver {
 
     public boolean isMultipleColorRentDetailCloseClicked(double mouseX, double mouseY) {
         return multipleColorRentSelectionPanel.isDetailCloseClicked(mouseX, mouseY);
+    }
+
+    private Player getViewedPlayer() {
+        keepViewedPlayerInRange();
+        return game.getPlayers().get(viewedPlayerIndex);
     }
 }
