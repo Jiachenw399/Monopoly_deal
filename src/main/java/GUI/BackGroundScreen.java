@@ -497,6 +497,33 @@ public class BackGroundScreen {
         return handlePropertyPageButtonClick(mouseX, mouseY);
     }
 
+    public PropertiesCards getClickedWildCard(double mouseX, double mouseY) {
+        Player currentPlayer = game.getCurrentPlayer();
+        int startIndex = propertyPageIndex * cardsPerPage;
+        int endIndex = Math.min(startIndex + cardsPerPage, currentPlayer.getPropertyCards().size());
+
+        double startX = 32;
+        double startY = 302;
+        double cardGap = 75;
+
+        for (int i = startIndex; i < endIndex; i++) {
+            PropertiesCards card = currentPlayer.getPropertyCards().get(i);
+
+            if (!card.isWildCard()) {
+                continue;
+            }
+
+            int displayIndex = i - startIndex;
+            double x = startX + displayIndex * cardGap;
+
+            if (isInside(mouseX, mouseY, x, startY, smallCardWidth, smallCardHeight)) {
+                return card;
+            }
+        }
+
+        return null;
+    }
+
     private boolean handleBankPageButtonClick(double mouseX, double mouseY) {
         Player currentPlayer = game.getCurrentPlayer();
         int maxPage = getMaxPage(currentPlayer.getBankCards().size());

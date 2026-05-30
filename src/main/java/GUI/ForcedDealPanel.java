@@ -36,9 +36,11 @@ public class ForcedDealPanel {
     private final double myNextX = 270;
     private final double targetPrevX = 620;
     private final double targetNextX = 720;
-    private final double pageButtonY = 465;
+    private final double pageButtonY = 505;
     private final double pageButtonWidth = 80;
     private final double pageButtonHeight = 32;
+
+    private final double actionButtonY = 610;
 
     private final PlayerDetailPopupPanel detailPopupPanel;
     private Player detailTargetPlayer;
@@ -130,20 +132,20 @@ public class ForcedDealPanel {
         }
 
         return mouseX >= 720 && mouseX <= 860
-                && mouseY >= 505 && mouseY <= 545;
+                && mouseY >= actionButtonY && mouseY <= actionButtonY + 40;
     }
 
     public boolean isBackClicked(double mouseX, double mouseY) {
         return isSelecting()
                 && selectedTargetPlayer != null
                 && mouseX >= 560 && mouseX <= 700
-                && mouseY >= 505 && mouseY <= 545;
+                && mouseY >= actionButtonY && mouseY <= actionButtonY + 40;
     }
 
     public boolean isConfirmClicked(double mouseX, double mouseY) {
         return isSelecting()
                 && mouseX >= 380 && mouseX <= 520
-                && mouseY >= 505 && mouseY <= 545;
+                && mouseY >= actionButtonY && mouseY <= actionButtonY + 40;
     }
 
     public Player getClickedTargetPlayer(double mouseX, double mouseY) {
@@ -434,16 +436,16 @@ public class ForcedDealPanel {
         String myText = selectedMyCard == null ? "Your card: not selected" : "Your card: selected";
         String targetText = selectedTargetCard == null ? "Target card: not selected" : "Target card: selected";
 
-        gc.fillText(myText + "     " + targetText, Game.SCREEN_WIDTH / 2, 455);
+        gc.fillText(myText + "     " + targetText, Game.SCREEN_WIDTH / 2, 480);
     }
 
     private void drawButtons(GraphicsContext gc) {
         if (selectedTargetPlayer != null) {
-            ScreenDrawHelper.drawButton(gc, 380, 505, 140, 40, "CONFIRM");
-            ScreenDrawHelper.drawButton(gc, 560, 505, 140, 40, "BACK");
+            ScreenDrawHelper.drawButton(gc, 380, actionButtonY, 140, 40, "CONFIRM");
+            ScreenDrawHelper.drawButton(gc, 560, actionButtonY, 140, 40, "BACK");
         }
 
-        ScreenDrawHelper.drawButton(gc, 720, 505, 140, 40, "CANCEL");
+        ScreenDrawHelper.drawButton(gc, 720, actionButtonY, 140, 40, "CANCEL");
     }
 
     private ArrayList<PropertiesCards> getExchangeableProperties(Player player) {

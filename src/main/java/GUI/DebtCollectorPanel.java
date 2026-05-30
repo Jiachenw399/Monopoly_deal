@@ -122,6 +122,10 @@ public class DebtCollectorPanel {
         return selectedTarget != null && detailPopupPanel.handlePageButtonClick(mouseX, mouseY);
     }
 
+    public boolean isDetailCloseClicked(double mouseX, double mouseY) {
+        return selectedTarget != null && detailPopupPanel.isCloseClicked(mouseX, mouseY);
+    }
+
     public void draw(GraphicsContext gc) {
         if (!isSelecting()) {
             return;

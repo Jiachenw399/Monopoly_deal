@@ -299,8 +299,34 @@ public class GameClickHandler {
             return false;
         }
 
+        if (gameScreen.isSlyDealDetailCloseClicked(x, y)
+                || gameScreen.isSlyDealDetailBackClicked(x, y)) {
+            gameScreen.showSlyDealTargetDetail(null);
+            return true;
+        }
+
+        if (gameScreen.isSlyDealBackClicked(x, y)) {
+            gameScreen.setSelectedSlyDealTarget(null);
+            return true;
+        }
+
         if (gameScreen.isSlyDealCancelClicked(x, y)) {
             gameScreen.cancelSlyDealSelection();
+            return true;
+        }
+
+        if (gameScreen.isSlyDealDetailConfirmClicked(x, y)) {
+            Player target = gameScreen.getSlyDealDetailTarget();
+
+            if (target != null) {
+                gameScreen.setSelectedSlyDealTarget(target);
+                gameScreen.showSlyDealTargetDetail(null);
+            }
+
+            return true;
+        }
+
+        if (gameScreen.handleSlyDealDetailPageButtonClick(x, y)) {
             return true;
         }
 
@@ -311,6 +337,13 @@ public class GameClickHandler {
 
         if (gameScreen.isSlyDealNextPageClicked(x, y)) {
             gameScreen.nextSlyDealPage();
+            return true;
+        }
+
+        Player targetPlayer = gameScreen.getClickedSlyDealTarget(x, y);
+
+        if (targetPlayer != null) {
+            gameScreen.showSlyDealTargetDetail(targetPlayer);
             return true;
         }
 
@@ -424,6 +457,11 @@ public class GameClickHandler {
     private boolean handleDebtCollectorSelection(double x, double y) {
         if (!gameScreen.isDebtCollectorSelecting()) {
             return false;
+        }
+
+        if (gameScreen.isDebtCollectorDetailCloseClicked(x, y)) {
+            gameScreen.setSelectedDebtCollectorTarget(null);
+            return true;
         }
 
         if (gameScreen.isDebtCollectorCancelClicked(x, y)) {

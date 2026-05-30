@@ -212,6 +212,46 @@ public class GameScreen implements GameObserver {
         slyDealPanel.nextPage();
     }
 
+    public Player getClickedSlyDealTarget(double mouseX, double mouseY) {
+        return slyDealPanel.getClickedTargetPlayer(mouseX, mouseY);
+    }
+
+    public void showSlyDealTargetDetail(Player player) {
+        slyDealPanel.showTargetDetail(player);
+    }
+
+    public Player getSlyDealDetailTarget() {
+        return slyDealPanel.getDetailTargetPlayer();
+    }
+
+    public void setSelectedSlyDealTarget(Player player) {
+        slyDealPanel.setSelectedTargetPlayer(player);
+    }
+
+    public Player getSelectedSlyDealTarget() {
+        return slyDealPanel.getSelectedTargetPlayer();
+    }
+
+    public boolean isSlyDealDetailCloseClicked(double mouseX, double mouseY) {
+        return slyDealPanel.isDetailCloseClicked(mouseX, mouseY);
+    }
+
+    public boolean isSlyDealDetailBackClicked(double mouseX, double mouseY) {
+        return slyDealPanel.isDetailBackClicked(mouseX, mouseY);
+    }
+
+    public boolean isSlyDealDetailConfirmClicked(double mouseX, double mouseY) {
+        return slyDealPanel.isDetailConfirmClicked(mouseX, mouseY);
+    }
+
+    public boolean handleSlyDealDetailPageButtonClick(double mouseX, double mouseY) {
+        return slyDealPanel.handleDetailPageButtonClick(mouseX, mouseY);
+    }
+
+    public boolean isSlyDealBackClicked(double mouseX, double mouseY) {
+        return slyDealPanel.isBackClicked(mouseX, mouseY);
+    }
+
     public void startDebtCollectorSelection(ActionCards card) {
         debtCollectorPanel.startSelection(card);
         wildCardSelectionPanel.clearSelection();
@@ -327,7 +367,7 @@ public class GameScreen implements GameObserver {
     }
 
     public PropertiesCards getClickedWildCard(double mouseX, double mouseY) {
-        return wildCardSelectionPanel.getClickedWildCard(mouseX, mouseY);
+        return backGroundScreen.getClickedWildCard(mouseX, mouseY);
     }
 
     public PropertyColor getClickedWildColorButton(double mouseX, double mouseY) {
@@ -643,6 +683,10 @@ public class GameScreen implements GameObserver {
 
     public boolean handleDebtCollectorDetailPageButtonClick(double mouseX, double mouseY) {
         return debtCollectorPanel.handleDetailPageButtonClick(mouseX, mouseY);
+    }
+
+    public boolean isDebtCollectorDetailCloseClicked(double mouseX, double mouseY) {
+        return debtCollectorPanel.isDetailCloseClicked(mouseX, mouseY);
     }
 
     public boolean isMultipleColorRentDetailShowing() {

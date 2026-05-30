@@ -24,30 +24,30 @@ public class PlayerDetailPopupPanel {
     private int propertyPage = 0;
 
     private final double popupX = 95;
-    private final double popupY = 60;
+    private final double popupY = 65;
     private final double popupWidth = 845;
-    private final double popupHeight = 560;
+    private final double popupHeight = 590;
 
-    private final double closeX = 830;
-    private final double closeY = 85;
+    private final double closeX = popupX + popupWidth - 110;
+    private final double closeY = popupY + 25;
     private final double closeWidth = 80;
     private final double closeHeight = 34;
 
     private final double cardWidth = 68;
     private final double cardHeight = 93;
     private final double cardGapX = 82;
-    private final int cardsPerPage = 8;
+    private final int cardsPerPage = 6;
 
     private final double pageButtonWidth = 34;
     private final double pageButtonHeight = 26;
 
-    private final double bankPrevX = 715;
-    private final double bankNextX = 810;
-    private final double bankButtonY = 247;
+    private final double bankPrevX = 520;
+    private final double bankNextX = 615;
+    private final double bankButtonY = popupY + 187;
 
-    private final double propertyPrevX = 715;
-    private final double propertyNextX = 810;
-    private final double propertyButtonY = 405;
+    private final double propertyPrevX = 520;
+    private final double propertyNextX = 615;
+    private final double propertyButtonY = popupY + 365;
 
     // Creates the popup panel with game data.
     public PlayerDetailPopupPanel(Game game) {
@@ -302,9 +302,9 @@ public class PlayerDetailPopupPanel {
     // Draws the selected player property area.
     private void drawPropertyArea(GraphicsContext gc, Player player) {
         double titleX = popupX + 30;
-        double titleY = popupY + 335;
+        double titleY = popupY + 356;
         double startX = popupX + 30;
-        double startY = popupY + 368;
+        double startY = popupY + 390;
 
         drawAreaTitle(gc, "Property Area", titleX, titleY);
 
@@ -493,7 +493,7 @@ public class PlayerDetailPopupPanel {
         double panelX = popupX + 620;
         double panelY = popupY + 100;
         double panelWidth = 190;
-        double panelHeight = 365;
+        double panelHeight = 400;
 
         gc.setFill(Color.rgb(25, 34, 50));
         gc.fillRoundRect(panelX, panelY, panelWidth, panelHeight, 18, 18);

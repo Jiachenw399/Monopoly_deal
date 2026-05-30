@@ -3,6 +3,7 @@ package network;
 import logic.Game;
 import model.ActionCardType;
 import model.ActionCards;
+import model.BuildingPaymentCard;
 import model.Card;
 import model.MoneyCards;
 import model.Player;
@@ -323,9 +324,13 @@ public class GameServer {
         }
 
         ArrayList<Card> selectedCards = parsePaymentCards(request.getPayer(), paymentText);
+        int selectedValue = game.getPaymentCardsValue(request.getPayer(), selectedCards);
 
         if (selectedCards.isEmpty()) {
-            requester.send(new NetworkMessage("SERVER", "Use PAY B1 P2. B means bank card, P means property card").encode());
+            requester.send(new NetworkMessage(
+                    "SERVER",
+                    "Use PAY B1 HOUSE:BROWN HOTEL:BROWN P2. B means bank card, HOUSE/HOTEL means building, P means property card"
+            ).encode());
             return;
         }
 
@@ -334,7 +339,7 @@ public class GameServer {
             return;
         }
 
-        broadcast(new NetworkMessage("BROADCAST", "Player " + requester.getPlayerId() + " paid " + game.getCardsValue(selectedCards) + "M"));
+        broadcast(new NetworkMessage("BROADCAST", "Player " + requester.getPlayerId() + " paid " + selectedValue + "M"));
         sendGameStateToAll();
     }
 
@@ -407,6 +412,12 @@ public class GameServer {
                 continue;
             }
 
+            Card buildingCard = parseBuildingPaymentCard(token);
+            if (buildingCard != null) {
+                selectedCards.add(buildingCard);
+                continue;
+            }
+
             char source = Character.toUpperCase(token.charAt(0));
             int index = parseOneBasedCardIndex(token.substring(1));
 
@@ -422,6 +433,27 @@ public class GameServer {
         }
 
         return selectedCards;
+    }
+
+    private Card parseBuildingPaymentCard(String token) {
+        String[] parts = token.split(":", 2);
+
+        if (parts.length != 2) {
+            return null;
+        }
+
+        try {
+            ActionCardType type = ActionCardType.valueOf(parts[0].toUpperCase());
+            PropertyColor color = PropertyColor.valueOf(parts[1].toUpperCase());
+
+            if (type == ActionCardType.HOUSE || type == ActionCardType.HOTEL) {
+                return new BuildingPaymentCard(type, color);
+            }
+        } catch (IllegalArgumentException e) {
+            return null;
+        }
+
+        return null;
     }
 
     private int parseOneBasedCardIndex(String cardNumberText) {

@@ -7,6 +7,8 @@ import javafx.scene.text.Font;
 import javafx.scene.text.TextAlignment;
 import logic.Game;
 import logic.PlayerInfoHelper;
+import model.ActionCardType;
+import model.BuildingPaymentCard;
 import model.Card;
 import model.Player;
 import model.PropertiesCards;
@@ -18,6 +20,7 @@ import java.util.ArrayList;
 public class PaymentSelectionPanel {
     private final Game game;
     private final ArrayList<Card> selectedCards;
+    private final ArrayList<Card> bankPaymentCards;
 
     private final double bankStartX = 60;
     private final double bankStartY = 180;
@@ -48,6 +51,7 @@ public class PaymentSelectionPanel {
     public PaymentSelectionPanel(Game game) {
         this.game = game;
         this.selectedCards = new ArrayList<>();
+        this.bankPaymentCards = new ArrayList<>();
     }
 
     // Draws the payment selection screen.
@@ -76,7 +80,31 @@ public class PaymentSelectionPanel {
             bankPageIndex = 0;
             propertyPageIndex = 0;
             lastRequest = request;
+            selectedCards.clear();
+            rebuildBankPaymentCards(request);
         }
+    }
+
+    private void rebuildBankPaymentCards(Game.PaymentRequest request) {
+        bankPaymentCards.clear();
+
+        if (request == null) {
+            return;
+        }
+
+        Player payer = request.getPayer();
+
+        for (PropertyColor color : PropertyColor.values()) {
+            if (PlayerInfoHelper.hasHotel(payer, color)) {
+                bankPaymentCards.add(new BuildingPaymentCard(ActionCardType.HOTEL, color));
+            }
+
+            if (PlayerInfoHelper.hasHouse(payer, color)) {
+                bankPaymentCards.add(new BuildingPaymentCard(ActionCardType.HOUSE, color));
+            }
+        }
+
+        bankPaymentCards.addAll(payer.getBankCards());
     }
 
     // Draws the dark background overlay.
@@ -90,7 +118,7 @@ public class PaymentSelectionPanel {
         int payerIndex = game.getPlayers().indexOf(payer) + 1;
         int receiverIndex = game.getPlayers().indexOf(receiver) + 1;
         int requiredAmount = Math.min(request.getAmount(), game.getTotalAssetsValue(payer));
-        int selectedTotal = game.getCardsValue(selectedCards);
+        int selectedTotal = game.getPaymentCardsValue(payer, selectedCards);
 
         gc.setFill(Color.WHITE);
         gc.setFont(Font.font("Arial", 26));
@@ -121,9 +149,9 @@ public class PaymentSelectionPanel {
         gc.setFont(Font.font("Arial", 19));
         gc.setTextAlign(TextAlignment.LEFT);
         gc.setTextBaseline(VPos.TOP);
-        gc.fillText("Bank Cards", 60, 145);
+        gc.fillText("Bank / Buildings", 60, 145);
 
-        int cardCount = payer.getBankCards().size();
+        int cardCount = bankPaymentCards.size();
         int maxPage = getMaxPage(cardCount);
         bankPageIndex = keepPageInRange(bankPageIndex, maxPage);
 
@@ -134,13 +162,20 @@ public class PaymentSelectionPanel {
         int endIndex = Math.min(startIndex + cardsPerPage, cardCount);
 
         for (int i = startIndex; i < endIndex; i++) {
-            Card card = payer.getBankCards().get(i);
+            Card card = bankPaymentCards.get(i);
             int displayIndex = i - startIndex;
 
             double x = bankStartX + displayIndex * cardGapX;
             double y = bankStartY;
 
-            drawPaymentCard(gc, card, x, y, "Money", card.getValue() + "M", Color.GOLD);
+            if (card instanceof BuildingPaymentCard buildingCard) {
+                boolean blocked = isHouseBlockedByUnpaidHotel(payer, buildingCard);
+                drawPaymentCard(gc, card, x, y, "Building",
+                        blocked ? "Pay hotel first" : getBuildingText(buildingCard),
+                        blocked ? Color.DARKGRAY : Color.LIGHTGREEN);
+            } else {
+                drawPaymentCard(gc, card, x, y, "Money", card.getValue() + "M", Color.GOLD);
+            }
         }
 
         if (cardCount == 0) {
@@ -173,8 +208,11 @@ public class PaymentSelectionPanel {
             double x = propertyStartX + displayIndex * cardGapX;
             double y = propertyStartY;
             String text = getDisplayColorName(card.getCurrentColor());
+            boolean blocked = isPropertyBlockedByUnpaidBuildings(payer, card);
+            String label = blocked ? "Pay building first" : card.getValue() + "M";
 
-            drawPaymentCard(gc, card, x, y, "Property", text, Color.LIGHTBLUE);
+            drawPaymentCard(gc, card, x, y, "Property", text + " " + label,
+                    blocked ? Color.DARKGRAY : Color.LIGHTBLUE);
         }
 
         if (cardCount == 0) {
@@ -263,8 +301,8 @@ public class PaymentSelectionPanel {
         gc.fillText("If paid to Player " + receiverIndex + ":", boxX + 15, boxY + 15);
 
         gc.setFont(Font.font("Arial", 13));
-        gc.fillText("Selected property cards will be added", boxX + 15, boxY + 45);
-        gc.fillText("to this player's property area.", boxX + 15, boxY + 63);
+        gc.fillText("Buildings must be paid before property.", boxX + 15, boxY + 45);
+        gc.fillText("House/Hotel go to receiver bank.", boxX + 15, boxY + 63);
 
         drawReceiverSetPreview(gc, receiver, boxX, boxY + 100);
     }
@@ -322,7 +360,7 @@ public class PaymentSelectionPanel {
     // Draws confirm, clear, and Just Say No buttons.
     private void drawActionButtons(GraphicsContext gc, Game.PaymentRequest request, Player payer) {
         int requiredAmount = Math.min(request.getAmount(), game.getTotalAssetsValue(payer));
-        int selectedTotal = game.getCardsValue(selectedCards);
+        int selectedTotal = game.getPaymentCardsValue(payer, selectedCards);
 
         if (selectedTotal >= requiredAmount) {
             ScreenDrawHelper.drawButton(gc, 330, 555, 160, 40, "CONFIRM PAY");
@@ -421,7 +459,7 @@ public class PaymentSelectionPanel {
 
         Game.PaymentRequest request = game.getCurrentPaymentRequest();
         int requiredAmount = Math.min(request.getAmount(), game.getTotalAssetsValue(request.getPayer()));
-        int selectedTotal = game.getCardsValue(selectedCards);
+        int selectedTotal = game.getPaymentCardsValue(request.getPayer(), selectedCards);
 
         return selectedTotal >= requiredAmount;
     }
@@ -434,6 +472,7 @@ public class PaymentSelectionPanel {
             return false;
         }
 
+        resetPagesWhenRequestChanged(request);
         Player payer = request.getPayer();
 
         if (handlePageButtonClick(mouseX, mouseY, payer)) {
@@ -468,6 +507,15 @@ public class PaymentSelectionPanel {
         } else {
             selectedCards.add(card);
         }
+
+        if (card instanceof BuildingPaymentCard && game.isPaymentSelecting()) {
+            removeBlockedPropertySelections(game.getCurrentPaymentRequest().getPayer());
+        }
+    }
+
+    private void removeBlockedPropertySelections(Player payer) {
+        selectedCards.removeIf(card -> card instanceof PropertiesCards propertyCard
+                && isPropertyBlockedByUnpaidBuildings(payer, propertyCard));
     }
 
     // Handles page button clicks for both card areas.
@@ -480,7 +528,7 @@ public class PaymentSelectionPanel {
     }
 
     private boolean handleBankPageButtonClick(double mouseX, double mouseY, Player payer) {
-        int maxPage = getMaxPage(payer.getBankCards().size());
+        int maxPage = getMaxPage(bankPaymentCards.size());
 
         if (isInside(mouseX, mouseY, bankPrevX, bankArrowY, arrowWidth, arrowHeight)) {
             if (bankPageIndex > 0) {
@@ -539,7 +587,7 @@ public class PaymentSelectionPanel {
     // Returns the clicked bank card on the current page.
     private Card getClickedPaymentBankCard(double mouseX, double mouseY, Player payer) {
         int startIndex = bankPageIndex * cardsPerPage;
-        int endIndex = Math.min(startIndex + cardsPerPage, payer.getBankCards().size());
+        int endIndex = Math.min(startIndex + cardsPerPage, bankPaymentCards.size());
 
         for (int i = startIndex; i < endIndex; i++) {
             int displayIndex = i - startIndex;
@@ -548,7 +596,13 @@ public class PaymentSelectionPanel {
             double y = bankStartY;
 
             if (isInside(mouseX, mouseY, x, y, cardWidth, cardHeight)) {
-                return payer.getBankCards().get(i);
+                Card card = bankPaymentCards.get(i);
+                if (card instanceof BuildingPaymentCard buildingCard
+                        && isHouseBlockedByUnpaidHotel(payer, buildingCard)) {
+                    return null;
+                }
+
+                return bankPaymentCards.get(i);
             }
         }
 
@@ -567,6 +621,10 @@ public class PaymentSelectionPanel {
             double y = propertyStartY;
 
             if (isInside(mouseX, mouseY, x, y, cardWidth, cardHeight)) {
+                if (isPropertyBlockedByUnpaidBuildings(payer, payer.getPropertyCards().get(i))) {
+                    return null;
+                }
+
                 return payer.getPropertyCards().get(i);
             }
         }
@@ -593,5 +651,42 @@ public class PaymentSelectionPanel {
         }
 
         return builder.toString();
+    }
+
+    private String getBuildingText(BuildingPaymentCard buildingCard) {
+        return getDisplayColorName(buildingCard.getColor()) + " " + buildingCard.getValue() + "M";
+    }
+
+    private boolean isHouseBlockedByUnpaidHotel(Player payer, BuildingPaymentCard buildingCard) {
+        return buildingCard.getActionCardType() == ActionCardType.HOUSE
+                && PlayerInfoHelper.hasHotel(payer, buildingCard.getColor())
+                && !hasSelectedBuilding(buildingCard.getColor(), ActionCardType.HOTEL);
+    }
+
+    private boolean isPropertyBlockedByUnpaidBuildings(Player payer, PropertiesCards propertyCard) {
+        PropertyColor color = propertyCard.getCurrentColor();
+        if (color == null) {
+            return false;
+        }
+
+        if (PlayerInfoHelper.hasHotel(payer, color)
+                && !hasSelectedBuilding(color, ActionCardType.HOTEL)) {
+            return true;
+        }
+
+        return PlayerInfoHelper.hasHouse(payer, color)
+                && !hasSelectedBuilding(color, ActionCardType.HOUSE);
+    }
+
+    private boolean hasSelectedBuilding(PropertyColor color, ActionCardType type) {
+        for (Card card : selectedCards) {
+            if (card instanceof BuildingPaymentCard buildingCard
+                    && buildingCard.getColor() == color
+                    && buildingCard.getActionCardType() == type) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

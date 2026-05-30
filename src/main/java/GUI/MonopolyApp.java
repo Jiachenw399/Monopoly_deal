@@ -60,6 +60,8 @@ public class MonopolyApp extends Application {
     private void setupStage(Stage primaryStage, Scene scene) {
         primaryStage.setScene(scene);
         primaryStage.setTitle("Monopoly Deal");
+        primaryStage.setMinWidth(GuiScale.canvasWidth());
+        primaryStage.setMinHeight(GuiScale.canvasHeight());
         primaryStage.show();
     }
 

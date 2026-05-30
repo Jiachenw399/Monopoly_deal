@@ -4,6 +4,7 @@ import GUI.GameClickActionAdapter;
 import GUI.GameScreen;
 import logic.Game;
 import logic.GameFacade;
+import model.BuildingPaymentCard;
 import model.ActionCards;
 import model.Card;
 import model.Player;
@@ -192,6 +193,11 @@ public class OnlineGameClickActions extends GameClickActionAdapter {
         Player payer = request.getPayer();
         ArrayList<String> tokens = new ArrayList<>();
         for (Card card : selectedCards) {
+            if (card instanceof BuildingPaymentCard buildingCard) {
+                tokens.add(buildingCard.getActionCardType().name() + ":" + buildingCard.getColor().name());
+                continue;
+            }
+
             int bankIndex = payer.getBankCards().indexOf(card);
             if (bankIndex >= 0) {
                 tokens.add("B" + (bankIndex + 1));

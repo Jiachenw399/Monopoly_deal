@@ -19,7 +19,7 @@ import java.util.Objects;
  */
 public class Game implements GameFacade {
     public static final double SCREEN_WIDTH = 1035;
-    public static final double SCREEN_HEIGHT = 625;
+    public static final double SCREEN_HEIGHT = 700;
     private static final int DEFAULT_PLAYER_COUNT = 4;
     private static final int MIN_PLAYER_COUNT = 2;
     private static final int MAX_PLAYER_COUNT = 4;
@@ -249,6 +249,10 @@ public class Game implements GameFacade {
 
     public int getCardsValue(ArrayList<Card> cards) {
         return paymentManager.getCardsValue(cards);
+    }
+
+    public int getPaymentCardsValue(Player payer, ArrayList<Card> cards) {
+        return paymentManager.getPaymentCardsValue(payer, cards);
     }
 
     private boolean finishAction(boolean success) {

@@ -96,6 +96,51 @@ public class ActionCardServiceTest {
     }
 
     @Test
+    public void testHouseCannotBeAddedToIncompleteSet() {
+        TestContext context = new TestContext();
+        Player currentPlayer = context.players.get(0);
+        currentPlayer.getPropertyCards().add(new PropertiesCards(PropertiesCardsType.BROWN));
+        ActionCards house = addActionCardToHand(currentPlayer, ActionCardType.HOUSE);
+
+        assertFalse(context.service.finishHouse(currentPlayer, house, PropertyColor.BROWN));
+
+        assertFalse(PlayerInfoHelper.hasHouse(currentPlayer, PropertyColor.BROWN));
+        assertTrue(currentPlayer.getHandCards().contains(house));
+    }
+
+    @Test
+    public void testHotelRequiresHouseFirst() {
+        TestContext context = new TestContext();
+        Player currentPlayer = context.players.get(0);
+        addBrownSet(currentPlayer);
+        ActionCards hotel = addActionCardToHand(currentPlayer, ActionCardType.HOTEL);
+
+        assertFalse(context.service.finishHotel(currentPlayer, hotel, PropertyColor.BROWN));
+
+        assertFalse(PlayerInfoHelper.hasHotel(currentPlayer, PropertyColor.BROWN));
+        assertTrue(currentPlayer.getHandCards().contains(hotel));
+    }
+
+    @Test
+    public void testCannotAddDuplicateHouseOrHotel() {
+        TestContext context = new TestContext();
+        Player currentPlayer = context.players.get(0);
+        addBrownSet(currentPlayer);
+        ActionCards firstHouse = addActionCardToHand(currentPlayer, ActionCardType.HOUSE);
+        ActionCards secondHouse = addActionCardToHand(currentPlayer, ActionCardType.HOUSE);
+        ActionCards firstHotel = addActionCardToHand(currentPlayer, ActionCardType.HOTEL);
+        ActionCards secondHotel = addActionCardToHand(currentPlayer, ActionCardType.HOTEL);
+
+        assertTrue(context.service.finishHouse(currentPlayer, firstHouse, PropertyColor.BROWN));
+        assertFalse(context.service.finishHouse(currentPlayer, secondHouse, PropertyColor.BROWN));
+        assertTrue(context.service.finishHotel(currentPlayer, firstHotel, PropertyColor.BROWN));
+        assertFalse(context.service.finishHotel(currentPlayer, secondHotel, PropertyColor.BROWN));
+
+        assertTrue(currentPlayer.getHandCards().contains(secondHouse));
+        assertTrue(currentPlayer.getHandCards().contains(secondHotel));
+    }
+
+    @Test
     public void testRentWithDoubleRentCreatesPaymentAndUsesTwoCards() {
         TestContext context = new TestContext();
         Player currentPlayer = context.players.get(0);

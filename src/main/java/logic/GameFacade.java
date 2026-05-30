@@ -68,6 +68,8 @@ public interface GameFacade {
 
     int getCardsValue(ArrayList<Card> cards);
 
+    int getPaymentCardsValue(Player payer, ArrayList<Card> cards);
+
     Player getCurrentPlayer();
 
     int getCurrentPlayerIndex();
