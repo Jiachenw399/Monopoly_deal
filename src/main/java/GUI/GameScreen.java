@@ -1,6 +1,10 @@
 package GUI;
 
 import javafx.scene.canvas.Canvas;
+import javafx.geometry.VPos;
+import javafx.scene.paint.Color;
+import javafx.scene.text.Font;
+import javafx.scene.text.TextAlignment;
 import logic.Game;
 import logic.GameObserver;
 import java.util.ArrayList;
@@ -27,6 +31,9 @@ public class GameScreen implements GameObserver {
     private PlayerViewPanel playerViewPanel;
     private PlayerDetailPopupPanel playerDetailPopupPanel;
     private ActionCardChoicePanel actionCardChoicePanel;
+    private MusicPlayer musicPlayer;
+    private boolean shuffleAnimating;
+    private long shuffleStartNanos;
 
     private double cardWidth = 82;
     private double cardHeight = 112;
@@ -38,6 +45,10 @@ public class GameScreen implements GameObserver {
 
 
     public GameScreen(Game game) {
+        this(game, null);
+    }
+
+    public GameScreen(Game game, MusicPlayer musicPlayer) {
         this.game = game;
         canvas = new Canvas(GuiScale.canvasWidth(), GuiScale.canvasHeight());
         slyDealPanel = new SlyDealPanel(game);
@@ -53,7 +64,9 @@ public class GameScreen implements GameObserver {
         playerViewPanel = new PlayerViewPanel();
         playerDetailPopupPanel = new PlayerDetailPopupPanel(game);
         actionCardChoicePanel = new ActionCardChoicePanel();
+        this.musicPlayer = musicPlayer;
         this.isShow = false;
+        this.shuffleAnimating = false;
     }
 
     public Canvas getCanvas() {
@@ -83,6 +96,118 @@ public class GameScreen implements GameObserver {
         forcedDealPanel.draw(canvas.getGraphicsContext2D());
         playerDetailPopupPanel.draw(canvas.getGraphicsContext2D());
         actionCardChoicePanel.draw(canvas.getGraphicsContext2D());
+        drawMuteButton(canvas.getGraphicsContext2D());
+        drawShuffleAnimation(canvas.getGraphicsContext2D());
+    }
+
+    public void startShuffleAnimation() {
+        shuffleAnimating = true;
+        shuffleStartNanos = System.nanoTime();
+    }
+
+    public void stopShuffleAnimation() {
+        shuffleAnimating = false;
+    }
+
+    public boolean isShuffleAnimating() {
+        return shuffleAnimating;
+    }
+
+    private void drawShuffleAnimation(javafx.scene.canvas.GraphicsContext gc) {
+        if (!shuffleAnimating) {
+            return;
+        }
+
+        double elapsed = (System.nanoTime() - shuffleStartNanos) / 1_000_000_000.0;
+        double centerX = Game.SCREEN_WIDTH / 2;
+        double centerY = Game.SCREEN_HEIGHT / 2 + 8;
+
+        gc.setFill(Color.rgb(10, 14, 24, 0.82));
+        gc.fillRect(0, 0, Game.SCREEN_WIDTH, Game.SCREEN_HEIGHT);
+
+        gc.setTextAlign(TextAlignment.CENTER);
+        gc.setTextBaseline(VPos.CENTER);
+        gc.setFill(ScreenDrawHelper.ACCENT);
+        gc.setFont(Font.font("Arial", 34));
+        gc.fillText("Shuffling the Deal", centerX, 118);
+
+        gc.setFill(Color.rgb(220, 230, 245));
+        gc.setFont(Font.font("Arial", 17));
+        gc.fillText("Get ready...", centerX, 158);
+
+        drawShuffleDeck(gc, centerX - 180, centerY, elapsed, -1);
+        drawShuffleDeck(gc, centerX + 180, centerY, elapsed, 1);
+        drawFlyingCards(gc, centerX, centerY, elapsed);
+
+        gc.setFill(Color.rgb(255, 184, 77, 0.35 + 0.25 * Math.sin(elapsed * 8)));
+        gc.fillOval(centerX - 190, centerY + 120, 380, 32);
+    }
+
+    private void drawShuffleDeck(javafx.scene.canvas.GraphicsContext gc,
+                                 double x,
+                                 double y,
+                                 double elapsed,
+                                 int direction) {
+        for (int i = 0; i < 8; i++) {
+            double offset = i * 3.5;
+            double pulse = Math.sin(elapsed * 5 + i * 0.4) * 4;
+            drawAnimatedCard(gc, x + direction * offset, y - offset + pulse, direction * 8, i);
+        }
+    }
+
+    private void drawFlyingCards(javafx.scene.canvas.GraphicsContext gc,
+                                 double centerX,
+                                 double centerY,
+                                 double elapsed) {
+        for (int i = 0; i < 10; i++) {
+            double t = (elapsed * 0.75 + i / 10.0) % 1.0;
+            double side = i % 2 == 0 ? -1 : 1;
+            double arc = Math.sin(t * Math.PI);
+            double x = centerX + side * (210 - t * 420);
+            double y = centerY - 80 * arc + Math.cos(t * Math.PI * 2) * 10;
+            double angle = side * (35 - t * 70);
+
+            drawAnimatedCard(gc, x, y, angle, i);
+        }
+    }
+
+    private void drawAnimatedCard(javafx.scene.canvas.GraphicsContext gc,
+                                  double x,
+                                  double y,
+                                  double angle,
+                                  int index) {
+        gc.save();
+        gc.translate(x, y);
+        gc.rotate(angle);
+
+        Color fill = switch (index % 4) {
+            case 0 -> Color.rgb(255, 252, 225);
+            case 1 -> Color.rgb(219, 239, 255);
+            case 2 -> Color.rgb(226, 255, 229);
+            default -> Color.rgb(255, 226, 235);
+        };
+
+        gc.setFill(Color.rgb(0, 0, 0, 0.24));
+        gc.fillRoundRect(-30 + 4, -42 + 5, 60, 84, 10, 10);
+        gc.setFill(fill);
+        gc.fillRoundRect(-30, -42, 60, 84, 10, 10);
+        gc.setStroke(ScreenDrawHelper.ACCENT);
+        gc.strokeRoundRect(-30, -42, 60, 84, 10, 10);
+
+        gc.setFill(Color.rgb(35, 45, 63));
+        gc.setFont(Font.font("Arial", 20));
+        gc.setTextAlign(TextAlignment.CENTER);
+        gc.setTextBaseline(VPos.CENTER);
+        gc.fillText(index % 3 == 0 ? "$" : "M", 0, 0);
+        gc.restore();
+    }
+
+    private void drawMuteButton(javafx.scene.canvas.GraphicsContext gc) {
+        if (musicPlayer == null) {
+            return;
+        }
+
+        ScreenDrawHelper.drawButton(gc, 895, 20, 120, 36, musicPlayer.isMuted() ? "Unmute" : "Mute");
     }
 
     private void syncViewedPlayerWithCurrentTurn() {
@@ -147,6 +272,18 @@ public class GameScreen implements GameObserver {
 
     public boolean isBackMenuClicked(double mouseX, double mouseY) {
         return mouseX >= 820 && mouseX <= 990 && mouseY >= 570 && mouseY <= 610;
+    }
+
+    public boolean isMuteClicked(double mouseX, double mouseY) {
+        return musicPlayer != null
+                && mouseX >= 895 && mouseX <= 1015
+                && mouseY >= 20 && mouseY <= 56;
+    }
+
+    public void toggleMute() {
+        if (musicPlayer != null) {
+            musicPlayer.toggleMute();
+        }
     }
 
     public void clear() {

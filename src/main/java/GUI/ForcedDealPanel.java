@@ -48,7 +48,7 @@ public class ForcedDealPanel {
     private final double detailConfirmX = 390;
     private final double detailBackX = 555;
     private final double detailCancelX = 720;
-    private final double detailButtonY = 550;
+    private final double detailButtonY = 615;
     private final double detailButtonWidth = 140;
     private final double detailButtonHeight = 40;
 

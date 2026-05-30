@@ -24,11 +24,11 @@ public class DebtCollectorPanel {
     private final double targetGap = 25;
 
     private final double confirmX = 390;
-    private final double confirmY = 550;
+    private final double confirmY = 615;
     private final double backX = 555;
-    private final double backY = 550;
+    private final double backY = 615;
     private final double cancelX = 720;
-    private final double cancelY = 550;
+    private final double cancelY = 615;
     private final double buttonWidth = 140;
     private final double buttonHeight = 40;
 

@@ -26,7 +26,7 @@ public class PlayerDetailPopupPanel {
     private final double popupX = 95;
     private final double popupY = 65;
     private final double popupWidth = 845;
-    private final double popupHeight = 590;
+    private final double popupHeight = 620;
 
     private final double closeX = popupX + popupWidth - 110;
     private final double closeY = popupY + 25;

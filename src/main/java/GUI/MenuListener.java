@@ -1,8 +1,10 @@
 package GUI;
 
+import javafx.animation.PauseTransition;
 import javafx.scene.Scene;
 import javafx.scene.input.KeyCode;
 import javafx.stage.Stage;
+import javafx.util.Duration;
 import logic.GameFacade;
 import network.OnlineLauncher;
 
@@ -65,15 +67,21 @@ public class MenuListener {
     }
 
     private void startGame() {
-        if (!menu.isShow()) {
+        if (!menu.isShow() || gameScreen.isShuffleAnimating()) {
             return;
         }
 
         menu.setShow(false);
         ruleScreen.setShow(false);
         gameScreen.setShow(true);
+        gameScreen.startShuffleAnimation();
 
-        game.startGame();
+        PauseTransition delay = new PauseTransition(Duration.seconds(2.0));
+        delay.setOnFinished(event -> {
+            game.startGame();
+            gameScreen.stopShuffleAnimation();
+        });
+        delay.play();
     }
 
     private void returnToMenu() {

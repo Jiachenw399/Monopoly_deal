@@ -11,6 +11,7 @@ public class MonopolyApp extends Application {
     private MainMenu menu;
     private GameSession session;
     private RuleScreen ruleScreen;
+    private MusicPlayer musicPlayer;
 
     @Override
     public void start(Stage primaryStage) {
@@ -27,8 +28,10 @@ public class MonopolyApp extends Application {
     }
 
     private void initializeScreens() {
+        musicPlayer = new MusicPlayer();
+        musicPlayer.play();
         menu = new MainMenu();
-        session = new GameSession();
+        session = new GameSession(new logic.Game(), musicPlayer);
         ruleScreen = new RuleScreen();
     }
 

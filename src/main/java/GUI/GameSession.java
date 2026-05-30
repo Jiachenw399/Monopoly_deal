@@ -12,8 +12,12 @@ public class GameSession {
     }
 
     public GameSession(Game game) {
+        this(game, null);
+    }
+
+    public GameSession(Game game, MusicPlayer musicPlayer) {
         this.game = game;
-        this.gameScreen = new GameScreen(game);
+        this.gameScreen = new GameScreen(game, musicPlayer);
         this.game.addObserver(gameScreen);
     }
 

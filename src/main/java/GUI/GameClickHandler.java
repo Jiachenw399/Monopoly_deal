@@ -19,6 +19,11 @@ public class GameClickHandler {
     }
 
     public void handleMouseClick(double x, double y) {
+        if (gameScreen.isMuteClicked(x, y)) {
+            gameScreen.toggleMute();
+            return;
+        }
+
         if (handleActionCardChoiceClick(x, y)) {
             return;
         }
