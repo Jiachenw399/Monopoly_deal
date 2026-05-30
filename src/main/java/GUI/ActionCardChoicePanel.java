@@ -49,15 +49,21 @@ public class ActionCardChoicePanel {
     }
 
     public boolean isMoneyClicked(double mouseX, double mouseY) {
-        return isShowing() && isInside(mouseX, mouseY, moneyButtonX, moneyButtonY, moneyButtonWidth, moneyButtonHeight);
+        return isShowing()
+                && ScreenDrawHelper.isInside(mouseX, mouseY,
+                moneyButtonX, moneyButtonY, moneyButtonWidth, moneyButtonHeight);
     }
 
     public boolean isActionClicked(double mouseX, double mouseY) {
-        return isShowing() && isInside(mouseX, mouseY, actionButtonX, actionButtonY, actionButtonWidth, actionButtonHeight);
+        return isShowing()
+                && ScreenDrawHelper.isInside(mouseX, mouseY,
+                actionButtonX, actionButtonY, actionButtonWidth, actionButtonHeight);
     }
 
     public boolean isCancelClicked(double mouseX, double mouseY) {
-        return isShowing() && isInside(mouseX, mouseY, cancelButtonX, cancelButtonY, cancelButtonWidth, cancelButtonHeight);
+        return isShowing()
+                && ScreenDrawHelper.isInside(mouseX, mouseY,
+                cancelButtonX, cancelButtonY, cancelButtonWidth, cancelButtonHeight);
     }
 
     public boolean canUseAsAction() {
@@ -66,11 +72,6 @@ public class ActionCardChoicePanel {
         //JUST_SAY_NO and DOUBLE_THE_RENT cannot be directly used
         return type != ActionCardType.JUST_SAY_NO
                 && type != ActionCardType.DOUBLE_THE_RENT;
-    }
-
-    private boolean isInside(double mouseX, double mouseY, double x, double y, double width, double height) {
-        return mouseX >= x && mouseX <= x + width
-                && mouseY >= y && mouseY <= y + height;
     }
 
     public void draw(GraphicsContext gc) {
@@ -98,6 +99,7 @@ public class ActionCardChoicePanel {
         gc.strokeRoundRect(panelX, panelY, panelWidth, panelHeight, 24, 24);
         gc.setLineWidth(1);
     }
+
     private void drawChoiceWindow(GraphicsContext gc) {
         gc.setFill(Color.rgb(255, 232, 180));
         gc.setFont(Font.font("Arial", 24));

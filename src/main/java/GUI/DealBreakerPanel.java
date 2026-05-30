@@ -77,10 +77,8 @@ public class DealBreakerPanel {
         }
 
         if (detailChoice != null) {
-            return mouseX >= detailCancelX
-                    && mouseX <= detailCancelX + detailButtonWidth
-                    && mouseY >= detailButtonY
-                    && mouseY <= detailButtonY + detailButtonHeight;
+            return ScreenDrawHelper.isInside(mouseX, mouseY,
+                    detailCancelX, detailButtonY, detailButtonWidth, detailButtonHeight);
         }
 
         return mouseX >= 720 && mouseX <= 860
@@ -103,8 +101,7 @@ public class DealBreakerPanel {
             double x = panelX + (displayIndex % 5) * (cardWidth + cardGap);
             double y = panelY + (displayIndex / 5) * (cardHeight + 35);
 
-            if (mouseX >= x && mouseX <= x + cardWidth
-                    && mouseY >= y && mouseY <= y + cardHeight) {
+            if (ScreenDrawHelper.isInside(mouseX, mouseY, x, y, cardWidth, cardHeight)) {
                 return choices.get(i);
             }
         }
@@ -150,8 +147,8 @@ public class DealBreakerPanel {
     private void drawCompletedSets(GraphicsContext gc) {
         ArrayList<GameScreen.DealBreakerChoice> choices = getAllChoices();
 
-        int maxPage = getMaxPage(choices.size());
-        pageIndex = keepPageInRange(pageIndex, maxPage);
+        int maxPage = ScreenDrawHelper.getMaxPage(choices.size(), setsPerPage);
+        pageIndex = ScreenDrawHelper.keepPageInRange(pageIndex, maxPage);
 
         int startIndex = pageIndex * setsPerPage;
         int endIndex = Math.min(startIndex + setsPerPage, choices.size());
@@ -234,36 +231,16 @@ public class DealBreakerPanel {
         return choices;
     }
 
-    private int getMaxPage(int size) {
-        if (size <= 0) {
-            return 0;
-        }
-
-        return (size - 1) / setsPerPage;
-    }
-
-    private int keepPageInRange(int currentPage, int maxPage) {
-        if (currentPage < 0) {
-            return 0;
-        }
-
-        if (currentPage > maxPage) {
-            return maxPage;
-        }
-
-        return currentPage;
-    }
-
     public boolean isPrevPageClicked(double mouseX, double mouseY) {
         return isSelecting()
-                && mouseX >= prevX && mouseX <= prevX + pageButtonWidth
-                && mouseY >= pageY && mouseY <= pageY + pageButtonHeight;
+                && ScreenDrawHelper.isInside(mouseX, mouseY, prevX, pageY,
+                pageButtonWidth, pageButtonHeight);
     }
 
     public boolean isNextPageClicked(double mouseX, double mouseY) {
         return isSelecting()
-                && mouseX >= nextX && mouseX <= nextX + pageButtonWidth
-                && mouseY >= pageY && mouseY <= pageY + pageButtonHeight;
+                && ScreenDrawHelper.isInside(mouseX, mouseY, nextX, pageY,
+                pageButtonWidth, pageButtonHeight);
     }
 
     public void previousPage() {
@@ -273,7 +250,7 @@ public class DealBreakerPanel {
     }
 
     public void nextPage() {
-        int maxPage = getMaxPage(getAllChoices().size());
+        int maxPage = ScreenDrawHelper.getMaxPage(getAllChoices().size(), setsPerPage);
 
         if (pageIndex < maxPage) {
             pageIndex++;
@@ -334,13 +311,13 @@ public class DealBreakerPanel {
 
     public boolean isDetailConfirmClicked(double mouseX, double mouseY) {
         return detailChoice != null
-                && mouseX >= detailConfirmX && mouseX <= detailConfirmX + detailButtonWidth
-                && mouseY >= detailButtonY && mouseY <= detailButtonY + detailButtonHeight;
+                && ScreenDrawHelper.isInside(mouseX, mouseY,
+                detailConfirmX, detailButtonY, detailButtonWidth, detailButtonHeight);
     }
 
     public boolean isDetailBackClicked(double mouseX, double mouseY) {
         return detailChoice != null
-                && mouseX >= detailBackX && mouseX <= detailBackX + detailButtonWidth
-                && mouseY >= detailButtonY && mouseY <= detailButtonY + detailButtonHeight;
+                && ScreenDrawHelper.isInside(mouseX, mouseY,
+                detailBackX, detailButtonY, detailButtonWidth, detailButtonHeight);
     }
 }

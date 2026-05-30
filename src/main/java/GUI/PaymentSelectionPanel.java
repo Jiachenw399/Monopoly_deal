@@ -152,11 +152,12 @@ public class PaymentSelectionPanel {
         gc.fillText("Bank / Buildings", 60, 145);
 
         int cardCount = bankPaymentCards.size();
-        int maxPage = getMaxPage(cardCount);
-        bankPageIndex = keepPageInRange(bankPageIndex, maxPage);
+        int maxPage = ScreenDrawHelper.getMaxPage(cardCount, cardsPerPage);
+        bankPageIndex = ScreenDrawHelper.keepPageInRange(bankPageIndex, maxPage);
 
-        drawPageText(gc, bankPageIndex, maxPage, 430, 148);
-        drawArrowButtons(gc, bankPrevX, bankNextX, bankArrowY, bankPageIndex, maxPage);
+        ScreenDrawHelper.drawPageText(gc, bankPageIndex, maxPage, 430, 148, Color.LIGHTGRAY);
+        ScreenDrawHelper.drawArrowButtons(gc, bankPrevX, bankNextX, bankArrowY,
+                arrowWidth, arrowHeight, bankPageIndex, maxPage);
 
         int startIndex = bankPageIndex * cardsPerPage;
         int endIndex = Math.min(startIndex + cardsPerPage, cardCount);
@@ -192,11 +193,12 @@ public class PaymentSelectionPanel {
         gc.fillText("Property Cards", 60, 330);
 
         int cardCount = payer.getPropertyCards().size();
-        int maxPage = getMaxPage(cardCount);
-        propertyPageIndex = keepPageInRange(propertyPageIndex, maxPage);
+        int maxPage = ScreenDrawHelper.getMaxPage(cardCount, cardsPerPage);
+        propertyPageIndex = ScreenDrawHelper.keepPageInRange(propertyPageIndex, maxPage);
 
-        drawPageText(gc, propertyPageIndex, maxPage, 430, 333);
-        drawArrowButtons(gc, propertyPrevX, propertyNextX, propertyArrowY, propertyPageIndex, maxPage);
+        ScreenDrawHelper.drawPageText(gc, propertyPageIndex, maxPage, 430, 333, Color.LIGHTGRAY);
+        ScreenDrawHelper.drawArrowButtons(gc, propertyPrevX, propertyNextX, propertyArrowY,
+                arrowWidth, arrowHeight, propertyPageIndex, maxPage);
 
         int startIndex = propertyPageIndex * cardsPerPage;
         int endIndex = Math.min(startIndex + cardsPerPage, cardCount);
@@ -207,7 +209,7 @@ public class PaymentSelectionPanel {
 
             double x = propertyStartX + displayIndex * cardGapX;
             double y = propertyStartY;
-            String text = getDisplayColorName(card.getCurrentColor());
+            String text = ScreenDrawHelper.getDisplayColorName(card.getCurrentColor());
             boolean blocked = isPropertyBlockedByUnpaidBuildings(payer, card);
             String label = blocked ? "Pay building first" : card.getValue() + "M";
 
@@ -217,57 +219,6 @@ public class PaymentSelectionPanel {
 
         if (cardCount == 0) {
             drawEmptyText(gc, "No property cards", propertyStartX, propertyStartY + 32);
-        }
-    }
-
-    // Calculates the last page index for a card list.
-    private int getMaxPage(int cardCount) {
-        if (cardCount <= 0) {
-            return 0;
-        }
-
-        return (cardCount - 1) / cardsPerPage;
-    }
-
-    // Keeps the current page index within valid bounds.
-    private int keepPageInRange(int pageIndex, int maxPage) {
-        if (pageIndex < 0) {
-            return 0;
-        }
-
-        if (pageIndex > maxPage) {
-            return maxPage;
-        }
-
-        return pageIndex;
-    }
-
-    // Draws current page number text.
-    private void drawPageText(GraphicsContext gc, int pageIndex, int maxPage, double x, double y) {
-        gc.setFill(Color.LIGHTGRAY);
-        gc.setFont(Font.font("Arial", 13));
-        gc.setTextAlign(TextAlignment.LEFT);
-        gc.setTextBaseline(VPos.TOP);
-        gc.fillText("Page " + (pageIndex + 1) + "/" + (maxPage + 1), x, y);
-    }
-
-    // Draws previous and next page buttons.
-    private void drawArrowButtons(GraphicsContext gc,
-                                  double prevX,
-                                  double nextX,
-                                  double y,
-                                  int pageIndex,
-                                  int maxPage) {
-        if (pageIndex > 0) {
-            ScreenDrawHelper.drawButton(gc, prevX, y, arrowWidth, arrowHeight, "<");
-        } else {
-            ScreenDrawHelper.drawDisabledButton(gc, prevX, y, arrowWidth, arrowHeight, "<");
-        }
-
-        if (pageIndex < maxPage) {
-            ScreenDrawHelper.drawButton(gc, nextX, y, arrowWidth, arrowHeight, ">");
-        } else {
-            ScreenDrawHelper.drawDisabledButton(gc, nextX, y, arrowWidth, arrowHeight, ">");
         }
     }
 
@@ -528,9 +479,9 @@ public class PaymentSelectionPanel {
     }
 
     private boolean handleBankPageButtonClick(double mouseX, double mouseY, Player payer) {
-        int maxPage = getMaxPage(bankPaymentCards.size());
+        int maxPage = ScreenDrawHelper.getMaxPage(bankPaymentCards.size(), cardsPerPage);
 
-        if (isInside(mouseX, mouseY, bankPrevX, bankArrowY, arrowWidth, arrowHeight)) {
+        if (ScreenDrawHelper.isInside(mouseX, mouseY, bankPrevX, bankArrowY, arrowWidth, arrowHeight)) {
             if (bankPageIndex > 0) {
                 bankPageIndex--;
             }
@@ -538,7 +489,7 @@ public class PaymentSelectionPanel {
             return true;
         }
 
-        if (isInside(mouseX, mouseY, bankNextX, bankArrowY, arrowWidth, arrowHeight)) {
+        if (ScreenDrawHelper.isInside(mouseX, mouseY, bankNextX, bankArrowY, arrowWidth, arrowHeight)) {
             if (bankPageIndex < maxPage) {
                 bankPageIndex++;
             }
@@ -550,9 +501,9 @@ public class PaymentSelectionPanel {
     }
 
     private boolean handlePropertyPageButtonClick(double mouseX, double mouseY, Player payer) {
-        int maxPage = getMaxPage(payer.getPropertyCards().size());
+        int maxPage = ScreenDrawHelper.getMaxPage(payer.getPropertyCards().size(), cardsPerPage);
 
-        if (isInside(mouseX, mouseY, propertyPrevX, propertyArrowY, arrowWidth, arrowHeight)) {
+        if (ScreenDrawHelper.isInside(mouseX, mouseY, propertyPrevX, propertyArrowY, arrowWidth, arrowHeight)) {
             if (propertyPageIndex > 0) {
                 propertyPageIndex--;
             }
@@ -560,7 +511,7 @@ public class PaymentSelectionPanel {
             return true;
         }
 
-        if (isInside(mouseX, mouseY, propertyNextX, propertyArrowY, arrowWidth, arrowHeight)) {
+        if (ScreenDrawHelper.isInside(mouseX, mouseY, propertyNextX, propertyArrowY, arrowWidth, arrowHeight)) {
             if (propertyPageIndex < maxPage) {
                 propertyPageIndex++;
             }
@@ -569,19 +520,6 @@ public class PaymentSelectionPanel {
         }
 
         return false;
-    }
-
-    // Checks whether the mouse position is inside a rectangle.
-    private boolean isInside(double mouseX,
-                             double mouseY,
-                             double x,
-                             double y,
-                             double width,
-                             double height) {
-        return mouseX >= x
-                && mouseX <= x + width
-                && mouseY >= y
-                && mouseY <= y + height;
     }
 
     // Returns the clicked bank card on the current page.
@@ -595,7 +533,7 @@ public class PaymentSelectionPanel {
             double x = bankStartX + displayIndex * cardGapX;
             double y = bankStartY;
 
-            if (isInside(mouseX, mouseY, x, y, cardWidth, cardHeight)) {
+            if (ScreenDrawHelper.isInside(mouseX, mouseY, x, y, cardWidth, cardHeight)) {
                 Card card = bankPaymentCards.get(i);
                 if (card instanceof BuildingPaymentCard buildingCard
                         && isHouseBlockedByUnpaidHotel(payer, buildingCard)) {
@@ -620,7 +558,7 @@ public class PaymentSelectionPanel {
             double x = propertyStartX + displayIndex * cardGapX;
             double y = propertyStartY;
 
-            if (isInside(mouseX, mouseY, x, y, cardWidth, cardHeight)) {
+            if (ScreenDrawHelper.isInside(mouseX, mouseY, x, y, cardWidth, cardHeight)) {
                 if (isPropertyBlockedByUnpaidBuildings(payer, payer.getPropertyCards().get(i))) {
                     return null;
                 }
@@ -632,29 +570,8 @@ public class PaymentSelectionPanel {
         return null;
     }
 
-    // Converts enum color names into readable text.
-    private String getDisplayColorName(PropertyColor color) {
-        if (color == null) {
-            return "No Color";
-        }
-
-        String[] words = color.name().toLowerCase().split("_");
-        StringBuilder builder = new StringBuilder();
-
-        for (String word : words) {
-            if (!builder.isEmpty()) {
-                builder.append(" ");
-            }
-
-            builder.append(word.substring(0, 1).toUpperCase());
-            builder.append(word.substring(1));
-        }
-
-        return builder.toString();
-    }
-
     private String getBuildingText(BuildingPaymentCard buildingCard) {
-        return getDisplayColorName(buildingCard.getColor()) + " " + buildingCard.getValue() + "M";
+        return ScreenDrawHelper.getDisplayColorName(buildingCard.getColor()) + " " + buildingCard.getValue() + "M";
     }
 
     private boolean isHouseBlockedByUnpaidHotel(Player payer, BuildingPaymentCard buildingCard) {

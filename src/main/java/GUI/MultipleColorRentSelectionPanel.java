@@ -126,19 +126,15 @@ public class MultipleColorRentSelectionPanel {
     public boolean isDetailConfirmClicked(double mouseX, double mouseY) {
         return isSelecting()
                 && detailTarget != null
-                && mouseX >= detailConfirmX
-                && mouseX <= detailConfirmX + detailButtonWidth
-                && mouseY >= detailButtonY
-                && mouseY <= detailButtonY + detailButtonHeight;
+                && ScreenDrawHelper.isInside(mouseX, mouseY,
+                detailConfirmX, detailButtonY, detailButtonWidth, detailButtonHeight);
     }
 
     public boolean isDetailBackClicked(double mouseX, double mouseY) {
         return isSelecting()
                 && detailTarget != null
-                && mouseX >= detailBackX
-                && mouseX <= detailBackX + detailButtonWidth
-                && mouseY >= detailButtonY
-                && mouseY <= detailButtonY + detailButtonHeight;
+                && ScreenDrawHelper.isInside(mouseX, mouseY,
+                detailBackX, detailButtonY, detailButtonWidth, detailButtonHeight);
     }
 
     public boolean isDoubleRentClicked(double mouseX, double mouseY) {
@@ -156,10 +152,8 @@ public class MultipleColorRentSelectionPanel {
         }
 
         if (detailTarget != null) {
-            return mouseX >= detailCancelX
-                    && mouseX <= detailCancelX + detailButtonWidth
-                    && mouseY >= detailButtonY
-                    && mouseY <= detailButtonY + detailButtonHeight;
+            return ScreenDrawHelper.isInside(mouseX, mouseY,
+                    detailCancelX, detailButtonY, detailButtonWidth, detailButtonHeight);
         }
 
         return mouseX >= 690 && mouseX <= 830
@@ -191,8 +185,7 @@ public class MultipleColorRentSelectionPanel {
 
             double buttonY = y + displayIndex * (buttonHeight + gap);
 
-            if (mouseX >= x && mouseX <= x + buttonWidth
-                    && mouseY >= buttonY && mouseY <= buttonY + buttonHeight) {
+            if (ScreenDrawHelper.isInside(mouseX, mouseY, x, buttonY, buttonWidth, buttonHeight)) {
                 return game.getPlayers().get(i);
             }
 
@@ -228,8 +221,7 @@ public class MultipleColorRentSelectionPanel {
             double buttonX = x + col * (buttonWidth + gapX);
             double buttonY = y + row * (buttonHeight + gapY);
 
-            if (mouseX >= buttonX && mouseX <= buttonX + buttonWidth
-                    && mouseY >= buttonY && mouseY <= buttonY + buttonHeight) {
+            if (ScreenDrawHelper.isInside(mouseX, mouseY, buttonX, buttonY, buttonWidth, buttonHeight)) {
                 return color;
             }
 
@@ -372,7 +364,8 @@ public class MultipleColorRentSelectionPanel {
             gc.setFont(Font.font("Arial", 13));
             gc.setTextAlign(TextAlignment.CENTER);
             gc.setTextBaseline(VPos.CENTER);
-            gc.fillText(getDisplayColorName(color), buttonX + buttonWidth / 2, buttonY + buttonHeight / 2);
+            gc.fillText(ScreenDrawHelper.getDisplayColorName(color),
+                    buttonX + buttonWidth / 2, buttonY + buttonHeight / 2);
 
             displayIndex++;
         }
@@ -407,7 +400,7 @@ public class MultipleColorRentSelectionPanel {
         if (selectedColor == null) {
             colorText = "Color: not selected";
         } else {
-            colorText = "Color: " + getDisplayColorName(selectedColor);
+            colorText = "Color: " + ScreenDrawHelper.getDisplayColorName(selectedColor);
         }
 
         gc.fillText(targetText + "     " + colorText, Game.SCREEN_WIDTH / 2, 485);
@@ -453,26 +446,6 @@ public class MultipleColorRentSelectionPanel {
 
     private int calculatePreviewRent(Player player, PropertyColor color) {
         return rentCalculator.calculateRent(player, color, useDoubleRent);
-    }
-
-    private String getDisplayColorName(PropertyColor color) {
-        if (color == null) {
-            return "No Color";
-        }
-
-        String[] words = color.name().toLowerCase().split("_");
-        StringBuilder result = new StringBuilder();
-
-        for (String word : words) {
-            if (!result.isEmpty()) {
-                result.append(" ");
-            }
-
-            result.append(word.substring(0, 1).toUpperCase());
-            result.append(word.substring(1));
-        }
-
-        return result.toString();
     }
 
     public boolean isDetailCloseClicked(double mouseX, double mouseY) {

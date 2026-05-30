@@ -77,10 +77,8 @@ public class SlyDealPanel {
         }
 
         if (detailTargetPlayer != null) {
-            return mouseX >= detailCancelX
-                    && mouseX <= detailCancelX + detailButtonWidth
-                    && mouseY >= detailButtonY
-                    && mouseY <= detailButtonY + detailButtonHeight;
+            return ScreenDrawHelper.isInside(mouseX, mouseY,
+                    detailCancelX, detailButtonY, detailButtonWidth, detailButtonHeight);
         }
 
         return isSelecting()
@@ -107,8 +105,7 @@ public class SlyDealPanel {
             double x = panelX + col * (cardWidth + gap);
             double y = panelY + row * (cardHeight + 35);
 
-            if (mouseX >= x && mouseX <= x + cardWidth
-                    && mouseY >= y && mouseY <= y + cardHeight) {
+            if (ScreenDrawHelper.isInside(mouseX, mouseY, x, y, cardWidth, cardHeight)) {
                 return new GameScreen.SlyDealChoice(selectedTargetPlayer, choices.get(i));
             }
         }
@@ -136,8 +133,7 @@ public class SlyDealPanel {
             Player player = game.getPlayers().get(i);
             double cardX = x + displayIndex * (width + gap);
 
-            if (mouseX >= cardX && mouseX <= cardX + width
-                    && mouseY >= y && mouseY <= y + height
+            if (ScreenDrawHelper.isInside(mouseX, mouseY, cardX, y, width, height)
                     && hasStealableProperty(player)) {
                 return player;
             }
@@ -249,8 +245,8 @@ public class SlyDealPanel {
         gc.setTextBaseline(VPos.TOP);
         gc.fillText("Choose one property from Player " + targetIndex, Game.SCREEN_WIDTH / 2, 105);
 
-        int maxPage = getMaxPage(choices.size());
-        pageIndex = keepPageInRange(pageIndex, maxPage);
+        int maxPage = ScreenDrawHelper.getMaxPage(choices.size(), cardsPerPage);
+        pageIndex = ScreenDrawHelper.keepPageInRange(pageIndex, maxPage);
 
         int startIndex = pageIndex * cardsPerPage;
         int endIndex = Math.min(startIndex + cardsPerPage, choices.size());
@@ -407,40 +403,20 @@ public class SlyDealPanel {
         return !getStealableProperties(player).isEmpty();
     }
 
-    private int getMaxPage(int size) {
-        if (size <= 0) {
-            return 0;
-        }
-
-        return (size - 1) / cardsPerPage;
-    }
-
-    private int keepPageInRange(int currentPage, int maxPage) {
-        if (currentPage < 0) {
-            return 0;
-        }
-
-        if (currentPage > maxPage) {
-            return maxPage;
-        }
-
-        return currentPage;
-    }
-
     public boolean isPrevPageClicked(double mouseX, double mouseY) {
         return isSelecting()
                 && selectedTargetPlayer != null
                 && detailTargetPlayer == null
-                && mouseX >= prevX && mouseX <= prevX + pageButtonWidth
-                && mouseY >= pageY && mouseY <= pageY + pageButtonHeight;
+                && ScreenDrawHelper.isInside(mouseX, mouseY, prevX, pageY,
+                pageButtonWidth, pageButtonHeight);
     }
 
     public boolean isNextPageClicked(double mouseX, double mouseY) {
         return isSelecting()
                 && selectedTargetPlayer != null
                 && detailTargetPlayer == null
-                && mouseX >= nextX && mouseX <= nextX + pageButtonWidth
-                && mouseY >= pageY && mouseY <= pageY + pageButtonHeight;
+                && ScreenDrawHelper.isInside(mouseX, mouseY, nextX, pageY,
+                pageButtonWidth, pageButtonHeight);
     }
 
     public void previousPage() {
@@ -450,7 +426,7 @@ public class SlyDealPanel {
     }
 
     public void nextPage() {
-        int maxPage = getMaxPage(getStealableProperties(selectedTargetPlayer).size());
+        int maxPage = ScreenDrawHelper.getMaxPage(getStealableProperties(selectedTargetPlayer).size(), cardsPerPage);
 
         if (pageIndex < maxPage) {
             pageIndex++;
@@ -516,18 +492,14 @@ public class SlyDealPanel {
 
     public boolean isDetailBackClicked(double mouseX, double mouseY) {
         return detailTargetPlayer != null
-                && mouseX >= detailBackX
-                && mouseX <= detailBackX + detailButtonWidth
-                && mouseY >= detailButtonY
-                && mouseY <= detailButtonY + detailButtonHeight;
+                && ScreenDrawHelper.isInside(mouseX, mouseY,
+                detailBackX, detailButtonY, detailButtonWidth, detailButtonHeight);
     }
 
     public boolean isDetailConfirmClicked(double mouseX, double mouseY) {
         return detailTargetPlayer != null
-                && mouseX >= detailConfirmX
-                && mouseX <= detailConfirmX + detailButtonWidth
-                && mouseY >= detailButtonY
-                && mouseY <= detailButtonY + detailButtonHeight;
+                && ScreenDrawHelper.isInside(mouseX, mouseY,
+                detailConfirmX, detailButtonY, detailButtonWidth, detailButtonHeight);
     }
 
     public boolean handleDetailPageButtonClick(double mouseX, double mouseY) {
@@ -538,9 +510,6 @@ public class SlyDealPanel {
         return isSelecting()
                 && selectedTargetPlayer != null
                 && detailTargetPlayer == null
-                && mouseX >= 560
-                && mouseX <= 700
-                && mouseY >= 505
-                && mouseY <= 545;
+                && ScreenDrawHelper.isInside(mouseX, mouseY, 560, 505, 140, 40);
     }
 }

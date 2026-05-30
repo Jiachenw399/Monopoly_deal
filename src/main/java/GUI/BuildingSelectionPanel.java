@@ -69,8 +69,7 @@ public class BuildingSelectionPanel {
             double x = panelX + col * (buttonWidth + buttonGapX);
             double y = panelY + 100 + row * (buttonHeight + buttonGapY);
 
-            if (mouseX >= x && mouseX <= x + buttonWidth
-                    && mouseY >= y && mouseY <= y + buttonHeight) {
+            if (ScreenDrawHelper.isInside(mouseX, mouseY, x, y, buttonWidth, buttonHeight)) {
                 return color;
             }
 
@@ -134,7 +133,7 @@ public class BuildingSelectionPanel {
             gc.strokeRoundRect(x, y, buttonWidth, buttonHeight, 12, 12);
 
             gc.setFill(Color.BLACK);
-            gc.fillText(getDisplayColorName(color), x + buttonWidth / 2, y + buttonHeight / 2);
+            gc.fillText(ScreenDrawHelper.getDisplayColorName(color), x + buttonWidth / 2, y + buttonHeight / 2);
 
             displayIndex++;
         }
@@ -184,23 +183,4 @@ public class BuildingSelectionPanel {
                 && pendingCard.getActionCardType().name().contains("HOTEL");
     }
 
-    private String getDisplayColorName(PropertyColor color) {
-        if (color == null) {
-            return "No Color";
-        }
-
-        String[] words = color.name().toLowerCase().split("_");
-        StringBuilder result = new StringBuilder();
-
-        for (String word : words) {
-            if (!result.isEmpty()) {
-                result.append(" ");
-            }
-
-            result.append(word.substring(0, 1).toUpperCase());
-            result.append(word.substring(1));
-        }
-
-        return result.toString();
-    }
 }

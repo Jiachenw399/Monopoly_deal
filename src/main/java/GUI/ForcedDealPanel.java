@@ -125,10 +125,8 @@ public class ForcedDealPanel {
         }
 
         if (detailTargetPlayer != null) {
-            return mouseX >= detailCancelX
-                    && mouseX <= detailCancelX + detailButtonWidth
-                    && mouseY >= detailButtonY
-                    && mouseY <= detailButtonY + detailButtonHeight;
+            return ScreenDrawHelper.isInside(mouseX, mouseY,
+                    detailCancelX, detailButtonY, detailButtonWidth, detailButtonHeight);
         }
 
         return mouseX >= 720 && mouseX <= 860
@@ -170,8 +168,7 @@ public class ForcedDealPanel {
 
             Player targetPlayer = game.getPlayers().get(i);
 
-            if (mouseX >= cardX && mouseX <= cardX + width
-                    && mouseY >= y && mouseY <= y + height
+            if (ScreenDrawHelper.isInside(mouseX, mouseY, cardX, y, width, height)
                     && hasExchangeableProperty(targetPlayer)) {
                 return targetPlayer;
             }
@@ -211,8 +208,7 @@ public class ForcedDealPanel {
             double x = startX + (displayIndex % 4) * (cardWidth + cardGap);
             double y = cardStartY + (displayIndex / 4) * (cardHeight + 32);
 
-            if (mouseX >= x && mouseX <= x + cardWidth
-                    && mouseY >= y && mouseY <= y + cardHeight) {
+            if (ScreenDrawHelper.isInside(mouseX, mouseY, x, y, cardWidth, cardHeight)) {
                 return cards.get(i);
             }
         }
@@ -356,13 +352,13 @@ public class ForcedDealPanel {
         ArrayList<PropertiesCards> cards = getExchangeableProperties(player);
 
         int page = startX == myPanelX ? myPageIndex : targetPageIndex;
-        int maxPage = getMaxPage(cards.size());
+        int maxPage = ScreenDrawHelper.getMaxPage(cards.size(), cardsPerPage);
 
         if (startX == myPanelX) {
-            myPageIndex = keepPageInRange(myPageIndex, maxPage);
+            myPageIndex = ScreenDrawHelper.keepPageInRange(myPageIndex, maxPage);
             page = myPageIndex;
         } else {
-            targetPageIndex = keepPageInRange(targetPageIndex, maxPage);
+            targetPageIndex = ScreenDrawHelper.keepPageInRange(targetPageIndex, maxPage);
             page = targetPageIndex;
         }
 
@@ -460,26 +456,6 @@ public class ForcedDealPanel {
         return cards;
     }
 
-    private int getMaxPage(int size) {
-        if (size <= 0) {
-            return 0;
-        }
-
-        return (size - 1) / cardsPerPage;
-    }
-
-    private int keepPageInRange(int currentPage, int maxPage) {
-        if (currentPage < 0) {
-            return 0;
-        }
-
-        if (currentPage > maxPage) {
-            return maxPage;
-        }
-
-        return currentPage;
-    }
-
     public boolean isMyPrevPageClicked(double mouseX, double mouseY) {
         return isSelecting()
                 && selectedTargetPlayer != null
@@ -515,7 +491,8 @@ public class ForcedDealPanel {
     }
 
     public void nextMyPage() {
-        int maxPage = getMaxPage(getExchangeableProperties(game.getCurrentPlayer()).size());
+        int maxPage = ScreenDrawHelper.getMaxPage(
+                getExchangeableProperties(game.getCurrentPlayer()).size(), cardsPerPage);
 
         if (myPageIndex < maxPage) {
             myPageIndex++;
@@ -533,7 +510,8 @@ public class ForcedDealPanel {
             return;
         }
 
-        int maxPage = getMaxPage(getExchangeableProperties(selectedTargetPlayer).size());
+        int maxPage = ScreenDrawHelper.getMaxPage(
+                getExchangeableProperties(selectedTargetPlayer).size(), cardsPerPage);
 
         if (targetPageIndex < maxPage) {
             targetPageIndex++;
@@ -601,13 +579,13 @@ public class ForcedDealPanel {
 
     public boolean isDetailConfirmClicked(double mouseX, double mouseY) {
         return detailTargetPlayer != null
-                && mouseX >= detailConfirmX && mouseX <= detailConfirmX + detailButtonWidth
-                && mouseY >= detailButtonY && mouseY <= detailButtonY + detailButtonHeight;
+                && ScreenDrawHelper.isInside(mouseX, mouseY,
+                detailConfirmX, detailButtonY, detailButtonWidth, detailButtonHeight);
     }
 
     public boolean isDetailBackClicked(double mouseX, double mouseY) {
         return detailTargetPlayer != null
-                && mouseX >= detailBackX && mouseX <= detailBackX + detailButtonWidth
-                && mouseY >= detailButtonY && mouseY <= detailButtonY + detailButtonHeight;
+                && ScreenDrawHelper.isInside(mouseX, mouseY,
+                detailBackX, detailButtonY, detailButtonWidth, detailButtonHeight);
     }
 }

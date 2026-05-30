@@ -5,6 +5,7 @@ import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.TextAlignment;
+import model.PropertyColor;
 
 public class ScreenDrawHelper {
     public static final Color BACKGROUND = Color.rgb(18, 24, 38);
@@ -130,6 +131,40 @@ public class ScreenDrawHelper {
         gc.setTextBaseline(VPos.TOP);
     }
 
+    public static void drawPageText(GraphicsContext gc,
+                                    int pageIndex,
+                                    int maxPage,
+                                    double x,
+                                    double y,
+                                    Color color) {
+        gc.setFill(color);
+        gc.setFont(Font.font("Arial", 13));
+        gc.setTextAlign(TextAlignment.LEFT);
+        gc.setTextBaseline(VPos.TOP);
+        gc.fillText("Page " + (pageIndex + 1) + "/" + (maxPage + 1), x, y);
+    }
+
+    public static void drawArrowButtons(GraphicsContext gc,
+                                        double prevX,
+                                        double nextX,
+                                        double y,
+                                        double width,
+                                        double height,
+                                        int pageIndex,
+                                        int maxPage) {
+        if (pageIndex > 0) {
+            drawButton(gc, prevX, y, width, height, "<");
+        } else {
+            drawDisabledButton(gc, prevX, y, width, height, "<");
+        }
+
+        if (pageIndex < maxPage) {
+            drawButton(gc, nextX, y, width, height, ">");
+        } else {
+            drawDisabledButton(gc, nextX, y, width, height, ">");
+        }
+    }
+
     public static void drawDoubleRentOption(GraphicsContext gc,
                                             double x,
                                             double y,
@@ -206,5 +241,53 @@ public class ScreenDrawHelper {
         if (!line.isEmpty()) {
             gc.fillText(line, x + maxWidth / 2, currentY);
         }
+    }
+
+    public static int getMaxPage(int itemCount, int itemsPerPage) {
+        if (itemCount <= 0) {
+            return 0;
+        }
+
+        return (itemCount - 1) / itemsPerPage;
+    }
+
+    public static int keepPageInRange(int pageIndex, int maxPage) {
+        if (pageIndex < 0) {
+            return 0;
+        }
+
+        return Math.min(pageIndex, maxPage);
+    }
+
+    public static boolean isInside(double mouseX,
+                                   double mouseY,
+                                   double x,
+                                   double y,
+                                   double width,
+                                   double height) {
+        return mouseX >= x
+                && mouseX <= x + width
+                && mouseY >= y
+                && mouseY <= y + height;
+    }
+
+    public static String getDisplayColorName(PropertyColor color) {
+        if (color == null) {
+            return "No Color";
+        }
+
+        String[] words = color.name().toLowerCase().split("_");
+        StringBuilder builder = new StringBuilder();
+
+        for (String word : words) {
+            if (!builder.isEmpty()) {
+                builder.append(" ");
+            }
+
+            builder.append(word.substring(0, 1).toUpperCase());
+            builder.append(word.substring(1));
+        }
+
+        return builder.toString();
     }
 }

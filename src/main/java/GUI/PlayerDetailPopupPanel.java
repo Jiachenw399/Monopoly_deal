@@ -100,7 +100,7 @@ public class PlayerDetailPopupPanel {
         }
 
         if (isBankNextClicked(mouseX, mouseY)) {
-            if (bankPage < getMaxPage(player.getBankCards().size())) {
+            if (bankPage < ScreenDrawHelper.getMaxPage(player.getBankCards().size(), cardsPerPage)) {
                 bankPage++;
             }
             return true;
@@ -114,7 +114,7 @@ public class PlayerDetailPopupPanel {
         }
 
         if (isPropertyNextClicked(mouseX, mouseY)) {
-            if (propertyPage < getMaxPage(player.getPropertyCards().size())) {
+            if (propertyPage < ScreenDrawHelper.getMaxPage(player.getPropertyCards().size(), cardsPerPage)) {
                 propertyPage++;
             }
             return true;
@@ -124,25 +124,23 @@ public class PlayerDetailPopupPanel {
     }
 
     private boolean isBankPrevClicked(double mouseX, double mouseY) {
-        return isInside(mouseX, mouseY, bankPrevX, bankButtonY, pageButtonWidth, pageButtonHeight);
+        return ScreenDrawHelper.isInside(mouseX, mouseY, bankPrevX, bankButtonY,
+                pageButtonWidth, pageButtonHeight);
     }
 
     private boolean isBankNextClicked(double mouseX, double mouseY) {
-        return isInside(mouseX, mouseY, bankNextX, bankButtonY, pageButtonWidth, pageButtonHeight);
+        return ScreenDrawHelper.isInside(mouseX, mouseY, bankNextX, bankButtonY,
+                pageButtonWidth, pageButtonHeight);
     }
 
     private boolean isPropertyPrevClicked(double mouseX, double mouseY) {
-        return isInside(mouseX, mouseY, propertyPrevX, propertyButtonY, pageButtonWidth, pageButtonHeight);
+        return ScreenDrawHelper.isInside(mouseX, mouseY, propertyPrevX, propertyButtonY,
+                pageButtonWidth, pageButtonHeight);
     }
 
     private boolean isPropertyNextClicked(double mouseX, double mouseY) {
-        return isInside(mouseX, mouseY, propertyNextX, propertyButtonY, pageButtonWidth, pageButtonHeight);
-    }
-
-    // Checks whether the mouse position is inside a rectangle.
-    private boolean isInside(double mouseX, double mouseY, double x, double y, double width, double height) {
-        return mouseX >= x && mouseX <= x + width
-                && mouseY >= y && mouseY <= y + height;
+        return ScreenDrawHelper.isInside(mouseX, mouseY, propertyNextX, propertyButtonY,
+                pageButtonWidth, pageButtonHeight);
     }
 
     // Draws the whole player detail popup.
@@ -166,33 +164,11 @@ public class PlayerDetailPopupPanel {
 
     // Keeps bank and property pages inside valid ranges.
     private void keepPageInRange(Player player) {
-        int maxBankPage = getMaxPage(player.getBankCards().size());
-        int maxPropertyPage = getMaxPage(player.getPropertyCards().size());
+        int maxBankPage = ScreenDrawHelper.getMaxPage(player.getBankCards().size(), cardsPerPage);
+        int maxPropertyPage = ScreenDrawHelper.getMaxPage(player.getPropertyCards().size(), cardsPerPage);
 
-        if (bankPage > maxBankPage) {
-            bankPage = maxBankPage;
-        }
-
-        if (propertyPage > maxPropertyPage) {
-            propertyPage = maxPropertyPage;
-        }
-
-        if (bankPage < 0) {
-            bankPage = 0;
-        }
-
-        if (propertyPage < 0) {
-            propertyPage = 0;
-        }
-    }
-
-    // Calculates the last page index for cards.
-    private int getMaxPage(int size) {
-        if (size <= 0) {
-            return 0;
-        }
-
-        return (size - 1) / cardsPerPage;
+        bankPage = ScreenDrawHelper.keepPageInRange(bankPage, maxBankPage);
+        propertyPage = ScreenDrawHelper.keepPageInRange(propertyPage, maxPropertyPage);
     }
 
     // Draws the dark background overlay.
@@ -295,7 +271,7 @@ public class PlayerDetailPopupPanel {
                 bankNextX,
                 bankButtonY,
                 bankPage,
-                getMaxPage(player.getBankCards().size())
+                ScreenDrawHelper.getMaxPage(player.getBankCards().size(), cardsPerPage)
         );
     }
 
@@ -320,7 +296,7 @@ public class PlayerDetailPopupPanel {
                 propertyNextX,
                 propertyButtonY,
                 propertyPage,
-                getMaxPage(player.getPropertyCards().size())
+                ScreenDrawHelper.getMaxPage(player.getPropertyCards().size(), cardsPerPage)
         );
     }
 
@@ -449,7 +425,7 @@ public class PlayerDetailPopupPanel {
         }
 
         if (card instanceof PropertiesCards propertyCard) {
-            return getDisplayColorName(propertyCard.getCurrentColor());
+            return ScreenDrawHelper.getDisplayColorName(propertyCard.getCurrentColor());
         }
 
         return card.getValue() + "M";
@@ -466,27 +442,6 @@ public class PlayerDetailPopupPanel {
         }
 
         return Color.WHITE;
-    }
-
-    // Converts enum color names into readable text.
-    private String getDisplayColorName(PropertyColor color) {
-        if (color == null) {
-            return "No Color";
-        }
-
-        String[] words = color.name().toLowerCase().split("_");
-        StringBuilder result = new StringBuilder();
-
-        for (String word : words) {
-            if (!result.isEmpty()) {
-                result.append(" ");
-            }
-
-            result.append(word.substring(0, 1).toUpperCase());
-            result.append(word.substring(1));
-        }
-
-        return result.toString();
     }
 
     private void drawColorSummary(GraphicsContext gc, Player player) {

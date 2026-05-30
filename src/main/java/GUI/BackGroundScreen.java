@@ -148,16 +148,17 @@ public class BackGroundScreen {
 
         int total = PlayerInfoHelper.getBankTotal(currentPlayer);
         int cardCount = currentPlayer.getBankCards().size();
-        int maxPage = getMaxPage(cardCount);
+        int maxPage = ScreenDrawHelper.getMaxPage(cardCount, cardsPerPage);
 
-        bankPageIndex = keepPageInRange(bankPageIndex, maxPage);
+        bankPageIndex = ScreenDrawHelper.keepPageInRange(bankPageIndex, maxPage);
 
         gc.setFont(Font.font("Arial", 15));
         gc.setFill(ScreenDrawHelper.ACCENT);
         gc.fillText("Total Money: " + total + "M", 190, 134);
 
-        drawPageText(gc, bankPageIndex, maxPage, 520, 134);
-        drawArrowButtons(gc, bankPrevX, bankNextX, bankArrowY, bankPageIndex, maxPage);
+        ScreenDrawHelper.drawPageText(gc, bankPageIndex, maxPage, 520, 134, ScreenDrawHelper.MUTED_TEXT);
+        ScreenDrawHelper.drawArrowButtons(gc, bankPrevX, bankNextX, bankArrowY,
+                arrowWidth, arrowHeight, bankPageIndex, maxPage);
 
         double startX = 32;
         double startY = 160;
@@ -187,12 +188,13 @@ public class BackGroundScreen {
         ScreenDrawHelper.drawSectionTitle(gc, "Property Area", 32, 274);
 
         int cardCount = currentPlayer.getPropertyCards().size();
-        int maxPage = getMaxPage(cardCount);
+        int maxPage = ScreenDrawHelper.getMaxPage(cardCount, cardsPerPage);
 
-        propertyPageIndex = keepPageInRange(propertyPageIndex, maxPage);
+        propertyPageIndex = ScreenDrawHelper.keepPageInRange(propertyPageIndex, maxPage);
 
-        drawPageText(gc, propertyPageIndex, maxPage, 520, 276);
-        drawArrowButtons(gc, propertyPrevX, propertyNextX, propertyArrowY, propertyPageIndex, maxPage);
+        ScreenDrawHelper.drawPageText(gc, propertyPageIndex, maxPage, 520, 276, ScreenDrawHelper.MUTED_TEXT);
+        ScreenDrawHelper.drawArrowButtons(gc, propertyPrevX, propertyNextX, propertyArrowY,
+                arrowWidth, arrowHeight, propertyPageIndex, maxPage);
 
         double startX = 32;
         double startY = 302;
@@ -208,7 +210,7 @@ public class BackGroundScreen {
             double x = startX + displayIndex * cardGap;
             double y = startY;
 
-            String colorText = getDisplayColorName(card.getCurrentColor());
+            String colorText = ScreenDrawHelper.getDisplayColorName(card.getCurrentColor());
 
             if (card == selectedWildCard) {
                 gc.setStroke(ScreenDrawHelper.ACCENT);
@@ -234,53 +236,6 @@ public class BackGroundScreen {
         }
 
         drawWildColorButtons(gc, selectedWildCard);
-    }
-
-    private int getMaxPage(int cardCount) {
-        if (cardCount <= 0) {
-            return 0;
-        }
-
-        return (cardCount - 1) / cardsPerPage;
-    }
-
-    private int keepPageInRange(int pageIndex, int maxPage) {
-        if (pageIndex < 0) {
-            return 0;
-        }
-
-        if (pageIndex > maxPage) {
-            return maxPage;
-        }
-
-        return pageIndex;
-    }
-
-    private void drawPageText(GraphicsContext gc, int pageIndex, int maxPage, double x, double y) {
-        gc.setFill(ScreenDrawHelper.MUTED_TEXT);
-        gc.setFont(Font.font("Arial", 13));
-        gc.setTextAlign(TextAlignment.LEFT);
-        gc.setTextBaseline(VPos.TOP);
-        gc.fillText("Page " + (pageIndex + 1) + "/" + (maxPage + 1), x, y);
-    }
-
-    private void drawArrowButtons(GraphicsContext gc,
-                                  double prevX,
-                                  double nextX,
-                                  double y,
-                                  int pageIndex,
-                                  int maxPage) {
-        if (pageIndex > 0) {
-            ScreenDrawHelper.drawButton(gc, prevX, y, arrowWidth, arrowHeight, "<");
-        } else {
-            ScreenDrawHelper.drawDisabledButton(gc, prevX, y, arrowWidth, arrowHeight, "<");
-        }
-
-        if (pageIndex < maxPage) {
-            ScreenDrawHelper.drawButton(gc, nextX, y, arrowWidth, arrowHeight, ">");
-        } else {
-            ScreenDrawHelper.drawDisabledButton(gc, nextX, y, arrowWidth, arrowHeight, ">");
-        }
     }
 
     private void drawPropertyBuildingLabel(GraphicsContext gc, PropertiesCards card, double x, double y) {
@@ -345,7 +300,7 @@ public class BackGroundScreen {
             gc.setFont(Font.font("Arial", 11));
             gc.setTextAlign(TextAlignment.CENTER);
             gc.setTextBaseline(VPos.CENTER);
-            gc.fillText(getDisplayColorName(color), buttonX + w / 2, buttonY + h / 2);
+            gc.fillText(ScreenDrawHelper.getDisplayColorName(color), buttonX + w / 2, buttonY + h / 2);
         }
 
         gc.setTextBaseline(VPos.TOP);
@@ -469,26 +424,6 @@ public class BackGroundScreen {
         gc.fillText("Congratulations!", Game.SCREEN_WIDTH / 2, 332);
     }
 
-    private String getDisplayColorName(PropertyColor color) {
-        if (color == null) {
-            return "No Color";
-        }
-
-        String[] words = color.name().toLowerCase().split("_");
-        StringBuilder builder = new StringBuilder();
-
-        for (String word : words) {
-            if (!builder.isEmpty()) {
-                builder.append(" ");
-            }
-
-            builder.append(word.substring(0, 1).toUpperCase());
-            builder.append(word.substring(1));
-        }
-
-        return builder.toString();
-    }
-
     public boolean handlePageButtonClick(double mouseX, double mouseY) {
         if (handleBankPageButtonClick(mouseX, mouseY)) {
             return true;
@@ -516,7 +451,7 @@ public class BackGroundScreen {
             int displayIndex = i - startIndex;
             double x = startX + displayIndex * cardGap;
 
-            if (isInside(mouseX, mouseY, x, startY, smallCardWidth, smallCardHeight)) {
+            if (ScreenDrawHelper.isInside(mouseX, mouseY, x, startY, smallCardWidth, smallCardHeight)) {
                 return card;
             }
         }
@@ -526,9 +461,9 @@ public class BackGroundScreen {
 
     private boolean handleBankPageButtonClick(double mouseX, double mouseY) {
         Player currentPlayer = game.getCurrentPlayer();
-        int maxPage = getMaxPage(currentPlayer.getBankCards().size());
+        int maxPage = ScreenDrawHelper.getMaxPage(currentPlayer.getBankCards().size(), cardsPerPage);
 
-        if (isInside(mouseX, mouseY, bankPrevX, bankArrowY, arrowWidth, arrowHeight)) {
+        if (ScreenDrawHelper.isInside(mouseX, mouseY, bankPrevX, bankArrowY, arrowWidth, arrowHeight)) {
             if (bankPageIndex > 0) {
                 bankPageIndex--;
             }
@@ -536,7 +471,7 @@ public class BackGroundScreen {
             return true;
         }
 
-        if (isInside(mouseX, mouseY, bankNextX, bankArrowY, arrowWidth, arrowHeight)) {
+        if (ScreenDrawHelper.isInside(mouseX, mouseY, bankNextX, bankArrowY, arrowWidth, arrowHeight)) {
             if (bankPageIndex < maxPage) {
                 bankPageIndex++;
             }
@@ -549,9 +484,9 @@ public class BackGroundScreen {
 
     private boolean handlePropertyPageButtonClick(double mouseX, double mouseY) {
         Player currentPlayer = game.getCurrentPlayer();
-        int maxPage = getMaxPage(currentPlayer.getPropertyCards().size());
+        int maxPage = ScreenDrawHelper.getMaxPage(currentPlayer.getPropertyCards().size(), cardsPerPage);
 
-        if (isInside(mouseX, mouseY, propertyPrevX, propertyArrowY, arrowWidth, arrowHeight)) {
+        if (ScreenDrawHelper.isInside(mouseX, mouseY, propertyPrevX, propertyArrowY, arrowWidth, arrowHeight)) {
             if (propertyPageIndex > 0) {
                 propertyPageIndex--;
             }
@@ -559,7 +494,7 @@ public class BackGroundScreen {
             return true;
         }
 
-        if (isInside(mouseX, mouseY, propertyNextX, propertyArrowY, arrowWidth, arrowHeight)) {
+        if (ScreenDrawHelper.isInside(mouseX, mouseY, propertyNextX, propertyArrowY, arrowWidth, arrowHeight)) {
             if (propertyPageIndex < maxPage) {
                 propertyPageIndex++;
             }
@@ -570,15 +505,4 @@ public class BackGroundScreen {
         return false;
     }
 
-    private boolean isInside(double mouseX,
-                             double mouseY,
-                             double x,
-                             double y,
-                             double width,
-                             double height) {
-        return mouseX >= x
-                && mouseX <= x + width
-                && mouseY >= y
-                && mouseY <= y + height;
-    }
 }
