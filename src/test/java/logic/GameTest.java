@@ -6,7 +6,15 @@ import static org.junit.jupiter.api.Assertions.assertNotSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.Test;
 
+import java.util.ArrayList;
+
+import model.ActionCardType;
+import model.ActionCards;
+import model.Card;
 import model.Player;
+import model.PropertiesCards;
+import model.PropertiesCardsType;
+import model.PropertyColor;
 
 public class GameTest {
     private static class CountingObserver implements GameObserver {
@@ -64,5 +72,56 @@ public class GameTest {
         game.startGame();
 
         assertTrue(observer.notificationCount > 0);
+    }
+
+    @Test
+    public void testChangingWildPropertyColorChecksWinImmediately() {
+        Game game = new Game();
+        game.startGame();
+        Player player = game.getCurrentPlayer();
+        addCompleteBrownSet(player);
+        addCompleteLightGreenSet(player);
+        player.getPropertyCards().add(new PropertiesCards(PropertiesCardsType.DARK_BLUE));
+        PropertiesCards wildCard = new PropertiesCards(PropertiesCardsType.WILD_ALL);
+        player.getPropertyCards().add(wildCard);
+
+        assertFalse(game.isWin());
+
+        assertTrue(game.setPropertyColor(player, wildCard, PropertyColor.DARK_BLUE));
+
+        assertTrue(game.isWin());
+    }
+
+    @Test
+    public void testPaymentPropertyTransferChecksReceiverWinImmediately() {
+        Game game = new Game(2);
+        game.startGame();
+        Player receiver = game.getPlayers().get(0);
+        Player payer = game.getPlayers().get(1);
+        addCompleteBrownSet(receiver);
+        addCompleteLightGreenSet(receiver);
+        receiver.getPropertyCards().add(new PropertiesCards(PropertiesCardsType.DARK_BLUE));
+        PropertiesCards paymentProperty = new PropertiesCards(PropertiesCardsType.DARK_BLUE);
+        payer.getPropertyCards().add(paymentProperty);
+        ActionCards debtCollector = new ActionCards(ActionCardType.DEBT_COLLECTOR);
+        receiver.getHandCards().add(debtCollector);
+
+        assertTrue(game.finishDebtCollector(debtCollector, payer));
+        ArrayList<Card> selectedCards = new ArrayList<>();
+        selectedCards.add(paymentProperty);
+
+        assertTrue(game.finishCurrentPayment(selectedCards));
+
+        assertTrue(game.isWin());
+    }
+
+    private void addCompleteBrownSet(Player player) {
+        player.getPropertyCards().add(new PropertiesCards(PropertiesCardsType.BROWN));
+        player.getPropertyCards().add(new PropertiesCards(PropertiesCardsType.BROWN));
+    }
+
+    private void addCompleteLightGreenSet(Player player) {
+        player.getPropertyCards().add(new PropertiesCards(PropertiesCardsType.LIGHT_GREEN));
+        player.getPropertyCards().add(new PropertiesCards(PropertiesCardsType.LIGHT_GREEN));
     }
 }

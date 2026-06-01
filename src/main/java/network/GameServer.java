@@ -398,7 +398,7 @@ public class GameServer {
             return;
         }
 
-        property.setCurrentColor(color);
+        game.setPropertyColor(player, property, color);
         broadcast(new NetworkMessage("BROADCAST", "Player " + requester.getPlayerId() + " changed a wild card to " + color));
         sendGameStateToAll();
     }

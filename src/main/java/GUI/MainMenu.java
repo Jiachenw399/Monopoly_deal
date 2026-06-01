@@ -11,10 +11,12 @@ import logic.Game;
 public class MainMenu {
     private final Canvas canvas;
     private boolean isShow;
+    private boolean choosingPlayerCount;
 
     public MainMenu() {
         canvas = new Canvas(GuiScale.canvasWidth(), GuiScale.canvasHeight());
         isShow = true;
+        choosingPlayerCount = false;
     }
 
     public void paint() {
@@ -22,8 +24,12 @@ public class MainMenu {
         GuiScale.prepare(gc);
 
         drawBackground(gc);
-        drawMenuText(gc);
-        drawMenuCards(gc);
+        if (choosingPlayerCount) {
+            drawPlayerCountChoice(gc);
+        } else {
+            drawMenuText(gc);
+            drawMenuCards(gc);
+        }
     }
 
     public void clear() {
@@ -61,6 +67,41 @@ public class MainMenu {
         drawMenuOption(gc, 365, 460, "X", "Exit Game");
     }
 
+    private void drawPlayerCountChoice(GraphicsContext gc) {
+        gc.setTextAlign(TextAlignment.CENTER);
+        gc.setTextBaseline(VPos.CENTER);
+
+        gc.setFill(ScreenDrawHelper.ACCENT);
+        gc.setFont(new Font("Arial", 42));
+        gc.fillText("Choose Players", Game.SCREEN_WIDTH / 2, 145);
+
+        gc.setFill(ScreenDrawHelper.MUTED_TEXT);
+        gc.setFont(new Font("Arial", 18));
+        gc.fillText("Press 2, 3, or 4 to start a local game.", Game.SCREEN_WIDTH / 2, 192);
+
+        drawPlayerCountOption(gc, 285, 285, "2", "2 Players");
+        drawPlayerCountOption(gc, 440, 285, "3", "3 Players");
+        drawPlayerCountOption(gc, 595, 285, "4", "4 Players");
+
+        gc.setFill(ScreenDrawHelper.MUTED_TEXT);
+        gc.setFont(Font.font("Arial", 15));
+        gc.fillText("Esc returns to the main menu.", Game.SCREEN_WIDTH / 2, 442);
+    }
+
+    private void drawPlayerCountOption(GraphicsContext gc, double x, double y, String key, String text) {
+        ScreenDrawHelper.drawPanel(gc, x, y, 135, 110);
+
+        gc.setFill(ScreenDrawHelper.ACCENT);
+        gc.setFont(Font.font("Arial", 36));
+        gc.setTextAlign(TextAlignment.CENTER);
+        gc.setTextBaseline(VPos.CENTER);
+        gc.fillText(key, x + 67.5, y + 38);
+
+        gc.setFill(ScreenDrawHelper.TEXT);
+        gc.setFont(Font.font("Arial", 16));
+        gc.fillText(text, x + 67.5, y + 78);
+    }
+
     private void drawMenuOption(GraphicsContext gc, double x, double y, String key, String text) {
         ScreenDrawHelper.drawPanel(gc, x, y, 305, 52);
 
@@ -90,5 +131,13 @@ public class MainMenu {
 
     public void setShow(boolean show) {
         isShow = show;
+    }
+
+    public boolean isChoosingPlayerCount() {
+        return choosingPlayerCount;
+    }
+
+    public void setChoosingPlayerCount(boolean choosingPlayerCount) {
+        this.choosingPlayerCount = choosingPlayerCount;
     }
 }

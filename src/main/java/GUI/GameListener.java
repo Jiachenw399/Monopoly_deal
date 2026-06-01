@@ -22,6 +22,10 @@ public class GameListener {
                 return;
             }
 
+            if (gameScreen.isShuffleAnimating()) {
+                return;
+            }
+
             clickHandler.handleMouseClick(
                     GuiScale.toLogical(event.getX()),
                     GuiScale.toLogical(event.getY())

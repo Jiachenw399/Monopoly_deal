@@ -34,27 +34,42 @@ public class MenuListener {
     private void handleKeyPressed(Scene scene, KeyCode code) {
         switch (code) {
             case N:
-                if (menu.isShow()) {
+                if (menu.isShow() && !menu.isChoosingPlayerCount()) {
                     showRuleScreen();
                 }
                 break;
 
             case A:
-                if (menu.isShow()) {
-                    startGame();
+                if (menu.isShow() && !menu.isChoosingPlayerCount()) {
+                    menu.setChoosingPlayerCount(true);
                 }
                 break;
 
             case L:
-                if (menu.isShow() && scene.getWindow() instanceof Stage stage) {
+                if (menu.isShow() && !menu.isChoosingPlayerCount() && scene.getWindow() instanceof Stage stage) {
                     OnlineLauncher.openLanMenu(stage, musicPlayer);
                 }
                 break;
 
             case X:
-                if (menu.isShow()) {
+                if (menu.isShow() && !menu.isChoosingPlayerCount()) {
                     System.exit(0);
                 }
+                break;
+
+            case DIGIT2:
+            case NUMPAD2:
+                startGameWithPlayerCount(2);
+                break;
+
+            case DIGIT3:
+            case NUMPAD3:
+                startGameWithPlayerCount(3);
+                break;
+
+            case DIGIT4:
+            case NUMPAD4:
+                startGameWithPlayerCount(4);
                 break;
 
             case ESCAPE:
@@ -72,11 +87,12 @@ public class MenuListener {
         ruleScreen.setShow(true);
     }
 
-    private void startGame() {
-        if (!menu.isShow() || gameScreen.isShuffleAnimating()) {
+    private void startGameWithPlayerCount(int playerCount) {
+        if (!menu.isShow() || !menu.isChoosingPlayerCount() || gameScreen.isShuffleAnimating()) {
             return;
         }
 
+        menu.setChoosingPlayerCount(false);
         menu.setShow(false);
         ruleScreen.setShow(false);
         gameScreen.setShow(true);
@@ -84,13 +100,14 @@ public class MenuListener {
 
         PauseTransition delay = new PauseTransition(Duration.seconds(2.0));
         delay.setOnFinished(event -> {
-            game.startGame();
+            game.startGame(playerCount);
             gameScreen.stopShuffleAnimation();
         });
         delay.play();
     }
 
     private void returnToMenu() {
+        menu.setChoosingPlayerCount(false);
         ruleScreen.setShow(false);
         gameScreen.setShow(false);
         menu.setShow(true);

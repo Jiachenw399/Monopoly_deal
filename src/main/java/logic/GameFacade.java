@@ -12,6 +12,8 @@ import java.util.ArrayList;
 public interface GameFacade {
     void startGame();
 
+    void startGame(int playerCount);
+
     void startTurn(Player currentPlayer);
 
     void guiEndTurn();
@@ -63,6 +65,8 @@ public interface GameFacade {
     void currentPaymentUseJustSayNo();
 
     boolean finishCurrentPayment(ArrayList<Card> selectedCards);
+
+    boolean setPropertyColor(Player player, PropertiesCards propertyCard, PropertyColor color);
 
     int getTotalAssetsValue(Player player);
 

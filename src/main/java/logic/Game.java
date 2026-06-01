@@ -30,7 +30,7 @@ public class Game implements GameFacade {
     private final GameSetupService gameSetupService;
     private final List<GameObserver> observers;
     private final DeckCardFactory cardFactory;
-    private final int playerCount;
+    private int playerCount;
 
     private DrawPileAndDiscardPile drawCards;
     private PaymentManager paymentManager;
@@ -81,6 +81,11 @@ public class Game implements GameFacade {
         notifyObservers();
     }
 
+    public void startGame(int playerCount) {
+        this.playerCount = normalizePlayerCount(playerCount);
+        startGame();
+    }
+
     private void resetGame() {
         initializeGameObjects();
         isWin = false;
@@ -107,7 +112,7 @@ public class Game implements GameFacade {
     }
 
     public void guiEndTurn() {
-        if (checkCurrentPlayerWin()) {
+        if (checkAnyPlayerWin()) {
             notifyObservers();
             return;
         }
@@ -117,7 +122,7 @@ public class Game implements GameFacade {
     }
 
     public void forceAdvanceTurnForAbsentPlayer() {
-        if (checkCurrentPlayerWin()) {
+        if (checkAnyPlayerWin()) {
             notifyObservers();
             return;
         }
@@ -243,6 +248,25 @@ public class Game implements GameFacade {
         return finishAction(paymentManager.finishCurrentPayment(selectedCards));
     }
 
+    public boolean setPropertyColor(Player player, PropertiesCards propertyCard, PropertyColor color) {
+        if (player == null || propertyCard == null || color == null) {
+            return false;
+        }
+
+        if (!player.getPropertyCards().contains(propertyCard)) {
+            return false;
+        }
+
+        if (!propertyCard.isWildCard() || !propertyCard.getType().getColors().contains(color)) {
+            return false;
+        }
+
+        propertyCard.setCurrentColor(color);
+        checkAnyPlayerWin();
+        notifyObservers();
+        return true;
+    }
+
     public int getTotalAssetsValue(Player player) {
         return paymentManager.getTotalAssetsValue(player);
     }
@@ -257,17 +281,19 @@ public class Game implements GameFacade {
 
     private boolean finishAction(boolean success) {
         if (success) {
-            checkCurrentPlayerWin();
+            checkAnyPlayerWin();
             notifyObservers();
         }
 
         return success;
     }
 
-    private boolean checkCurrentPlayerWin() {
-        if (getCurrentPlayer().checkIfWin()) {
-            isWin = true;
-            return true;
+    private boolean checkAnyPlayerWin() {
+        for (Player player : players) {
+            if (player.checkIfWin()) {
+                isWin = true;
+                return true;
+            }
         }
 
         return false;

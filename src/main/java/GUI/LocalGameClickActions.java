@@ -104,7 +104,7 @@ public class LocalGameClickActions extends GameClickActionAdapter {
 
     @Override
     public void setWildCardColor(PropertiesCards card, PropertyColor color) {
-        card.setCurrentColor(color);
+        game.setPropertyColor(game.getCurrentPlayer(), card, color);
     }
 
     @Override
