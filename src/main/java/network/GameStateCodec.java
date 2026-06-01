@@ -5,6 +5,7 @@ import model.ActionCardType;
 import model.ActionCards;
 import model.Card;
 import model.DrawPileAndDiscardPile;
+import model.HiddenCard;
 import model.MoneyCards;
 import model.Player;
 import model.PropertiesCards;
@@ -27,6 +28,11 @@ public final class GameStateCodec {
 
     // Runs encode.
     public static String encode(Game game, int playerId) {
+        return encode(game, playerId, -1);
+    }
+
+    // Runs encode with turn timer information.
+    public static String encode(Game game, int playerId, int turnRemainingSeconds) {
         if (game == null) {
             return "NO_GAME";
         }
@@ -37,6 +43,7 @@ public final class GameStateCodec {
         builder.append("you=").append(playerId);
         builder.append(";");
         builder.append("currentPlayer=").append(game.getCurrentPlayerIndex() + 1);
+        builder.append(";turnRemaining=").append(turnRemainingSeconds);
         builder.append(";discardPhase=").append(game.isDiscard());
         appendPaymentState(builder, game, playerId);
         builder.append(";players=");
@@ -80,14 +87,15 @@ public final class GameStateCodec {
         Map<String, String> fields = splitFields(body);
         snapshot.you = parseInt(fields.get("you"));
         snapshot.currentPlayerIndex = Math.max(0, parseInt(fields.get("currentPlayer")) - 1);
+        snapshot.turnRemainingSeconds = parseInt(fields.getOrDefault("turnRemaining", "-1"));
         snapshot.discard = Boolean.parseBoolean(fields.getOrDefault("discardPhase", "false"));
         snapshot.win = Boolean.parseBoolean(fields.getOrDefault("win", "false"));
 
-        Map<Integer, Integer> usedCounts = parseUsedCounts(fields.get("players"));
+        Map<Integer, PlayerSummary> playerSummaries = parsePlayerSummaries(fields.get("players"));
         List<Card> yourHand = parseCards(fields.get("yourHand"), ",");
         Map<Integer, List<Card>> banks = parseCardGroups(fields.get("publicBanks"));
         Map<Integer, List<Card>> properties = parseCardGroups(fields.get("publicProperties"));
-        int playerCount = Math.max(Math.max(usedCounts.size(), banks.size()), properties.size());
+        int playerCount = Math.max(Math.max(playerSummaries.size(), banks.size()), properties.size());
 
         DrawPileAndDiscardPile drawPile = new DrawPileAndDiscardPile();
         for (int i = 1; i <= playerCount; i++) {
@@ -97,6 +105,11 @@ public final class GameStateCodec {
             player.getPropertyCards().clear();
             if (i == snapshot.you) {
                 player.getHandCards().addAll(yourHand);
+            } else {
+                int hiddenHandCount = playerSummaries.getOrDefault(i, PlayerSummary.EMPTY).handCount;
+                for (int cardNumber = 0; cardNumber < hiddenHandCount; cardNumber++) {
+                    player.getHandCards().add(new HiddenCard());
+                }
             }
             player.getBankCards().addAll(banks.getOrDefault(i, List.of()));
             for (Card card : properties.getOrDefault(i, List.of())) {
@@ -104,7 +117,7 @@ public final class GameStateCodec {
                     player.getPropertyCards().add(propertyCard);
                 }
             }
-            player.setUseCardTimes(usedCounts.getOrDefault(i, 0));
+            player.setUseCardTimes(playerSummaries.getOrDefault(i, PlayerSummary.EMPTY).usedCount);
             snapshot.players.add(player);
         }
 
@@ -214,9 +227,9 @@ public final class GameStateCodec {
         return fields;
     }
 
-    // Parses used counts.
-    private static Map<Integer, Integer> parseUsedCounts(String text) {
-        Map<Integer, Integer> result = new LinkedHashMap<>();
+    // Parses player hand and used-card summaries.
+    private static Map<Integer, PlayerSummary> parsePlayerSummaries(String text) {
+        Map<Integer, PlayerSummary> result = new LinkedHashMap<>();
         if (text == null || text.isBlank()) {
             return result;
         }
@@ -237,14 +250,20 @@ public final class GameStateCodec {
                 continue;
             }
             int parsedPlayerId = parseInt(token.substring(1, open));
+            int hand = 0;
             int used = 0;
             for (String item : token.substring(open + 1, close).split(",")) {
                 String[] pair = item.split("=", 2);
-                if (pair.length == 2 && "used".equals(pair[0])) {
+                if (pair.length != 2) {
+                    continue;
+                }
+                if ("hand".equals(pair[0])) {
+                    hand = parseInt(pair[1]);
+                } else if ("used".equals(pair[0])) {
                     used = parseInt(pair[1]);
                 }
             }
-            result.put(parsedPlayerId, used);
+            result.put(parsedPlayerId, new PlayerSummary(hand, used));
         }
         return result;
     }
@@ -344,8 +363,13 @@ public final class GameStateCodec {
         public final ArrayList<Player> players = new ArrayList<>();
         public int you;
         public int currentPlayerIndex;
+        public int turnRemainingSeconds = -1;
         public boolean discard;
         public boolean win;
         public Game.PaymentRequest paymentRequest;
+    }
+
+    private record PlayerSummary(int handCount, int usedCount) {
+        private static final PlayerSummary EMPTY = new PlayerSummary(0, 0);
     }
 }

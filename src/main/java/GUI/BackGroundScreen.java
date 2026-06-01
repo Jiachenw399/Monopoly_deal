@@ -28,6 +28,7 @@ public class BackGroundScreen {
     private int propertyPageIndex = 0;
     private int lastPlayerIndex = -1;
     private boolean endTurnEnabled = true;
+    private int turnRemainingSeconds = -1;
 
     private final int cardsPerPage = 8;
 
@@ -50,6 +51,10 @@ public class BackGroundScreen {
     // Sets whether the End Turn button can be used.
     public void setEndTurnEnabled(boolean endTurnEnabled) {
         this.endTurnEnabled = endTurnEnabled;
+    }
+
+    public void setTurnRemainingSeconds(int turnRemainingSeconds) {
+        this.turnRemainingSeconds = turnRemainingSeconds;
     }
 
     // Draws all background.
@@ -105,6 +110,12 @@ public class BackGroundScreen {
         gc.setFill(ScreenDrawHelper.TEXT);
         gc.setFont(Font.font("Arial", 22));
         gc.fillText("Player " + (game.getCurrentPlayerIndex() + 1) + "'s Turn", 36, 28);
+
+        if (turnRemainingSeconds >= 0) {
+            gc.setFill(ScreenDrawHelper.MUTED_TEXT);
+            gc.setFont(Font.font("Arial", 14));
+            gc.fillText(turnRemainingSeconds + "s left", 520, 33);
+        }
 
         if (showViewingPlayer) {
             gc.setFill(ScreenDrawHelper.MUTED_TEXT);

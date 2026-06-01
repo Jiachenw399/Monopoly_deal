@@ -91,6 +91,10 @@ public class GameScreen implements GameObserver {
         backGroundScreen.setEndTurnEnabled(endTurnEnabled);
     }
 
+    public void setTurnRemainingSeconds(int turnRemainingSeconds) {
+        backGroundScreen.setTurnRemainingSeconds(turnRemainingSeconds);
+    }
+
     // Runs paint.
     public void paint() {
         GuiScale.prepare(canvas.getGraphicsContext2D());

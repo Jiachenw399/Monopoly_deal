@@ -14,9 +14,6 @@ import model.PropertyColor;
 import java.util.ArrayList;
 import java.util.function.BiConsumer;
 
-/**
- * Network commit adapter for {@link GUI.GameClickHandler} in {@link OnlinePlayWindow}.
- */
 public class OnlineGameClickActions extends GameClickActionAdapter {
     private int myPlayerId;
     private final BiConsumer<String, String> send;
@@ -98,43 +95,41 @@ public class OnlineGameClickActions extends GameClickActionAdapter {
     // Runs on multiple color rent target picked.
     @Override
     public void onMultipleColorRentTargetPicked(Player target) {
-        gameScreen.setSelectedMultipleColorRentTarget(target);
+        gameScreen.showMultipleColorRentTargetDetail(target);
     }
 
     // Runs on forced deal target picked.
     @Override
     public void onForcedDealTargetPicked(Player target) {
-        gameScreen.setSelectedForcedDealTarget(target);
+        gameScreen.showForcedDealTargetDetail(target);
     }
 
     // Runs on debt collector target picked.
     @Override
     public void onDebtCollectorTargetPicked(ActionCards card, Player target) {
-        send.accept("DEBT", handNumber(card) + " " + playerNumber(target));
-        gameScreen.cancelDebtCollectorSelection();
+        gameScreen.setSelectedDebtCollectorTarget(target);
     }
 
     // Finishes debt collector.
     @Override
     public void finishDebtCollector(ActionCards card, Player target) {
-        // Online uses immediate send in onDebtCollectorTargetPicked.
+        send.accept("DEBT", handNumber(card) + " " + playerNumber(target));
     }
 
     // Runs on deal breaker set picked.
     @Override
     public void onDealBreakerSetPicked(GameScreen.DealBreakerChoice choice) {
-        if (choice != null && !choice.getSelectedSet().isEmpty()) {
-            send.accept("DEAL_BREAKER", handNumber(gameScreen.getPendingDealBreakerCard())
-                    + " " + playerNumber(choice.getTargetPlayer())
-                    + " " + choice.getSelectedSet().getFirst().getCurrentColor().name());
-            gameScreen.cancelDealBreakerSelection();
-        }
+        gameScreen.showDealBreakerDetailChoice(choice);
     }
 
     // Finishes deal breaker.
     @Override
     public void finishDealBreaker(ActionCards card, Player target, ArrayList<PropertiesCards> selectedSet) {
-        // Online confirms in onDealBreakerSetPicked.
+        if (selectedSet != null && !selectedSet.isEmpty()) {
+            send.accept("DEAL_BREAKER", handNumber(card)
+                    + " " + playerNumber(target)
+                    + " " + selectedSet.getFirst().getCurrentColor().name());
+        }
     }
 
     // Finishes two color rent.
@@ -152,6 +147,10 @@ public class OnlineGameClickActions extends GameClickActionAdapter {
     // Runs set wild card color.
     @Override
     public void setWildCardColor(PropertiesCards card, PropertyColor color) {
+        if (game.getCurrentPlayerIndex() + 1 != myPlayerId) {
+            return;
+        }
+
         send.accept("SET_PROPERTY_COLOR",
                 propertyNumber(myPlayer(), card) + " " + color.name());
     }

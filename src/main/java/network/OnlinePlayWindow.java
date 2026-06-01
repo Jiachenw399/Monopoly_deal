@@ -12,6 +12,7 @@ import javafx.scene.Group;
 import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.control.Alert;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.TextAlignment;
@@ -25,9 +26,6 @@ import java.io.PrintWriter;
 import java.net.Socket;
 import java.util.ArrayList;
 
-/**
- * Online client shell that reuses {@link GameSession} and {@link GameClickHandler}.
- */
 public class OnlinePlayWindow extends Stage {
     private static final int PORT = 5555;
 
@@ -43,7 +41,9 @@ public class OnlinePlayWindow extends Stage {
     private Socket socket;
     private PrintWriter out;
     private boolean started;
+    private boolean lastMyTurn;
     private int myPlayerId;
+    private long turnDeadlineMillis = -1;
     private String connectionText = "Connecting...";
     private String playerListText = "Waiting for players...";
 
@@ -84,6 +84,7 @@ public class OnlinePlayWindow extends Stage {
             @Override
             public void handle(long now) {
                 if (started) {
+                    updateTurnRemainingDisplay();
                     lobbyCanvas.setVisible(false);
                     gameScreen.setShow(true);
                     gameScreen.paint();
@@ -200,8 +201,10 @@ public class OnlinePlayWindow extends Stage {
                     myPlayerId = snapshot.you;
                     clickActions.setMyPlayerId(myPlayerId);
                     session.applyOnlineSnapshot(snapshot);
-                    session.getGameScreen().lockViewedPlayer(myPlayerId - 1);
+                    updateViewedPlayer(snapshot);
                     session.getGameScreen().setEndTurnEnabled(snapshot.currentPlayerIndex + 1 == myPlayerId);
+                    updateTurnDeadline(snapshot.turnRemainingSeconds);
+                    notifyWhenMyTurn(snapshot.currentPlayerIndex + 1 == myPlayerId);
                     started = true;
                 } catch (RuntimeException e) {
                     connectionText = "State error";
@@ -212,6 +215,54 @@ public class OnlinePlayWindow extends Stage {
             default -> {
             }
         }
+    }
+
+    // Chooses the online view so everyone watches the active player while keeping private hands hidden.
+    private void updateViewedPlayer(GameStateCodec.Snapshot snapshot) {
+        if (snapshot.currentPlayerIndex + 1 == myPlayerId) {
+            session.getGameScreen().lockViewedPlayer(myPlayerId - 1);
+            return;
+        }
+
+        session.getGameScreen().lockViewedPlayer(snapshot.currentPlayerIndex);
+    }
+
+    // Updates the local countdown deadline from the latest server state.
+    private void updateTurnDeadline(int turnRemainingSeconds) {
+        if (turnRemainingSeconds < 0) {
+            turnDeadlineMillis = -1;
+            session.getGameScreen().setTurnRemainingSeconds(-1);
+            return;
+        }
+
+        turnDeadlineMillis = System.currentTimeMillis() + turnRemainingSeconds * 1000L;
+        updateTurnRemainingDisplay();
+    }
+
+    // Refreshes the visible countdown using the locally estimated server deadline.
+    private void updateTurnRemainingDisplay() {
+        if (turnDeadlineMillis < 0) {
+            session.getGameScreen().setTurnRemainingSeconds(-1);
+            return;
+        }
+
+        long remainingMillis = turnDeadlineMillis - System.currentTimeMillis();
+        int remainingSeconds = (int) Math.max(0, (remainingMillis + 999) / 1000);
+        session.getGameScreen().setTurnRemainingSeconds(remainingSeconds);
+    }
+
+    // Shows a prominent prompt when control enters this player's turn.
+    private void notifyWhenMyTurn(boolean myTurn) {
+        if (myTurn && !lastMyTurn) {
+            Alert alert = new Alert(Alert.AlertType.INFORMATION);
+            alert.setTitle("Your Turn");
+            alert.setHeaderText("轮到你出牌了");
+            alert.setContentText("你有 2 分钟完成本回合操作，超时后会自动切换到下一位玩家。");
+            alert.initOwner(this);
+            alert.show();
+        }
+
+        lastMyTurn = myTurn;
     }
 
     // Checks whether rect.

@@ -29,7 +29,7 @@ import java.util.function.Consumer;
 
 public class GameServer {
     private static final int PORT = 5555;
-    private static final int MIN_PLAYERS = 2;
+    private static final int MIN_PLAYERS = 1;
     private static final int MAX_PLAYERS = 4;
     private static final int TURN_SECONDS = 120;
 
