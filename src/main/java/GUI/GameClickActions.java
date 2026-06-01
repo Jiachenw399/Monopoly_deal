@@ -15,6 +15,9 @@ public interface GameClickActions {
     // Uses Just Say No for the current payment.
     void useJustSayNo();
 
+    // Accepts the latest Just Say No without countering.
+    void passJustSayNo();
+
     // Finishes a payment with selected cards.
     void finishPayment(ArrayList<Card> selectedCards);
 

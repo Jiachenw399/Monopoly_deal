@@ -270,9 +270,26 @@ public class Game implements GameFacade {
         return paymentManager.canCurrentPaymentUseJustSayNo();
     }
 
+    // Checks whether the current payment is waiting for a Just Say No counter.
+    public boolean isCurrentPaymentWaitingForJustSayNoResponse() {
+        return paymentManager.isCurrentPaymentWaitingForJustSayNoResponse();
+    }
+
+    // Finds the player who may answer the latest Just Say No.
+    public Player getCurrentJustSayNoResponder() {
+        return paymentManager.getCurrentJustSayNoResponder();
+    }
+
     // Runs current payment use just say no.
     public void currentPaymentUseJustSayNo() {
         paymentManager.currentPaymentUseJustSayNo();
+        notifyObservers();
+    }
+
+    // Accepts the latest Just Say No for the current payment.
+    public void currentPaymentPassJustSayNo() {
+        paymentManager.currentPaymentPassJustSayNo();
+        notifyObservers();
     }
 
     // Finishes current payment.
@@ -294,10 +311,31 @@ public class Game implements GameFacade {
             return false;
         }
 
+        if (wouldBreakBuiltCompleteSet(player, propertyCard, color)) {
+            return false;
+        }
+
         propertyCard.setCurrentColor(color);
         checkAnyPlayerWin();
         notifyObservers();
         return true;
+    }
+
+    // Checks whether changing a wild card color would break a built complete set.
+    private boolean wouldBreakBuiltCompleteSet(Player player, PropertiesCards propertyCard, PropertyColor newColor) {
+        PropertyColor oldColor = propertyCard.getCurrentColor();
+
+        if (oldColor == null || oldColor == newColor) {
+            return false;
+        }
+
+        if (!PlayerInfoHelper.hasHouse(player, oldColor) && !PlayerInfoHelper.hasHotel(player, oldColor)) {
+            return false;
+        }
+
+        int oldColorCount = PlayerInfoHelper.getPropertyCountByCurrentColor(player, oldColor);
+        return oldColorCount >= oldColor.getAmountToCompleteSet()
+                && oldColorCount - 1 < oldColor.getAmountToCompleteSet();
     }
 
     // Finds total assets value.
@@ -411,6 +449,9 @@ public class Game implements GameFacade {
         private final Player receiver;
         private final Player payer;
         private final int amount;
+        private boolean justSayNoPending;
+        private Player justSayNoResponder;
+        private Player lastJustSayNoUser;
 
         // Runs payment request.
         public PaymentRequest(Player receiver, Player payer, int amount) {
@@ -429,6 +470,32 @@ public class Game implements GameFacade {
 
         public int getAmount() {
             return amount;
+        }
+
+        public boolean isJustSayNoPending() {
+            return justSayNoPending;
+        }
+
+        public Player getJustSayNoResponder() {
+            return justSayNoResponder;
+        }
+
+        public Player getLastJustSayNoUser() {
+            return lastJustSayNoUser;
+        }
+
+        // Starts waiting for the opponent to answer a Just Say No.
+        public void startJustSayNoResponse(Player lastUser, Player responder) {
+            justSayNoPending = true;
+            lastJustSayNoUser = lastUser;
+            justSayNoResponder = responder;
+        }
+
+        // Clears Just Say No response state.
+        public void clearJustSayNoResponse() {
+            justSayNoPending = false;
+            justSayNoResponder = null;
+            lastJustSayNoUser = null;
         }
     }
 }

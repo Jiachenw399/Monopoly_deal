@@ -30,6 +30,12 @@ public class LocalGameClickActions extends GameClickActionAdapter {
         game.currentPaymentUseJustSayNo();
     }
 
+    // Accepts the latest Just Say No.
+    @Override
+    public void passJustSayNo() {
+        game.currentPaymentPassJustSayNo();
+    }
+
     // Finishes payment.
     @Override
     public void finishPayment(ArrayList<Card> selectedCards) {

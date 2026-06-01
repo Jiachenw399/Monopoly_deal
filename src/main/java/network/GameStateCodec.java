@@ -137,12 +137,19 @@ public final class GameStateCodec {
         Game.PaymentRequest request = game.getCurrentPaymentRequest();
         int receiverId = game.getPlayers().indexOf(request.getReceiver()) + 1;
         int payerId = game.getPlayers().indexOf(request.getPayer()) + 1;
+        int responderId = game.getPlayers().indexOf(request.getJustSayNoResponder()) + 1;
+        int lastJustSayNoUserId = game.getPlayers().indexOf(request.getLastJustSayNoUser()) + 1;
 
         builder.append("payer=").append(payerId);
         builder.append(",receiver=").append(receiverId);
         builder.append(",amount=").append(request.getAmount());
+        builder.append(",justSayNoPending=").append(request.isJustSayNoPending());
+        builder.append(",justSayNoResponder=").append(responderId);
+        builder.append(",lastJustSayNoUser=").append(lastJustSayNoUserId);
 
-        if (playerId == payerId) {
+        int activeJustSayNoPlayerId = request.isJustSayNoPending() ? responderId : payerId;
+
+        if (playerId == activeJustSayNoPlayerId) {
             builder.append(",youMustPay=true");
             builder.append(",canJustSayNo=").append(game.canCurrentPaymentUseJustSayNo());
         }
@@ -347,7 +354,18 @@ public final class GameStateCodec {
                 || payerIndex >= players.size() || receiverIndex >= players.size()) {
             return null;
         }
-        return new Game.PaymentRequest(players.get(receiverIndex), players.get(payerIndex), amount);
+        Game.PaymentRequest request = new Game.PaymentRequest(players.get(receiverIndex), players.get(payerIndex), amount);
+        if (Boolean.parseBoolean(values.getOrDefault("justSayNoPending", "false"))) {
+            int responderIndex = parseInt(values.get("justSayNoResponder")) - 1;
+            int lastUserIndex = parseInt(values.get("lastJustSayNoUser")) - 1;
+
+            if (responderIndex >= 0 && responderIndex < players.size()
+                    && lastUserIndex >= 0 && lastUserIndex < players.size()) {
+                request.startJustSayNoResponse(players.get(lastUserIndex), players.get(responderIndex));
+            }
+        }
+
+        return request;
     }
 
     // Parses int.

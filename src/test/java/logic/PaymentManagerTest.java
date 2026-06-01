@@ -99,6 +99,59 @@ public class PaymentManagerTest {
     }
 
     @Test
+    public void testJustSayNoCanBeCounteredToResumePayment() {
+        PaymentManager manager = new PaymentManager();
+        Player receiver = new Player(new DrawPileAndDiscardPile());
+        Player payer = new Player(new DrawPileAndDiscardPile());
+        ActionCards payerJustSayNo = new ActionCards(ActionCardType.JUST_SAY_NO);
+        ActionCards receiverJustSayNo = new ActionCards(ActionCardType.JUST_SAY_NO);
+        MoneyCards money = new MoneyCards(5);
+        payer.getHandCards().add(payerJustSayNo);
+        receiver.getHandCards().add(receiverJustSayNo);
+        payer.getBankCards().add(money);
+
+        manager.addPaymentRequest(receiver, payer, 5);
+        manager.startNextPaymentRequest();
+        manager.currentPaymentUseJustSayNo();
+
+        assertTrue(manager.isCurrentPaymentWaitingForJustSayNoResponse());
+        assertSame(receiver, manager.getCurrentJustSayNoResponder());
+        assertFalse(payer.getHandCards().contains(payerJustSayNo));
+
+        manager.currentPaymentUseJustSayNo();
+
+        assertSame(payer, manager.getCurrentPaymentRequest().getPayer());
+        assertFalse(manager.isCurrentPaymentWaitingForJustSayNoResponse());
+        assertFalse(receiver.getHandCards().contains(receiverJustSayNo));
+        assertTrue(manager.finishCurrentPayment(new ArrayList<>(java.util.List.of(money))));
+        assertTrue(receiver.getBankCards().contains(money));
+    }
+
+    @Test
+    public void testJustSayNoCounterCanBeCounteredAgain() {
+        PaymentManager manager = new PaymentManager();
+        Player receiver = new Player(new DrawPileAndDiscardPile());
+        Player payer = new Player(new DrawPileAndDiscardPile());
+        payer.getHandCards().add(new ActionCards(ActionCardType.JUST_SAY_NO));
+        payer.getHandCards().add(new ActionCards(ActionCardType.JUST_SAY_NO));
+        receiver.getHandCards().add(new ActionCards(ActionCardType.JUST_SAY_NO));
+        payer.getBankCards().add(new MoneyCards(5));
+
+        manager.addPaymentRequest(receiver, payer, 5);
+        manager.startNextPaymentRequest();
+        manager.currentPaymentUseJustSayNo();
+        manager.currentPaymentUseJustSayNo();
+
+        assertTrue(manager.isCurrentPaymentWaitingForJustSayNoResponse());
+        assertSame(payer, manager.getCurrentJustSayNoResponder());
+
+        manager.currentPaymentUseJustSayNo();
+
+        assertNull(manager.getCurrentPaymentRequest());
+        assertFalse(manager.isPaymentSelecting());
+    }
+
+    @Test
     public void testApplyOnlineStateReplacesCurrentPayment() {
         PaymentManager manager = new PaymentManager();
         Player receiver = new Player(new DrawPileAndDiscardPile());

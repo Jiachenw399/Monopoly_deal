@@ -256,8 +256,8 @@ public class OnlinePlayWindow extends Stage {
         if (myTurn && !lastMyTurn) {
             Alert alert = new Alert(Alert.AlertType.INFORMATION);
             alert.setTitle("Your Turn");
-            alert.setHeaderText("轮到你出牌了");
-            alert.setContentText("你有 2 分钟完成本回合操作，超时后会自动切换到下一位玩家。");
+            alert.setHeaderText("It is your turn");
+            alert.setContentText("You have 2 minutes to play. The turn will move to the next player when time runs out.");
             alert.initOwner(this);
             alert.show();
         }

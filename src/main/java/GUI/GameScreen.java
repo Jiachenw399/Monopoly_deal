@@ -746,6 +746,11 @@ public class GameScreen implements GameObserver {
         return paymentSelectionPanel.isJustSayNoClicked(mouseX, mouseY);
     }
 
+    // Checks whether payment Just Say No pass clicked.
+    public boolean isPaymentJustSayNoPassClicked(double mouseX, double mouseY) {
+        return paymentSelectionPanel.isJustSayNoPassClicked(mouseX, mouseY);
+    }
+
     // Clears payment selection.
     public void clearPaymentSelection() {
         paymentSelectionPanel.clearSelection();

@@ -83,8 +83,17 @@ public interface GameFacade {
     // Checks whether the current payment can use Just Say No.
     boolean canCurrentPaymentUseJustSayNo();
 
+    // Checks whether the current payment is waiting for a Just Say No counter.
+    boolean isCurrentPaymentWaitingForJustSayNoResponse();
+
+    // Finds the player who may answer the latest Just Say No.
+    Player getCurrentJustSayNoResponder();
+
     // Uses Just Say No for the current payment.
     void currentPaymentUseJustSayNo();
+
+    // Accepts the latest Just Say No for the current payment.
+    void currentPaymentPassJustSayNo();
 
     // Finishes the current payment with selected cards.
     boolean finishCurrentPayment(ArrayList<Card> selectedCards);

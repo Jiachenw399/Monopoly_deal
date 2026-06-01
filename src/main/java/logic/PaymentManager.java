@@ -44,9 +44,23 @@ public class PaymentManager {
             return;
         }
 
-        currentPaymentRequest.getPayer().discardActionCardFromHand(ActionCardType.JUST_SAY_NO);
-        currentPaymentRequest = null;
-        startNextPaymentRequest();
+        Player user = getCurrentJustSayNoUser();
+        Player responder = getCurrentJustSayNoOpponent(user);
+        user.discardActionCardFromHand(ActionCardType.JUST_SAY_NO);
+        currentPaymentRequest.startJustSayNoResponse(user, responder);
+
+        if (!canCurrentPaymentUseJustSayNo()) {
+            resolveCurrentJustSayNo();
+        }
+    }
+
+    // Accepts the latest Just Say No and resolves the payment chain.
+    public void currentPaymentPassJustSayNo() {
+        if (!isCurrentPaymentWaitingForJustSayNoResponse()) {
+            return;
+        }
+
+        resolveCurrentJustSayNo();
     }
 
     // Finishes current payment.
@@ -86,8 +100,22 @@ public class PaymentManager {
 
     // Checks whether this can current payment use just say no.
     public boolean canCurrentPaymentUseJustSayNo() {
-        return currentPaymentRequest != null
-                && currentPaymentRequest.getPayer().hasActionCard(ActionCardType.JUST_SAY_NO);
+        Player user = getCurrentJustSayNoUser();
+        return user != null && user.hasActionCard(ActionCardType.JUST_SAY_NO);
+    }
+
+    // Checks whether the payment is waiting for a Just Say No response.
+    public boolean isCurrentPaymentWaitingForJustSayNoResponse() {
+        return currentPaymentRequest != null && currentPaymentRequest.isJustSayNoPending();
+    }
+
+    // Finds the player who may respond to the latest Just Say No.
+    public Player getCurrentJustSayNoResponder() {
+        if (!isCurrentPaymentWaitingForJustSayNoResponse()) {
+            return null;
+        }
+
+        return currentPaymentRequest.getJustSayNoResponder();
     }
 
     // Finds total assets value.
@@ -309,5 +337,46 @@ public class PaymentManager {
     // Builds ing key.
     private String buildingKey(PropertyColor color, ActionCardType type) {
         return color.name() + ":" + type.name();
+    }
+
+    // Finds the player who can currently use Just Say No.
+    private Player getCurrentJustSayNoUser() {
+        if (currentPaymentRequest == null) {
+            return null;
+        }
+
+        if (currentPaymentRequest.isJustSayNoPending()) {
+            return currentPaymentRequest.getJustSayNoResponder();
+        }
+
+        return currentPaymentRequest.getPayer();
+    }
+
+    // Finds the opponent who can answer the current Just Say No.
+    private Player getCurrentJustSayNoOpponent(Player user) {
+        if (currentPaymentRequest == null || user == null) {
+            return null;
+        }
+
+        if (user == currentPaymentRequest.getPayer()) {
+            return currentPaymentRequest.getReceiver();
+        }
+
+        return currentPaymentRequest.getPayer();
+    }
+
+    // Resolves the current Just Say No chain according to the latest card played.
+    private void resolveCurrentJustSayNo() {
+        if (currentPaymentRequest == null || !currentPaymentRequest.isJustSayNoPending()) {
+            return;
+        }
+
+        boolean paymentCanceled = currentPaymentRequest.getLastJustSayNoUser() == currentPaymentRequest.getPayer();
+        currentPaymentRequest.clearJustSayNoResponse();
+
+        if (paymentCanceled) {
+            currentPaymentRequest = null;
+            startNextPaymentRequest();
+        }
     }
 }

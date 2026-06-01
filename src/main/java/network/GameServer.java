@@ -322,6 +322,11 @@ public class GameServer {
             return;
         }
 
+        if (game.isCurrentPaymentWaitingForJustSayNoResponse()) {
+            requester.send(new NetworkMessage("SERVER", "Resolve Just Say No before paying").encode());
+            return;
+        }
+
         Game.PaymentRequest request = game.getCurrentPaymentRequest();
         int payerId = game.getPlayers().indexOf(request.getPayer()) + 1;
 
@@ -363,10 +368,10 @@ public class GameServer {
         }
 
         Game.PaymentRequest request = game.getCurrentPaymentRequest();
-        int payerId = game.getPlayers().indexOf(request.getPayer()) + 1;
+        int expectedPlayerId = getCurrentJustSayNoPlayerId(request);
 
-        if (requester.getPlayerId() != payerId) {
-            requester.send(new NetworkMessage("SERVER", "Player " + payerId + " must respond now").encode());
+        if (requester.getPlayerId() != expectedPlayerId) {
+            requester.send(new NetworkMessage("SERVER", "Player " + expectedPlayerId + " must respond now").encode());
             return;
         }
 
@@ -377,6 +382,31 @@ public class GameServer {
 
         game.currentPaymentUseJustSayNo();
         broadcast(new NetworkMessage("BROADCAST", "Player " + requester.getPlayerId() + " used Just Say No"));
+        sendGameStateToAll();
+    }
+
+    // Accepts the latest Just Say No if the responder chooses not to counter.
+    private synchronized void passJustSayNoIfValid(ClientHandler requester) {
+        if (!isGameStarted()) {
+            requester.send(new NetworkMessage("SERVER", "Game has not started yet").encode());
+            return;
+        }
+
+        if (!game.isPaymentSelecting() || !game.isCurrentPaymentWaitingForJustSayNoResponse()) {
+            requester.send(new NetworkMessage("SERVER", "No Just Say No response is required now").encode());
+            return;
+        }
+
+        Game.PaymentRequest request = game.getCurrentPaymentRequest();
+        int responderId = game.getPlayers().indexOf(request.getJustSayNoResponder()) + 1;
+
+        if (requester.getPlayerId() != responderId) {
+            requester.send(new NetworkMessage("SERVER", "Player " + responderId + " must respond now").encode());
+            return;
+        }
+
+        game.currentPaymentPassJustSayNo();
+        broadcast(new NetworkMessage("BROADCAST", "Player " + requester.getPlayerId() + " accepted Just Say No"));
         sendGameStateToAll();
     }
 
@@ -406,7 +436,14 @@ public class GameServer {
             return;
         }
 
-        game.setPropertyColor(player, property, color);
+        if (!game.setPropertyColor(player, property, color)) {
+            requester.send(new NetworkMessage(
+                    "SERVER",
+                    "That color change would break a built complete set"
+            ).encode());
+            return;
+        }
+
         broadcast(new NetworkMessage("BROADCAST", "Player " + requester.getPlayerId() + " changed a wild card to " + color));
         sendGameStateToAll();
     }
@@ -520,6 +557,15 @@ public class GameServer {
         }
 
         return true;
+    }
+
+    // Finds the player who can currently use Just Say No.
+    private int getCurrentJustSayNoPlayerId(Game.PaymentRequest request) {
+        if (request.isJustSayNoPending()) {
+            return game.getPlayers().indexOf(request.getJustSayNoResponder()) + 1;
+        }
+
+        return game.getPlayers().indexOf(request.getPayer()) + 1;
     }
 
     // Creates action commands.
@@ -962,6 +1008,7 @@ public class GameServer {
             handlers.put("DISCARD", message -> discardIfValid(this, message.getBody()));
             handlers.put("PAY", message -> payIfValid(this, message.getBody()));
             handlers.put("JUST_SAY_NO", message -> justSayNoIfValid(this));
+            handlers.put("PASS_JUST_SAY_NO", message -> passJustSayNoIfValid(this));
             handlers.put("SET_PROPERTY_COLOR", message -> setPropertyColorIfValid(this, message.getBody()));
             handlers.put("END_TURN", message -> endTurnIfGameStarted(this));
             return handlers;

@@ -8,6 +8,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import logic.Game;
 import model.ActionCardType;
 import model.ActionCards;
+import model.HiddenCard;
 import model.MoneyCards;
 import model.Player;
 import model.PropertiesCards;
@@ -75,7 +76,24 @@ public class GameStateCodecTest {
     }
 
     @Test
-    public void testDecodeOnlyIncludesReceivingPlayersHand() {
+    public void testDecodePaymentRequestWithJustSayNoResponse() {
+        String body = "you=1;currentPlayer=1;discardPhase=false;"
+                + "payment=payer=2,receiver=1,amount=5,justSayNoPending=true,"
+                + "justSayNoResponder=1,lastJustSayNoUser=2;"
+                + "players=P1(hand=0,bank=0,properties=0,used=0),P2(hand=0,bank=1,properties=0,used=0);"
+                + "yourHand=;yourBank=;yourProperties=;"
+                + "publicBanks=P1[]|P2[MONEY:5];publicProperties=P1[]|P2[];win=false";
+
+        GameStateCodec.Snapshot snapshot = GameStateCodec.decode(body);
+
+        assertNotNull(snapshot.paymentRequest);
+        assertTrue(snapshot.paymentRequest.isJustSayNoPending());
+        assertEquals(snapshot.players.get(0), snapshot.paymentRequest.getJustSayNoResponder());
+        assertEquals(snapshot.players.get(1), snapshot.paymentRequest.getLastJustSayNoUser());
+    }
+
+    @Test
+    public void testDecodeUsesHiddenCardsForOtherPlayersHands() {
         Game game = new Game(2);
         game.startGame();
 
@@ -83,8 +101,11 @@ public class GameStateCodecTest {
 
         assertEquals(2, snapshotForPlayerTwo.you);
         assertEquals(0, snapshotForPlayerTwo.currentPlayerIndex);
-        assertEquals(0, snapshotForPlayerTwo.players.get(0).getHandCards().size());
+        assertEquals(game.getPlayers().get(0).getHandCards().size(),
+                snapshotForPlayerTwo.players.get(0).getHandCards().size());
+        assertTrue(snapshotForPlayerTwo.players.get(0).getHandCards().get(0) instanceof HiddenCard);
         assertTrue(snapshotForPlayerTwo.players.get(1).getHandCards().size() > 0);
+        assertFalse(snapshotForPlayerTwo.players.get(1).getHandCards().get(0) instanceof HiddenCard);
     }
 
 }

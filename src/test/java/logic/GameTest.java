@@ -93,6 +93,40 @@ public class GameTest {
     }
 
     @Test
+    public void testCannotChangeWildColorIfItBreaksBuiltCompleteSet() {
+        Game game = new Game(2);
+        game.startGame();
+        Player player = game.getCurrentPlayer();
+        PropertiesCards brownProperty = new PropertiesCards(PropertiesCardsType.BROWN);
+        PropertiesCards wildCard = new PropertiesCards(PropertiesCardsType.WILD_LIGHT_BLUE_BROWN);
+        wildCard.setCurrentColor(PropertyColor.BROWN);
+        brownProperty.setHasHouse(true);
+        player.getPropertyCards().add(brownProperty);
+        player.getPropertyCards().add(wildCard);
+
+        assertFalse(game.setPropertyColor(player, wildCard, PropertyColor.LIGHT_BLUE));
+        assertEquals(PropertyColor.BROWN, wildCard.getCurrentColor());
+    }
+
+    @Test
+    public void testCanChangeWildColorWhenBuiltOldColorRemainsComplete() {
+        Game game = new Game(2);
+        game.startGame();
+        Player player = game.getCurrentPlayer();
+        PropertiesCards firstBrown = new PropertiesCards(PropertiesCardsType.BROWN);
+        PropertiesCards secondBrown = new PropertiesCards(PropertiesCardsType.BROWN);
+        PropertiesCards wildCard = new PropertiesCards(PropertiesCardsType.WILD_LIGHT_BLUE_BROWN);
+        wildCard.setCurrentColor(PropertyColor.BROWN);
+        firstBrown.setHasHouse(true);
+        player.getPropertyCards().add(firstBrown);
+        player.getPropertyCards().add(secondBrown);
+        player.getPropertyCards().add(wildCard);
+
+        assertTrue(game.setPropertyColor(player, wildCard, PropertyColor.LIGHT_BLUE));
+        assertEquals(PropertyColor.LIGHT_BLUE, wildCard.getCurrentColor());
+    }
+
+    @Test
     public void testPaymentPropertyTransferChecksReceiverWinImmediately() {
         Game game = new Game(2);
         game.startGame();

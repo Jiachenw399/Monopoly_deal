@@ -68,6 +68,13 @@ public class PaymentSelectionPanel {
 
         drawOverlay(gc);
         drawTitle(gc, request, payer, receiver);
+
+        if (request.isJustSayNoPending()) {
+            drawJustSayNoResponse(gc, request);
+            drawActionButtons(gc, request, payer);
+            return;
+        }
+
         drawPaymentBankCards(gc, payer);
         drawPaymentPropertyCards(gc, payer);
         drawReceiverPreview(gc, receiver);
@@ -137,11 +144,37 @@ public class PaymentSelectionPanel {
         gc.fillText("Required: " + requiredAmount + "M    Selected: " + selectedTotal + "M",
                 Game.SCREEN_WIDTH / 2, 90);
 
-        if (game.getTotalAssetsValue(payer) < request.getAmount()) {
+        if (request.isJustSayNoPending()) {
+            int lastUserIndex = game.getPlayers().indexOf(request.getLastJustSayNoUser()) + 1;
+            int responderIndex = game.getPlayers().indexOf(request.getJustSayNoResponder()) + 1;
+            gc.setFill(Color.LIGHTYELLOW);
+            gc.fillText("Player " + lastUserIndex + " used Just Say No. Player "
+                    + responderIndex + " may counter it.", Game.SCREEN_WIDTH / 2, 115);
+        } else if (game.getTotalAssetsValue(payer) < request.getAmount()) {
             gc.setFill(Color.LIGHTYELLOW);
             gc.fillText("Not enough assets. Player " + payerIndex + " must pay all available assets.",
                     Game.SCREEN_WIDTH / 2, 115);
         }
+    }
+
+    // Draws the Just Say No response state.
+    private void drawJustSayNoResponse(GraphicsContext gc, Game.PaymentRequest request) {
+        int responderIndex = game.getPlayers().indexOf(request.getJustSayNoResponder()) + 1;
+
+        ScreenDrawHelper.drawPanel(gc, 265, 205, 505, 230);
+        gc.setFill(ScreenDrawHelper.ACCENT);
+        gc.setFont(Font.font("Arial", 28));
+        gc.setTextAlign(TextAlignment.CENTER);
+        gc.setTextBaseline(VPos.TOP);
+        gc.fillText("JUST SAY NO RESPONSE", Game.SCREEN_WIDTH / 2, 245);
+
+        gc.setFill(ScreenDrawHelper.TEXT);
+        gc.setFont(Font.font("Arial", 17));
+        gc.fillText("Player " + responderIndex + ", choose whether to counter.", Game.SCREEN_WIDTH / 2, 300);
+
+        gc.setFill(ScreenDrawHelper.MUTED_TEXT);
+        gc.setFont(Font.font("Arial", 14));
+        gc.fillText("Accepting applies the latest Just Say No.", Game.SCREEN_WIDTH / 2, 333);
     }
 
     // Draws the payer bank cards for selection.
@@ -311,6 +344,16 @@ public class PaymentSelectionPanel {
 
     // Draws confirm, clear, and Just Say No buttons.
     private void drawActionButtons(GraphicsContext gc, Game.PaymentRequest request, Player payer) {
+        if (request.isJustSayNoPending()) {
+            ScreenDrawHelper.drawButton(gc, 330, 555, 220, 40, "ACCEPT JUST SAY NO");
+
+            if (game.canCurrentPaymentUseJustSayNo()) {
+                ScreenDrawHelper.drawButton(gc, 570, 555, 220, 40, "COUNTER JUST SAY NO");
+            }
+
+            return;
+        }
+
         int requiredAmount = Math.min(request.getAmount(), game.getTotalAssetsValue(payer));
         int selectedTotal = game.getPaymentCardsValue(payer, selectedCards);
 
@@ -387,9 +430,23 @@ public class PaymentSelectionPanel {
 
     // Checks whether the Just Say No button was clicked.
     public boolean isJustSayNoClicked(double mouseX, double mouseY) {
+        if (game.isPaymentSelecting() && game.isCurrentPaymentWaitingForJustSayNoResponse()) {
+            return game.canCurrentPaymentUseJustSayNo()
+                    && mouseX >= 570 && mouseX <= 790
+                    && mouseY >= 555 && mouseY <= 595;
+        }
+
         return game.isPaymentSelecting()
                 && game.canCurrentPaymentUseJustSayNo()
                 && mouseX >= 650 && mouseX <= 870
+                && mouseY >= 555 && mouseY <= 595;
+    }
+
+    // Checks whether the Just Say No accept button was clicked.
+    public boolean isJustSayNoPassClicked(double mouseX, double mouseY) {
+        return game.isPaymentSelecting()
+                && game.isCurrentPaymentWaitingForJustSayNoResponse()
+                && mouseX >= 330 && mouseX <= 550
                 && mouseY >= 555 && mouseY <= 595;
     }
 

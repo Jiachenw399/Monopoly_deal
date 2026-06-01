@@ -155,6 +155,12 @@ public class GameClickHandler {
             return true;
         }
 
+        if (gameScreen.isPaymentJustSayNoPassClicked(x, y)) {
+            actions.passJustSayNo();
+            gameScreen.clearPaymentSelection();
+            return true;
+        }
+
         if (gameScreen.isPaymentJustSayNoClicked(x, y)) {
             actions.useJustSayNo();
             gameScreen.clearPaymentSelection();
