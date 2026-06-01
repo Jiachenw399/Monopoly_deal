@@ -7,7 +7,6 @@ import javafx.scene.text.Font;
 import javafx.scene.text.TextAlignment;
 import logic.Game;
 import logic.PlayerInfoHelper;
-import model.ActionCardType;
 import model.ActionCards;
 import model.PropertyColor;
 
@@ -84,7 +83,7 @@ public class TwoColorRentPanel {
             return null;
         }
 
-        ArrayList<PropertyColor> colors = getRentColors(pendingCard.getActionCardType());
+        ArrayList<PropertyColor> colors = pendingCard.getActionCardType().getRentColors();
 
         for (int i = 0; i < colors.size(); i++) {
             PropertyColor color = colors.get(i);
@@ -140,7 +139,7 @@ public class TwoColorRentPanel {
 
     // Draws the two possible rent color buttons.
     private void drawColorButtons(GraphicsContext gc) {
-        ArrayList<PropertyColor> colors = getRentColors(pendingCard.getActionCardType());
+        ArrayList<PropertyColor> colors = pendingCard.getActionCardType().getRentColors();
         boolean hasAnyColor = false;
 
         for (int i = 0; i < colors.size(); i++) {
@@ -225,40 +224,4 @@ public class TwoColorRentPanel {
         gc.setTextBaseline(VPos.TOP);
     }
 
-    // Gets the two colors allowed by the rent card type.
-    private ArrayList<PropertyColor> getRentColors(ActionCardType type) {
-        ArrayList<PropertyColor> colors = new ArrayList<>();
-
-        switch (type) {
-            case RENT_WITH_RED_AND_YELLOW:
-                colors.add(PropertyColor.RED);
-                colors.add(PropertyColor.YELLOW);
-                break;
-
-            case RENT_WITH_ORANGE_AND_PINK:
-                colors.add(PropertyColor.ORANGE);
-                colors.add(PropertyColor.PINK);
-                break;
-
-            case RENT_WITH_BROWN_AND_LIGHT_BLUE:
-                colors.add(PropertyColor.BROWN);
-                colors.add(PropertyColor.LIGHT_BLUE);
-                break;
-
-            case RENT_WITH_BLACK_AND_LIGHT_GREEN:
-                colors.add(PropertyColor.BLACK);
-                colors.add(PropertyColor.LIGHT_GREEN);
-                break;
-
-            case RENT_WITH_DARK_BLUE_AND_DARK_GREEN:
-                colors.add(PropertyColor.DARK_BLUE);
-                colors.add(PropertyColor.DARK_GREEN);
-                break;
-
-            default:
-                break;
-        }
-
-        return colors;
-    }
 }

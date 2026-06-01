@@ -36,6 +36,7 @@ public enum PropertiesCardsType {
         return value;
     }
 
+    // Finds colors.
     public ArrayList<PropertyColor> getColors() {
         return new ArrayList<>(colors);
     }

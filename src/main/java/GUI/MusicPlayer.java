@@ -8,11 +8,13 @@ public class MusicPlayer {
     private Clip clip;
     private boolean muted;
 
+    // Creates a MusicPlayer instance.
     public MusicPlayer() {
         muted = false;
         createClip();
     }
 
+    // Plays this operation.
     public void play() {
         if (clip == null || muted || clip.isRunning()) {
             return;
@@ -21,6 +23,7 @@ public class MusicPlayer {
         clip.loop(Clip.LOOP_CONTINUOUSLY);
     }
 
+    // Toggles mute.
     public void toggleMute() {
         muted = !muted;
 
@@ -39,6 +42,7 @@ public class MusicPlayer {
         return muted;
     }
 
+    // Creates clip.
     private void createClip() {
         try {
             AudioFormat format = new AudioFormat(44100, 16, 1, true, false);
@@ -52,6 +56,7 @@ public class MusicPlayer {
         }
     }
 
+    // Creates loop.
     private byte[] createLoop(AudioFormat format) {
         int sampleRate = (int) format.getSampleRate();
         int seconds = 16;
@@ -91,6 +96,7 @@ public class MusicPlayer {
         return data;
     }
 
+    // Runs soft triangle.
     private double softTriangle(double frequency, double time) {
         double phase = (frequency * time) % 1.0;
         double triangle = 4.0 * Math.abs(phase - 0.5) - 1.0;

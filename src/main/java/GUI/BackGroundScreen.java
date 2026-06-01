@@ -41,18 +41,22 @@ public class BackGroundScreen {
     private final double arrowWidth = 34;
     private final double arrowHeight = 28;
 
+    // Creates a BackGroundScreen instance.
     public BackGroundScreen(Game game) {
         this.game = game;
     }
 
+    // Draws all background.
     public void drawAllBackground(Canvas canvas, PropertiesCards selectedWildCard) {
         drawAllBackground(canvas, selectedWildCard, game.getCurrentPlayerIndex(), false);
     }
 
+    // Draws all background.
     public void drawAllBackground(Canvas canvas, PropertiesCards selectedWildCard, int displayPlayerIndex) {
         drawAllBackground(canvas, selectedWildCard, displayPlayerIndex, true);
     }
 
+    // Draws all background.
     private void drawAllBackground(Canvas canvas, PropertiesCards selectedWildCard,
                                    int displayPlayerIndex, boolean showViewingPlayer) {
         Player displayPlayer = getDisplayPlayer(displayPlayerIndex);
@@ -82,6 +86,7 @@ public class BackGroundScreen {
         ScreenDrawHelper.drawPageBackground(gc, Game.SCREEN_WIDTH, Game.SCREEN_HEIGHT);
     }
 
+    // Draws current player.
     private void drawCurrentPlayer(Canvas canvas, Player displayPlayer, int displayPlayerIndex,
                                    boolean showViewingPlayer) {
         GraphicsContext gc = canvas.getGraphicsContext2D();
@@ -154,6 +159,7 @@ public class BackGroundScreen {
         gc.fillText(remainingCards + " left", deckX + 48, deckY + 23);
     }
 
+    // Draws bank cards.
     private void drawBankCards(Canvas canvas, Player displayPlayer) {
         GraphicsContext gc = canvas.getGraphicsContext2D();
 
@@ -194,6 +200,7 @@ public class BackGroundScreen {
         }
     }
 
+    // Draws property cards.
     private void drawPropertyCards(Canvas canvas, Player displayPlayer, PropertiesCards selectedWildCard) {
         GraphicsContext gc = canvas.getGraphicsContext2D();
 
@@ -251,6 +258,7 @@ public class BackGroundScreen {
         drawWildColorButtons(gc, selectedWildCard);
     }
 
+    // Draws property building label.
     private void drawPropertyBuildingLabel(GraphicsContext gc, Player displayPlayer, PropertiesCards card, double x, double y) {
         PropertyColor color = card.getCurrentColor();
 
@@ -276,6 +284,7 @@ public class BackGroundScreen {
         }
     }
 
+    // Draws wild color buttons.
     private void drawWildColorButtons(GraphicsContext gc, PropertiesCards selectedWildCard) {
         if (selectedWildCard == null) {
             return;
@@ -319,6 +328,7 @@ public class BackGroundScreen {
         gc.setTextBaseline(VPos.TOP);
     }
 
+    // Draws hand cards.
     private void drawHandCards(Canvas canvas, Player displayPlayer) {
         GraphicsContext gc = canvas.getGraphicsContext2D();
         ArrayList<Card> handCards = displayPlayer.getHandCards();
@@ -344,6 +354,7 @@ public class BackGroundScreen {
         }
     }
 
+    // Finds hand card gap.
     private double getHandCardGap(ArrayList<Card> handCards) {
         double gap = 10;
         double currentGap = gap;
@@ -360,6 +371,7 @@ public class BackGroundScreen {
         return currentGap;
     }
 
+    // Draws hand card.
     private void drawHandCard(GraphicsContext gc, Card card, double x, double y, int number) {
         double cardHeight = 112;
 
@@ -409,6 +421,7 @@ public class BackGroundScreen {
         ScreenDrawHelper.drawWrappedText(gc, name, x + 6, y + 70, cardWidth - 12, 12);
     }
 
+    // Draws buttons.
     private void drawButtons(Canvas canvas) {
         GraphicsContext gc = canvas.getGraphicsContext2D();
 
@@ -416,6 +429,7 @@ public class BackGroundScreen {
         ScreenDrawHelper.drawButton(gc, 820, 570, 170, 40, "Back Menu");
     }
 
+    // Draws win message.
     private void drawWinMessage(Canvas canvas) {
         if (!game.isWin()) {
             return;
@@ -436,6 +450,7 @@ public class BackGroundScreen {
         gc.fillText("Congratulations!", Game.SCREEN_WIDTH / 2, 332);
     }
 
+    // Handles page button click.
     public boolean handlePageButtonClick(double mouseX, double mouseY, int displayPlayerIndex) {
         if (handleBankPageButtonClick(mouseX, mouseY, displayPlayerIndex)) {
             return true;
@@ -444,10 +459,12 @@ public class BackGroundScreen {
         return handlePropertyPageButtonClick(mouseX, mouseY, displayPlayerIndex);
     }
 
+    // Handles page button click.
     public boolean handlePageButtonClick(double mouseX, double mouseY) {
         return handlePageButtonClick(mouseX, mouseY, game.getCurrentPlayerIndex());
     }
 
+    // Finds clicked wild card.
     public PropertiesCards getClickedWildCard(double mouseX, double mouseY, int displayPlayerIndex) {
         Player currentPlayer = getDisplayPlayer(displayPlayerIndex);
         int startIndex = propertyPageIndex * cardsPerPage;
@@ -475,10 +492,12 @@ public class BackGroundScreen {
         return null;
     }
 
+    // Finds clicked wild card.
     public PropertiesCards getClickedWildCard(double mouseX, double mouseY) {
         return getClickedWildCard(mouseX, mouseY, game.getCurrentPlayerIndex());
     }
 
+    // Handles bank page button click.
     private boolean handleBankPageButtonClick(double mouseX, double mouseY, int displayPlayerIndex) {
         Player currentPlayer = getDisplayPlayer(displayPlayerIndex);
         int maxPage = ScreenDrawHelper.getMaxPage(currentPlayer.getBankCards().size(), cardsPerPage);
@@ -502,6 +521,7 @@ public class BackGroundScreen {
         return false;
     }
 
+    // Handles property page button click.
     private boolean handlePropertyPageButtonClick(double mouseX, double mouseY, int displayPlayerIndex) {
         Player currentPlayer = getDisplayPlayer(displayPlayerIndex);
         int maxPage = ScreenDrawHelper.getMaxPage(currentPlayer.getPropertyCards().size(), cardsPerPage);
@@ -525,6 +545,7 @@ public class BackGroundScreen {
         return false;
     }
 
+    // Finds display player.
     private Player getDisplayPlayer(int displayPlayerIndex) {
         if (displayPlayerIndex < 0 || displayPlayerIndex >= game.getPlayers().size()) {
             return game.getCurrentPlayer();

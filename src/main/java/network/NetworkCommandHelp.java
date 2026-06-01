@@ -13,6 +13,7 @@ final class NetworkCommandHelp {
               QUIT - leave the game
             """;
 
+    // Creates a NetworkCommandHelp instance.
     private NetworkCommandHelp() {
     }
 }

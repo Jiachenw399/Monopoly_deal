@@ -1,35 +1,55 @@
 package GUI;
 
 import logic.GameFacade;
+import model.ActionCardType;
 import model.ActionCards;
+
+import java.util.EnumMap;
+import java.util.Map;
+import java.util.function.Consumer;
 
 public abstract class GameClickActionAdapter implements GameClickActions {
     protected final GameFacade game;
     protected final GameScreen gameScreen;
+    private final Map<ActionCardType, Consumer<ActionCards>> actionFlows;
 
+    // Creates a GameClickActionAdapter instance.
     protected GameClickActionAdapter(GameFacade game, GameScreen gameScreen) {
         this.game = game;
         this.gameScreen = gameScreen;
+        this.actionFlows = createActionFlows();
     }
 
+    // Starts action card flow.
     @Override
     public void startActionCardFlow(ActionCards actionCard) {
-        switch (actionCard.getActionCardType()) {
-            case SLY_DEAL -> gameScreen.startSlyDealSelection(actionCard);
-            case RENT_WITH_MULTIPLE_COLOR -> gameScreen.startMultipleColorRentSelection(actionCard);
-            case HOUSE, HOTEL -> gameScreen.startBuildingSelection(actionCard);
-            case FORCED_DEAL -> gameScreen.startForcedDealSelection(actionCard);
-            case BIRTHDAY, PASS_GO -> finishImmediateAction(actionCard);
-            case DEBT_COLLECTOR -> gameScreen.startDebtCollectorSelection(actionCard);
-            case DEAL_BREAKER -> gameScreen.startDealBreakerSelection(actionCard);
-            case RENT_WITH_DARK_BLUE_AND_DARK_GREEN,
-                 RENT_WITH_BROWN_AND_LIGHT_BLUE,
-                 RENT_WITH_BLACK_AND_LIGHT_GREEN,
-                 RENT_WITH_RED_AND_YELLOW,
-                 RENT_WITH_ORANGE_AND_PINK -> gameScreen.startTwoColorRentSelection(actionCard);
-            default -> {
+        Consumer<ActionCards> flow = actionFlows.get(actionCard.getActionCardType());
+
+        if (flow != null) {
+            flow.accept(actionCard);
+        }
+    }
+
+    // Creates action flows.
+    private Map<ActionCardType, Consumer<ActionCards>> createActionFlows() {
+        Map<ActionCardType, Consumer<ActionCards>> flows = new EnumMap<>(ActionCardType.class);
+        flows.put(ActionCardType.SLY_DEAL, gameScreen::startSlyDealSelection);
+        flows.put(ActionCardType.RENT_WITH_MULTIPLE_COLOR, gameScreen::startMultipleColorRentSelection);
+        flows.put(ActionCardType.HOUSE, gameScreen::startBuildingSelection);
+        flows.put(ActionCardType.HOTEL, gameScreen::startBuildingSelection);
+        flows.put(ActionCardType.FORCED_DEAL, gameScreen::startForcedDealSelection);
+        flows.put(ActionCardType.BIRTHDAY, this::finishImmediateAction);
+        flows.put(ActionCardType.PASS_GO, this::finishImmediateAction);
+        flows.put(ActionCardType.DEBT_COLLECTOR, gameScreen::startDebtCollectorSelection);
+        flows.put(ActionCardType.DEAL_BREAKER, gameScreen::startDealBreakerSelection);
+
+        for (ActionCardType type : ActionCardType.values()) {
+            if (type.isTwoColorRentCard()) {
+                flows.put(type, gameScreen::startTwoColorRentSelection);
             }
         }
+
+        return flows;
     }
 
     protected abstract void finishImmediateAction(ActionCards actionCard);

@@ -16,6 +16,7 @@ public class PaymentManager {
     private final ArrayList<Game.PaymentRequest> paymentRequests = new ArrayList<>();
     private Game.PaymentRequest currentPaymentRequest;
 
+    // Adds payment request.
     public void addPaymentRequest(Player receiver, Player payer, int amount) {
         if (receiver == null || payer == null || amount <= 0) {
             return;
@@ -28,6 +29,7 @@ public class PaymentManager {
         paymentRequests.add(new Game.PaymentRequest(receiver, payer, amount));
     }
 
+    // Starts next payment request.
     public void startNextPaymentRequest() {
         if (currentPaymentRequest != null || paymentRequests.isEmpty()) {
             return;
@@ -36,6 +38,7 @@ public class PaymentManager {
         currentPaymentRequest = paymentRequests.removeFirst();
     }
 
+    // Runs current payment use just say no.
     public void currentPaymentUseJustSayNo() {
         if (!canCurrentPaymentUseJustSayNo()) {
             return;
@@ -46,6 +49,7 @@ public class PaymentManager {
         startNextPaymentRequest();
     }
 
+    // Finishes current payment.
     public boolean finishCurrentPayment(ArrayList<Card> selectedCards) {
         if (currentPaymentRequest == null || selectedCards == null || selectedCards.isEmpty()) {
             return false;
@@ -65,6 +69,7 @@ public class PaymentManager {
         return true;
     }
 
+    // Checks whether payment selecting.
     public boolean isPaymentSelecting() {
         return currentPaymentRequest != null;
     }
@@ -73,16 +78,19 @@ public class PaymentManager {
         return currentPaymentRequest;
     }
 
+    // Applies online state.
     public void applyOnlineState(Game.PaymentRequest currentPaymentRequest) {
         paymentRequests.clear();
         this.currentPaymentRequest = currentPaymentRequest;
     }
 
+    // Checks whether this can current payment use just say no.
     public boolean canCurrentPaymentUseJustSayNo() {
         return currentPaymentRequest != null
                 && currentPaymentRequest.getPayer().hasActionCard(ActionCardType.JUST_SAY_NO);
     }
 
+    // Finds total assets value.
     public int getTotalAssetsValue(Player player) {
         int total = PlayerInfoHelper.getBankTotal(player);
 
@@ -94,6 +102,7 @@ public class PaymentManager {
         return total;
     }
 
+    // Finds cards value.
     public int getCardsValue(ArrayList<Card> cards) {
         int total = 0;
 
@@ -104,6 +113,7 @@ public class PaymentManager {
         return total;
     }
 
+    // Finds payment cards value.
     public int getPaymentCardsValue(Player payer, ArrayList<Card> cards) {
         int total = 0;
 
@@ -114,6 +124,7 @@ public class PaymentManager {
         return total;
     }
 
+    // Checks whether valid payment selection.
     private boolean isValidPaymentSelection(Player payer, ArrayList<Card> selectedCards, int amount) {
         if (!isValidBuildingSelection(payer, selectedCards)
                 || containsBlockedPropertySelection(payer, selectedCards)) {
@@ -130,6 +141,7 @@ public class PaymentManager {
         return selectedTotal >= amount;
     }
 
+    // Runs transfer selected cards.
     private void transferSelectedCards(Player receiver, Player payer, ArrayList<Card> selectedCards) {
         transferSelectedBuildings(receiver, payer, selectedCards);
 
@@ -148,6 +160,7 @@ public class PaymentManager {
         }
     }
 
+    // Runs transfer selected buildings.
     private void transferSelectedBuildings(Player receiver, Player payer, ArrayList<Card> selectedCards) {
         for (Card card : selectedCards) {
             if (card instanceof BuildingPaymentCard buildingCard) {
@@ -156,6 +169,7 @@ public class PaymentManager {
         }
     }
 
+    // Runs transfer building.
     private void transferBuilding(Player receiver, Player payer, BuildingPaymentCard buildingCard) {
         PropertiesCards sourceCard = findBuildingCardByColor(
                 payer,
@@ -179,6 +193,7 @@ public class PaymentManager {
         }
     }
 
+    // Finds building value.
     private int getBuildingValue(PropertiesCards propertyCard) {
         int total = 0;
 
@@ -193,6 +208,7 @@ public class PaymentManager {
         return total;
     }
 
+    // Runs find building card by color.
     private PropertiesCards findBuildingCardByColor(Player player, PropertyColor color, ActionCardType type) {
         for (PropertiesCards propertyCard : player.getPropertyCards()) {
             if (propertyCard.getCurrentColor() == color && hasBuilding(propertyCard, type)) {
@@ -203,6 +219,7 @@ public class PaymentManager {
         return null;
     }
 
+    // Checks whether this has building.
     private boolean hasBuilding(PropertiesCards propertyCard, ActionCardType type) {
         if (type == ActionCardType.HOTEL) {
             return propertyCard.hasHotel();
@@ -215,6 +232,7 @@ public class PaymentManager {
         return false;
     }
 
+    // Checks whether valid building selection.
     private boolean isValidBuildingSelection(Player payer, ArrayList<Card> selectedCards) {
         Set<String> selectedBuildings = new HashSet<>();
 
@@ -244,6 +262,7 @@ public class PaymentManager {
         return true;
     }
 
+    // Runs contains blocked property selection.
     private boolean containsBlockedPropertySelection(Player payer, ArrayList<Card> selectedCards) {
         for (Card card : selectedCards) {
             if (card instanceof PropertiesCards propertyCard
@@ -255,6 +274,7 @@ public class PaymentManager {
         return false;
     }
 
+    // Checks whether property blocked by buildings.
     private boolean isPropertyBlockedByBuildings(Player payer,
                                                  PropertiesCards propertyCard,
                                                  ArrayList<Card> selectedCards) {
@@ -273,6 +293,7 @@ public class PaymentManager {
                 && !hasSelectedBuilding(selectedCards, color, ActionCardType.HOUSE);
     }
 
+    // Checks whether this has selected building.
     private boolean hasSelectedBuilding(ArrayList<Card> selectedCards, PropertyColor color, ActionCardType type) {
         for (Card card : selectedCards) {
             if (card instanceof BuildingPaymentCard buildingCard
@@ -285,6 +306,7 @@ public class PaymentManager {
         return false;
     }
 
+    // Builds ing key.
     private String buildingKey(PropertyColor color, ActionCardType type) {
         return color.name() + ":" + type.name();
     }

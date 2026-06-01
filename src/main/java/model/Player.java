@@ -12,6 +12,7 @@ public class Player {
     private DrawPileAndDiscardPile drawCardsAndDiscardPile;
     private int useCardTimes;
 
+    // Creates a Player instance.
     public Player(DrawPileAndDiscardPile drawCardsAndDiscardPile) {
         handCards = new ArrayList<>();
         propertyCards = new ArrayList<>();
@@ -20,6 +21,7 @@ public class Player {
         useCardTimes = 0;
     }
 
+    // Takes card.
     public void takeCard(int number) {
         for (int i = 0; i < number; i++) {
             if (drawCardsAndDiscardPile.getDrawPile().isEmpty()) {
@@ -35,6 +37,7 @@ public class Player {
         }
     }
 
+    // Runs put money card.
     public void putMoneyCard(Card card) {
         if (card == null) {
             return;
@@ -48,6 +51,7 @@ public class Player {
         bankCards.add(card);
     }
 
+    // Runs put property card.
     public void putPropertyCard(PropertiesCards card) {
         if (card == null) {
             return;
@@ -64,6 +68,7 @@ public class Player {
         propertyCards.add(card);
     }
 
+    // Moves card from hand to discard.
     public void moveCardFromHandToDiscard(Card card) {
         if (card == null) {
             return;
@@ -74,10 +79,12 @@ public class Player {
         }
     }
 
+    // Runs increase use card times.
     public void increaseUseCardTimes() {
         useCardTimes++;
     }
 
+    // Checks whether this can lose property to sly deal.
     public boolean canLosePropertyToSlyDeal(PropertiesCards card) {
         if (card == null || !propertyCards.contains(card)) {
             return false;
@@ -92,10 +99,12 @@ public class Player {
         return !isCompleteSet(color);
     }
 
+    // Checks whether this can use rent color.
     public boolean canUseRentColor(PropertyColor color) {
         return hasPropertyColor(color);
     }
 
+    // Checks whether this has property color.
     public boolean hasPropertyColor(PropertyColor color) {
         if (color == null) {
             return false;
@@ -110,6 +119,7 @@ public class Player {
         return false;
     }
 
+    // Finds property count by color.
     public int getPropertyCountByColor(PropertyColor color) {
         int count = 0;
 
@@ -126,6 +136,7 @@ public class Player {
         return count;
     }
 
+    // Checks whether complete set.
     public boolean isCompleteSet(PropertyColor color) {
         if (color == null) {
             return false;
@@ -135,10 +146,12 @@ public class Player {
         return count >= color.getAmountToCompleteSet();
     }
 
+    // Checks whether this has action card.
     public boolean hasActionCard(ActionCardType type) {
         return findActionCard(type) != null;
     }
 
+    // Runs find action card.
     public ActionCards findActionCard(ActionCardType type) {
         if (type == null) {
             return null;
@@ -154,6 +167,7 @@ public class Player {
         return null;
     }
 
+    // Discards action card from hand.
     public boolean discardActionCardFromHand(ActionCardType type) {
         ActionCards card = findActionCard(type);
 
@@ -166,6 +180,7 @@ public class Player {
         return true;
     }
 
+    // Discards card from hand.
     public boolean discardCardFromHand(Card card) {
         if (card == null) {
             return false;
@@ -179,6 +194,7 @@ public class Player {
         return true;
     }
 
+    // Receives bank card.
     public void receiveBankCard(Card card) {
         if (card == null) {
             return;
@@ -187,6 +203,7 @@ public class Player {
         bankCards.add(card);
     }
 
+    // Receives property card.
     public void receivePropertyCard(PropertiesCards card) {
         if (card == null) {
             return;
@@ -195,14 +212,17 @@ public class Player {
         propertyCards.add(card);
     }
 
+    // Removes bank card.
     public void removeBankCard(Card card) {
         bankCards.remove(card);
     }
 
+    // Removes property card.
     public void removePropertyCard(PropertiesCards card) {
         propertyCards.remove(card);
     }
 
+    // Takes money.
     public void takeMoney(int amount, Player payer) {
         if (payer == null || amount <= 0) {
             return;
@@ -241,6 +261,7 @@ public class Player {
         }
     }
 
+    // Finds total value.
     private int getTotalValue(List<? extends Card> cards) {
         int total = 0;
 
@@ -251,6 +272,7 @@ public class Player {
         return total;
     }
 
+    // Runs find smallest payment combination.
     private ArrayList<Card> findSmallestPaymentCombination(List<? extends Card> cards, int amount) {
         ArrayList<Card> bestCombination = new ArrayList<>();
         int bestSum = Integer.MAX_VALUE;
@@ -281,6 +303,7 @@ public class Player {
         return bestCombination;
     }
 
+    // Runs check if win.
     public boolean checkIfWin() {
         if (propertyCards.isEmpty()) {
             return false;

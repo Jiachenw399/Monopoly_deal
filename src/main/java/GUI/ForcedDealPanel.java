@@ -52,11 +52,13 @@ public class ForcedDealPanel {
     private final double detailButtonWidth = 140;
     private final double detailButtonHeight = 40;
 
+    // Creates a ForcedDealPanel instance.
     public ForcedDealPanel(Game game) {
         this.game = game;
         this.detailPopupPanel = new PlayerDetailPopupPanel(game);
     }
 
+    // Starts selection.
     public void startSelection(ActionCards card) {
         pendingCard = card;
         selectedTargetPlayer = null;
@@ -68,6 +70,7 @@ public class ForcedDealPanel {
         targetPageIndex = 0;
     }
 
+    // Checks whether this can cel selection.
     public void cancelSelection() {
         pendingCard = null;
         selectedTargetPlayer = null;
@@ -79,6 +82,7 @@ public class ForcedDealPanel {
         targetPageIndex = 0;
     }
 
+    // Checks whether selecting.
     public boolean isSelecting() {
         return pendingCard != null;
     }
@@ -99,6 +103,7 @@ public class ForcedDealPanel {
         return selectedTargetCard;
     }
 
+    // Runs set selected target player.
     public void setSelectedTargetPlayer(Player targetPlayer) {
         selectedTargetPlayer = targetPlayer;
         selectedTargetCard = null;
@@ -113,12 +118,14 @@ public class ForcedDealPanel {
         selectedTargetCard = card;
     }
 
+    // Checks whether this can confirm.
     public boolean canConfirm() {
         return selectedTargetPlayer != null
                 && selectedMyCard != null
                 && selectedTargetCard != null;
     }
 
+    // Checks whether cancel clicked.
     public boolean isCancelClicked(double mouseX, double mouseY) {
         if (!isSelecting()) {
             return false;
@@ -133,6 +140,7 @@ public class ForcedDealPanel {
                 && mouseY >= actionButtonY && mouseY <= actionButtonY + 40;
     }
 
+    // Checks whether back clicked.
     public boolean isBackClicked(double mouseX, double mouseY) {
         return isSelecting()
                 && selectedTargetPlayer != null
@@ -140,12 +148,14 @@ public class ForcedDealPanel {
                 && mouseY >= actionButtonY && mouseY <= actionButtonY + 40;
     }
 
+    // Checks whether confirm clicked.
     public boolean isConfirmClicked(double mouseX, double mouseY) {
         return isSelecting()
                 && mouseX >= 380 && mouseX <= 520
                 && mouseY >= actionButtonY && mouseY <= actionButtonY + 40;
     }
 
+    // Finds clicked target player.
     public Player getClickedTargetPlayer(double mouseX, double mouseY) {
         if (!isSelecting()) {
             return null;
@@ -179,6 +189,7 @@ public class ForcedDealPanel {
         return null;
     }
 
+    // Finds clicked my property.
     public PropertiesCards getClickedMyProperty(double mouseX, double mouseY) {
         if (!isSelecting() || selectedTargetPlayer == null) {
             return null;
@@ -187,6 +198,7 @@ public class ForcedDealPanel {
         return getClickedProperty(game.getCurrentPlayer(), myPanelX, mouseX, mouseY);
     }
 
+    // Finds clicked target property.
     public PropertiesCards getClickedTargetProperty(double mouseX, double mouseY) {
         if (!isSelecting() || selectedTargetPlayer == null) {
             return null;
@@ -195,6 +207,7 @@ public class ForcedDealPanel {
         return getClickedProperty(selectedTargetPlayer, targetPanelX, mouseX, mouseY);
     }
 
+    // Finds clicked property.
     private PropertiesCards getClickedProperty(Player player, double startX, double mouseX, double mouseY) {
         ArrayList<PropertiesCards> cards = getExchangeableProperties(player);
 
@@ -216,6 +229,7 @@ public class ForcedDealPanel {
         return null;
     }
 
+    // Draws this screen area.
     public void draw(GraphicsContext gc) {
         if (detailTargetPlayer != null) {
             detailPopupPanel.draw(gc);
@@ -242,11 +256,13 @@ public class ForcedDealPanel {
         gc.setTextBaseline(VPos.TOP);
     }
 
+    // Draws overlay.
     private void drawOverlay(GraphicsContext gc) {
         gc.setFill(Color.rgb(0, 0, 0, 0.75));
         gc.fillRect(0, 0, Game.SCREEN_WIDTH, Game.SCREEN_HEIGHT);
     }
 
+    // Draws title.
     private void drawTitle(GraphicsContext gc) {
         gc.setFill(Color.WHITE);
         gc.setFont(Font.font("Arial", 26));
@@ -259,6 +275,7 @@ public class ForcedDealPanel {
                 Game.SCREEN_WIDTH / 2, 72);
     }
 
+    // Draws target player choices.
     private void drawTargetPlayerChoices(GraphicsContext gc) {
         gc.setFill(Color.WHITE);
         gc.setFont(Font.font("Arial", 20));
@@ -285,6 +302,7 @@ public class ForcedDealPanel {
         }
     }
 
+    // Draws target player box.
     private void drawTargetPlayerBox(GraphicsContext gc,
                                      Player targetPlayer,
                                      int playerIndex,
@@ -310,6 +328,7 @@ public class ForcedDealPanel {
         gc.fillText("Properties: " + targetPlayer.getPropertyCards().size(), x + width / 2, y + 42);
     }
 
+    // Checks whether this has exchangeable property.
     private boolean hasExchangeableProperty(Player player) {
         for (PropertiesCards card : player.getPropertyCards()) {
             if (PlayerInfoHelper.canBeStolenBySlyDeal(player, card)) {
@@ -320,6 +339,7 @@ public class ForcedDealPanel {
         return false;
     }
 
+    // Draws exchange choices.
     private void drawExchangeChoices(GraphicsContext gc) {
         drawColumnTitle(gc, "Your Property", myPanelX, 155);
         drawColumnTitle(gc, getTargetTitle(), targetPanelX, 155);
@@ -329,11 +349,13 @@ public class ForcedDealPanel {
         drawStatus(gc);
     }
 
+    // Finds target title.
     private String getTargetTitle() {
         int targetIndex = game.getPlayers().indexOf(selectedTargetPlayer) + 1;
         return "Player " + targetIndex + " Property";
     }
 
+    // Draws column title.
     private void drawColumnTitle(GraphicsContext gc, String title, double x, double y) {
         gc.setFill(Color.WHITE);
         gc.setFont(Font.font("Arial", 20));
@@ -345,6 +367,7 @@ public class ForcedDealPanel {
         gc.fillRoundRect(x - 15, y + 35, 420, 270, 18, 18);
     }
 
+    // Draws property cards.
     private void drawPropertyCards(GraphicsContext gc,
                                    Player player,
                                    double startX,
@@ -384,6 +407,7 @@ public class ForcedDealPanel {
         drawPropertyPageButtons(gc, startX, cards.size(), page, maxPage);
     }
 
+    // Draws property card.
     private void drawPropertyCard(GraphicsContext gc,
                                   PropertiesCards card,
                                   double x,
@@ -423,6 +447,7 @@ public class ForcedDealPanel {
         }
     }
 
+    // Draws status.
     private void drawStatus(GraphicsContext gc) {
         gc.setFill(Color.WHITE);
         gc.setFont(Font.font("Arial", 16));
@@ -435,6 +460,7 @@ public class ForcedDealPanel {
         gc.fillText(myText + "     " + targetText, Game.SCREEN_WIDTH / 2, 480);
     }
 
+    // Draws buttons.
     private void drawButtons(GraphicsContext gc) {
         if (selectedTargetPlayer != null) {
             ScreenDrawHelper.drawButton(gc, 380, actionButtonY, 140, 40, "CONFIRM");
@@ -444,6 +470,7 @@ public class ForcedDealPanel {
         ScreenDrawHelper.drawButton(gc, 720, actionButtonY, 140, 40, "CANCEL");
     }
 
+    // Finds exchangeable properties.
     private ArrayList<PropertiesCards> getExchangeableProperties(Player player) {
         ArrayList<PropertiesCards> cards = new ArrayList<>();
 
@@ -456,6 +483,7 @@ public class ForcedDealPanel {
         return cards;
     }
 
+    // Checks whether my prev page clicked.
     public boolean isMyPrevPageClicked(double mouseX, double mouseY) {
         return isSelecting()
                 && selectedTargetPlayer != null
@@ -463,6 +491,7 @@ public class ForcedDealPanel {
                 && mouseY >= pageButtonY && mouseY <= pageButtonY + pageButtonHeight;
     }
 
+    // Checks whether my next page clicked.
     public boolean isMyNextPageClicked(double mouseX, double mouseY) {
         return isSelecting()
                 && selectedTargetPlayer != null
@@ -470,6 +499,7 @@ public class ForcedDealPanel {
                 && mouseY >= pageButtonY && mouseY <= pageButtonY + pageButtonHeight;
     }
 
+    // Checks whether target prev page clicked.
     public boolean isTargetPrevPageClicked(double mouseX, double mouseY) {
         return isSelecting()
                 && selectedTargetPlayer != null
@@ -477,6 +507,7 @@ public class ForcedDealPanel {
                 && mouseY >= pageButtonY && mouseY <= pageButtonY + pageButtonHeight;
     }
 
+    // Checks whether target next page clicked.
     public boolean isTargetNextPageClicked(double mouseX, double mouseY) {
         return isSelecting()
                 && selectedTargetPlayer != null
@@ -484,12 +515,14 @@ public class ForcedDealPanel {
                 && mouseY >= pageButtonY && mouseY <= pageButtonY + pageButtonHeight;
     }
 
+    // Runs previous my page.
     public void previousMyPage() {
         if (myPageIndex > 0) {
             myPageIndex--;
         }
     }
 
+    // Runs next my page.
     public void nextMyPage() {
         int maxPage = ScreenDrawHelper.getMaxPage(
                 getExchangeableProperties(game.getCurrentPlayer()).size(), cardsPerPage);
@@ -499,12 +532,14 @@ public class ForcedDealPanel {
         }
     }
 
+    // Runs previous target page.
     public void previousTargetPage() {
         if (targetPageIndex > 0) {
             targetPageIndex--;
         }
     }
 
+    // Runs next target page.
     public void nextTargetPage() {
         if (selectedTargetPlayer == null) {
             return;
@@ -518,6 +553,7 @@ public class ForcedDealPanel {
         }
     }
 
+    // Draws property page buttons.
     private void drawPropertyPageButtons(GraphicsContext gc,
                                          double startX,
                                          int totalCards,
@@ -553,6 +589,7 @@ public class ForcedDealPanel {
         gc.setTextBaseline(VPos.TOP);
     }
 
+    // Shows target detail.
     public void showTargetDetail(Player player) {
         detailTargetPlayer = player;
 
@@ -569,20 +606,24 @@ public class ForcedDealPanel {
         return detailTargetPlayer;
     }
 
+    // Checks whether detail close clicked.
     public boolean isDetailCloseClicked(double mouseX, double mouseY) {
         return detailTargetPlayer != null && detailPopupPanel.isCloseClicked(mouseX, mouseY);
     }
 
+    // Handles detail page button click.
     public boolean handleDetailPageButtonClick(double mouseX, double mouseY) {
         return detailTargetPlayer != null && detailPopupPanel.handlePageButtonClick(mouseX, mouseY);
     }
 
+    // Checks whether detail confirm clicked.
     public boolean isDetailConfirmClicked(double mouseX, double mouseY) {
         return detailTargetPlayer != null
                 && ScreenDrawHelper.isInside(mouseX, mouseY,
                 detailConfirmX, detailButtonY, detailButtonWidth, detailButtonHeight);
     }
 
+    // Checks whether detail back clicked.
     public boolean isDetailBackClicked(double mouseX, double mouseY) {
         return detailTargetPlayer != null
                 && ScreenDrawHelper.isInside(mouseX, mouseY,

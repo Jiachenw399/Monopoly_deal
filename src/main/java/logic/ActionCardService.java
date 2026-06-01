@@ -14,6 +14,7 @@ public class ActionCardService {
     private final PaymentManager paymentManager;
     private final RentCalculator rentCalculator;
 
+    // Creates a ActionCardService instance.
     public ActionCardService(ArrayList<Player> players,
                              PaymentManager paymentManager,
                              RentCalculator rentCalculator) {
@@ -22,6 +23,7 @@ public class ActionCardService {
         this.rentCalculator = rentCalculator;
     }
 
+    // Finishes pass go.
     public boolean finishPassGo(Player currentPlayer, ActionCards passGoCard) {
         if (!canFinishActionCard(currentPlayer, passGoCard, ActionCardType.PASS_GO)) {
             return false;
@@ -33,6 +35,7 @@ public class ActionCardService {
         return true;
     }
 
+    // Finishes birthday.
     public boolean finishBirthday(Player currentPlayer, ActionCards birthdayCard) {
         if (!canFinishActionCard(currentPlayer, birthdayCard, ActionCardType.BIRTHDAY)) {
             return false;
@@ -51,6 +54,7 @@ public class ActionCardService {
         return true;
     }
 
+    // Finishes sly deal.
     public boolean finishSlyDeal(Player currentPlayer,
                                  ActionCards slyDealCard,
                                  Player targetPlayer,
@@ -66,6 +70,7 @@ public class ActionCardService {
         return true;
     }
 
+    // Finishes deal breaker.
     public boolean finishDealBreaker(Player currentPlayer,
                                      ActionCards dealBreakerCard,
                                      Player targetPlayer,
@@ -81,6 +86,7 @@ public class ActionCardService {
         return true;
     }
 
+    // Finishes debt collector.
     public boolean finishDebtCollector(Player currentPlayer,
                                        ActionCards debtCollectorCard,
                                        Player targetPlayer) {
@@ -95,6 +101,7 @@ public class ActionCardService {
         return true;
     }
 
+    // Finishes two color rent.
     public boolean finishTwoColorRent(Player currentPlayer,
                                       ActionCards rentCard,
                                       PropertyColor selectedColor,
@@ -106,6 +113,7 @@ public class ActionCardService {
         return finishRent(currentPlayer, rentCard, selectedColor, null, true, useDoubleRent);
     }
 
+    // Finishes multiple color rent.
     public boolean finishMultipleColorRent(Player currentPlayer,
                                            ActionCards rentCard,
                                            Player targetPlayer,
@@ -118,6 +126,7 @@ public class ActionCardService {
         return finishRent(currentPlayer, rentCard, selectedColor, targetPlayer, false, useDoubleRent);
     }
 
+    // Finishes forced deal.
     public boolean finishForcedDeal(Player currentPlayer,
                                     ActionCards forcedDealCard,
                                     Player targetPlayer,
@@ -139,14 +148,17 @@ public class ActionCardService {
         return true;
     }
 
+    // Finishes house.
     public boolean finishHouse(Player currentPlayer, ActionCards houseCard, PropertyColor selectedColor) {
         return finishBuilding(currentPlayer, houseCard, selectedColor, ActionCardType.HOUSE);
     }
 
+    // Finishes hotel.
     public boolean finishHotel(Player currentPlayer, ActionCards hotelCard, PropertyColor selectedColor) {
         return finishBuilding(currentPlayer, hotelCard, selectedColor, ActionCardType.HOTEL);
     }
 
+    // Checks whether this has double the rent card.
     public boolean hasDoubleTheRentCard(Player player) {
         if (player == null) {
             return false;
@@ -162,6 +174,7 @@ public class ActionCardService {
         return false;
     }
 
+    // Finishes rent.
     private boolean finishRent(Player currentPlayer,
                                ActionCards rentCard,
                                PropertyColor selectedColor,
@@ -190,6 +203,7 @@ public class ActionCardService {
         return true;
     }
 
+    // Adds payment requests for all other players.
     private void addPaymentRequestsForAllOtherPlayers(Player currentPlayer, int amount) {
         for (Player player : players) {
             if (player != currentPlayer) {
@@ -198,6 +212,7 @@ public class ActionCardService {
         }
     }
 
+    // Finishes building.
     private boolean finishBuilding(Player currentPlayer,
                                    ActionCards buildingCard,
                                    PropertyColor selectedColor,
@@ -224,6 +239,7 @@ public class ActionCardService {
         return true;
     }
 
+    // Checks whether this can finish building.
     private boolean canFinishBuilding(Player currentPlayer,
                                       ActionCards card,
                                       PropertyColor selectedColor,
@@ -246,6 +262,7 @@ public class ActionCardService {
         return hasHouse && !hasHotel;
     }
 
+    // Checks whether this can finish sly deal.
     private boolean canFinishSlyDeal(Player currentPlayer,
                                      ActionCards card,
                                      Player targetPlayer,
@@ -262,6 +279,7 @@ public class ActionCardService {
                 && targetPlayer.canLosePropertyToSlyDeal(stolenCard);
     }
 
+    // Checks whether this can finish forced deal.
     private boolean canFinishForcedDeal(Player currentPlayer,
                                         ActionCards card,
                                         Player targetPlayer,
@@ -294,6 +312,7 @@ public class ActionCardService {
         return PlayerInfoHelper.canBeStolenBySlyDeal(targetPlayer, targetPlayerCard);
     }
 
+    // Checks whether this can finish deal breaker.
     private boolean canFinishDealBreaker(Player currentPlayer,
                                          ActionCards card,
                                          Player targetPlayer,
@@ -322,6 +341,7 @@ public class ActionCardService {
         return selectedSet.size() >= color.getAmountToCompleteSet();
     }
 
+    // Checks whether this can finish debt collector.
     private boolean canFinishDebtCollector(Player currentPlayer, ActionCards card, Player targetPlayer) {
         if (!canFinishActionCard(currentPlayer, card, ActionCardType.DEBT_COLLECTOR)) {
             return false;
@@ -330,6 +350,7 @@ public class ActionCardService {
         return targetPlayer != null && targetPlayer != currentPlayer;
     }
 
+    // Checks whether this can finish two color rent.
     private boolean canFinishTwoColorRent(Player currentPlayer,
                                           ActionCards card,
                                           PropertyColor selectedColor) {
@@ -345,21 +366,10 @@ public class ActionCardService {
             return false;
         }
 
-        return switch (card.getActionCardType()) {
-            case RENT_WITH_RED_AND_YELLOW ->
-                    selectedColor == PropertyColor.RED || selectedColor == PropertyColor.YELLOW;
-            case RENT_WITH_ORANGE_AND_PINK ->
-                    selectedColor == PropertyColor.ORANGE || selectedColor == PropertyColor.PINK;
-            case RENT_WITH_BROWN_AND_LIGHT_BLUE ->
-                    selectedColor == PropertyColor.BROWN || selectedColor == PropertyColor.LIGHT_BLUE;
-            case RENT_WITH_BLACK_AND_LIGHT_GREEN ->
-                    selectedColor == PropertyColor.BLACK || selectedColor == PropertyColor.LIGHT_GREEN;
-            case RENT_WITH_DARK_BLUE_AND_DARK_GREEN ->
-                    selectedColor == PropertyColor.DARK_BLUE || selectedColor == PropertyColor.DARK_GREEN;
-            default -> false;
-        };
+        return card.getActionCardType().getRentColors().contains(selectedColor);
     }
 
+    // Checks whether this can finish multiple color rent.
     private boolean canFinishMultipleColorRent(Player currentPlayer,
                                                ActionCards card,
                                                Player targetPlayer,
@@ -375,6 +385,7 @@ public class ActionCardService {
         return currentPlayer.canUseRentColor(selectedColor);
     }
 
+    // Checks whether this can finish action card.
     private boolean canFinishActionCard(Player currentPlayer, ActionCards card, ActionCardType expectedType) {
         if (card == null || card.getActionCardType() != expectedType) {
             return false;
@@ -383,6 +394,7 @@ public class ActionCardService {
         return canPlayCard(currentPlayer, card);
     }
 
+    // Checks whether this can play card.
     private boolean canPlayCard(Player currentPlayer, Card card) {
         if (currentPlayer == null || card == null) {
             return false;
@@ -395,14 +407,17 @@ public class ActionCardService {
         return currentPlayer.getHandCards().contains(card);
     }
 
+    // Checks whether this can use double rent.
     private boolean canUseDoubleRent(Player player, boolean useDoubleRent) {
         return useDoubleRent && hasDoubleTheRentCard(player);
     }
 
+    // Finds final rent.
     private int getFinalRent(Player player, PropertyColor selectedColor, boolean canUseDoubleRent) {
         return rentCalculator.calculateRent(player, selectedColor, canUseDoubleRent);
     }
 
+    // Runs increase rent use times.
     private void increaseRentUseTimes(Player player, boolean canUseDoubleRent) {
         increaseUseCardTimes(player);
 
@@ -411,6 +426,7 @@ public class ActionCardService {
         }
     }
 
+    // Discards double the rent if used.
     private void discardDoubleTheRentIfUsed(Player player, boolean useDoubleRent) {
         if (!useDoubleRent) {
             return;
@@ -423,19 +439,23 @@ public class ActionCardService {
         }
     }
 
+    // Moves action card to discard.
     private void moveActionCardToDiscard(Player currentPlayer, ActionCards card) {
         currentPlayer.moveCardFromHandToDiscard(card);
     }
 
+    // Runs increase use card times.
     private void increaseUseCardTimes(Player player) {
         player.setUseCardTimes(player.getUseCardTimes() + 1);
     }
 
+    // Checks whether complete set.
     private boolean isCompleteSet(Player player, PropertyColor color) {
         int count = PlayerInfoHelper.getPropertyCountByCurrentColor(player, color);
         return count >= color.getAmountToCompleteSet();
     }
 
+    // Runs find first property by color.
     private PropertiesCards findFirstPropertyByColor(Player player, PropertyColor color) {
         for (PropertiesCards card : player.getPropertyCards()) {
             if (card.getCurrentColor() == color) {

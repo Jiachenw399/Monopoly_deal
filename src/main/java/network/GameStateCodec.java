@@ -21,9 +21,11 @@ import java.util.regex.Pattern;
  * Encodes/decodes {@code GAME_STATE} payloads shared by {@link GameServer} and {@link OnlinePlayWindow}.
  */
 public final class GameStateCodec {
+    // Creates a GameStateCodec instance.
     private GameStateCodec() {
     }
 
+    // Runs encode.
     public static String encode(Game game, int playerId) {
         if (game == null) {
             return "NO_GAME";
@@ -72,6 +74,7 @@ public final class GameStateCodec {
         return builder.toString();
     }
 
+    // Runs decode.
     public static Snapshot decode(String body) {
         Snapshot snapshot = new Snapshot();
         Map<String, String> fields = splitFields(body);
@@ -109,6 +112,7 @@ public final class GameStateCodec {
         return snapshot;
     }
 
+    // Runs append payment state.
     private static void appendPaymentState(StringBuilder builder, Game game, int playerId) {
         builder.append(";payment=");
 
@@ -131,6 +135,7 @@ public final class GameStateCodec {
         }
     }
 
+    // Runs append public cards by player.
     private static void appendPublicCardsByPlayer(StringBuilder builder, Game game, boolean properties) {
         for (int i = 0; i < game.getPlayers().size(); i++) {
             if (i > 0) {
@@ -150,6 +155,7 @@ public final class GameStateCodec {
         }
     }
 
+    // Runs append cards.
     private static void appendCards(StringBuilder builder, List<? extends Card> cards, String separator) {
         for (int i = 0; i < cards.size(); i++) {
             if (i > 0) {
@@ -160,6 +166,7 @@ public final class GameStateCodec {
         }
     }
 
+    // Runs append properties.
     private static void appendProperties(StringBuilder builder, List<PropertiesCards> cards, String separator) {
         for (int i = 0; i < cards.size(); i++) {
             if (i > 0) {
@@ -170,6 +177,7 @@ public final class GameStateCodec {
         }
     }
 
+    // Runs card to text.
     private static String cardToText(Card card) {
         if (card instanceof MoneyCards) {
             return "MONEY:" + card.getValue();
@@ -186,6 +194,7 @@ public final class GameStateCodec {
         return "CARD_" + card.getValue();
     }
 
+    // Runs property to text.
     private static String propertyToText(PropertiesCards card) {
         String currentColor = card.getCurrentColor() == null ? "NO_COLOR" : card.getCurrentColor().name();
         return "PROPERTY:" + card.getType().name() + ":" + currentColor + ":"
@@ -193,6 +202,7 @@ public final class GameStateCodec {
                 + card.hasHouse() + ":" + card.hasHotel();
     }
 
+    // Runs split fields.
     private static Map<String, String> splitFields(String body) {
         Map<String, String> fields = new LinkedHashMap<>();
         for (String part : body.split(";")) {
@@ -204,6 +214,7 @@ public final class GameStateCodec {
         return fields;
     }
 
+    // Parses used counts.
     private static Map<Integer, Integer> parseUsedCounts(String text) {
         Map<Integer, Integer> result = new LinkedHashMap<>();
         if (text == null || text.isBlank()) {
@@ -238,6 +249,7 @@ public final class GameStateCodec {
         return result;
     }
 
+    // Parses card groups.
     private static Map<Integer, List<Card>> parseCardGroups(String text) {
         Map<Integer, List<Card>> result = new LinkedHashMap<>();
         if (text == null || text.isBlank()) {
@@ -255,6 +267,7 @@ public final class GameStateCodec {
         return result;
     }
 
+    // Parses cards.
     private static List<Card> parseCards(String text, String separator) {
         if (text == null || text.isBlank()) {
             return List.of();
@@ -269,6 +282,7 @@ public final class GameStateCodec {
         return cards;
     }
 
+    // Parses card.
     private static Card parseCard(String raw) {
         String[] parts = raw.split(":", -1);
         if (parts.length == 0) {
@@ -295,6 +309,7 @@ public final class GameStateCodec {
         return null;
     }
 
+    // Parses payment.
     private static Game.PaymentRequest parsePayment(String text, ArrayList<Player> players) {
         if (text == null || text.equals("none")) {
             return null;
@@ -316,6 +331,7 @@ public final class GameStateCodec {
         return new Game.PaymentRequest(players.get(receiverIndex), players.get(payerIndex), amount);
     }
 
+    // Parses int.
     private static int parseInt(String text) {
         try {
             return Integer.parseInt(text);

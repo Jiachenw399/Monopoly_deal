@@ -9,10 +9,12 @@ public class DrawPileAndDiscardPile {
     private ArrayList<Card> DiscardPile;
     private final DeckCardFactory cardFactory;
 
+    // Creates a DrawPileAndDiscardPile instance.
     public DrawPileAndDiscardPile() {
         this(new StandardDeckCardFactory());
     }
 
+    // Creates a DrawPileAndDiscardPile instance.
     public DrawPileAndDiscardPile(DeckCardFactory cardFactory) {
         this.cardFactory = Objects.requireNonNull(cardFactory);
         DrawPile = new ArrayList<>();
@@ -23,10 +25,12 @@ public class DrawPileAndDiscardPile {
         shuffleDrawCards();
     }
 
+    // Runs shuffle draw cards.
     public void shuffleDrawCards() {
         Collections.shuffle(DrawPile);
     }
 
+    // Runs shuffle.
     public void shuffle() {
         if (DrawPile.isEmpty()) {
             DrawPile.addAll(DiscardPile);
@@ -43,6 +47,7 @@ public class DrawPileAndDiscardPile {
         return DiscardPile;
     }
 
+    // Adds money cards.
     private void addMoneyCards() {
         int[] moneyValues = {
                 1, 1, 1, 1, 1, 1,
@@ -57,6 +62,7 @@ public class DrawPileAndDiscardPile {
         }
     }
 
+    // Adds action cards.
     private void addActionCards() {
         int[] amount = {
                 3, 3, 3, 3, 3, 3, 3,
@@ -92,11 +98,13 @@ public class DrawPileAndDiscardPile {
         }
     }
 
+    // Adds properties cards.
     private void addPropertiesCards() {
         addNormalPropertyCards();
         addPropertyWildCards();
     }
 
+    // Adds normal property cards.
     private void addNormalPropertyCards() {
         addPropertyCard(PropertiesCardsType.DARK_BLUE, "Boardwalk", "boardwalk.png");
         addPropertyCard(PropertiesCardsType.DARK_BLUE, "Park Place", "park_place.png");
@@ -137,6 +145,7 @@ public class DrawPileAndDiscardPile {
         addPropertyCard(PropertiesCardsType.LIGHT_GREEN, "Water Works", "water_works.png");
     }
 
+    // Adds property wild cards.
     private void addPropertyWildCards() {
         addSeveralPropertyCards(PropertiesCardsType.WILD_PINK_ORANGE, 2);
         addSeveralPropertyCards(PropertiesCardsType.WILD_RED_YELLOW, 2);
@@ -148,10 +157,12 @@ public class DrawPileAndDiscardPile {
         addSeveralPropertyCards(PropertiesCardsType.WILD_ALL, 2);
     }
 
+    // Adds property card.
     private void addPropertyCard(PropertiesCardsType type, String propertyName, String imageFileName) {
         DrawPile.add(cardFactory.createPropertyCard(type, propertyName, imageFileName));
     }
 
+    // Adds several property cards.
     private void addSeveralPropertyCards(PropertiesCardsType type, int amount) {
         for (int i = 0; i < amount; i++) {
             DrawPile.add(cardFactory.createPropertyCard(type));

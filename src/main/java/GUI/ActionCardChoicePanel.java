@@ -32,14 +32,17 @@ public class ActionCardChoicePanel {
     private final double cancelButtonWidth = 110;
     private final double cancelButtonHeight = 34;
 
+    // Shows this screen area.
     public void show(ActionCards card) {
         selectedCard = card;
     }
 
+    // Closes this screen area.
     public void close() {
         selectedCard = null;
     }
 
+    // Checks whether showing.
     public boolean isShowing() {
         return selectedCard != null;
     }
@@ -48,24 +51,28 @@ public class ActionCardChoicePanel {
         return selectedCard;
     }
 
+    // Checks whether money clicked.
     public boolean isMoneyClicked(double mouseX, double mouseY) {
         return isShowing()
                 && ScreenDrawHelper.isInside(mouseX, mouseY,
                 moneyButtonX, moneyButtonY, moneyButtonWidth, moneyButtonHeight);
     }
 
+    // Checks whether action clicked.
     public boolean isActionClicked(double mouseX, double mouseY) {
         return isShowing()
                 && ScreenDrawHelper.isInside(mouseX, mouseY,
                 actionButtonX, actionButtonY, actionButtonWidth, actionButtonHeight);
     }
 
+    // Checks whether cancel clicked.
     public boolean isCancelClicked(double mouseX, double mouseY) {
         return isShowing()
                 && ScreenDrawHelper.isInside(mouseX, mouseY,
                 cancelButtonX, cancelButtonY, cancelButtonWidth, cancelButtonHeight);
     }
 
+    // Checks whether this can use as action.
     public boolean canUseAsAction() {
         ActionCardType type = selectedCard.getActionCardType();
 
@@ -74,6 +81,7 @@ public class ActionCardChoicePanel {
                 && type != ActionCardType.DOUBLE_THE_RENT;
     }
 
+    // Draws this screen area.
     public void draw(GraphicsContext gc) {
         if (!isShowing()) {
             return;
@@ -85,11 +93,13 @@ public class ActionCardChoicePanel {
         drawButtons(gc);
     }
 
+    // Draws overlay.
     private void drawOverlay(GraphicsContext gc) {
         gc.setFill(Color.rgb(0, 0, 0, 0.70));
         gc.fillRect(0, 0, Game.SCREEN_WIDTH, Game.SCREEN_HEIGHT);
     }
 
+    // Draws panel.
     private void drawPanel(GraphicsContext gc) {
         gc.setFill(Color.rgb(18, 24, 35));
         gc.fillRoundRect(panelX, panelY, panelWidth, panelHeight, 24, 24);
@@ -100,6 +110,7 @@ public class ActionCardChoicePanel {
         gc.setLineWidth(1);
     }
 
+    // Draws choice window.
     private void drawChoiceWindow(GraphicsContext gc) {
         gc.setFill(Color.rgb(255, 232, 180));
         gc.setFont(Font.font("Arial", 24));
@@ -115,6 +126,7 @@ public class ActionCardChoicePanel {
         );
     }
 
+    // Draws buttons.
     private void drawButtons(GraphicsContext gc) {
         drawButtonCanBeUsed(gc, moneyButtonX, moneyButtonY, moneyButtonWidth, moneyButtonHeight, "As Money");
 
@@ -127,6 +139,7 @@ public class ActionCardChoicePanel {
         drawCancelButton(gc);
     }
 
+    // Draws button can be used.
     private void drawButtonCanBeUsed(GraphicsContext gc, double x, double y, double width, double height, String text) {
         gc.setFill(Color.rgb(255, 184, 77));
         gc.fillRoundRect(x, y, width, height, 12, 12);
@@ -141,6 +154,7 @@ public class ActionCardChoicePanel {
         gc.fillText(text, x + width / 2, y + height / 2);
     }
 
+    // Draws button cannot be used.
     private void drawButtonCannotBeUsed(GraphicsContext gc, double x, double y, double width, double height, String text) {
         gc.setFill(Color.rgb(20, 20, 20));
         gc.fillRoundRect(x, y, width, height, 12, 12);
@@ -155,6 +169,7 @@ public class ActionCardChoicePanel {
         gc.fillText(text, x + width / 2, y + height / 2);
     }
 
+    // Draws cancel button.
     private void drawCancelButton(GraphicsContext gc) {
         gc.setFill(Color.rgb(45, 55, 72));
         gc.fillRoundRect(cancelButtonX, cancelButtonY, cancelButtonWidth, cancelButtonHeight, 10, 10);

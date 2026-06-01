@@ -12,12 +12,14 @@ public class GameClickHandler {
     private final GameScreen gameScreen;
     private final GameClickActions actions;
 
+    // Creates a GameClickHandler instance.
     public GameClickHandler(GameFacade game, GameScreen gameScreen, GameClickActions actions) {
         this.game = game;
         this.gameScreen = gameScreen;
         this.actions = actions;
     }
 
+    // Handles mouse click.
     public void handleMouseClick(double x, double y) {
         if (gameScreen.isMuteClicked(x, y)) {
             gameScreen.toggleMute();
@@ -55,6 +57,7 @@ public class GameClickHandler {
         handleHandCardClick(x, y);
     }
 
+    // Handles action card choice click.
     private boolean handleActionCardChoiceClick(double x, double y) {
         if (!gameScreen.isActionCardChoiceShowing()) {
             return false;
@@ -91,6 +94,7 @@ public class GameClickHandler {
         return true;
     }
 
+    // Handles player detail popup click.
     private boolean handlePlayerDetailPopupClick(double x, double y) {
         if (!gameScreen.isPlayerDetailPopupShowing()) {
             return false;
@@ -108,6 +112,7 @@ public class GameClickHandler {
         return true;
     }
 
+    // Handles selection mode click.
     private boolean handleSelectionModeClick(double x, double y) {
         if (handlePaymentSelection(x, y)) {
             return true;
@@ -140,6 +145,7 @@ public class GameClickHandler {
         return handleTwoColorRentSelection(x, y);
     }
 
+    // Handles payment selection.
     private boolean handlePaymentSelection(double x, double y) {
         if (!game.isPaymentSelecting()) {
             return false;
@@ -172,6 +178,7 @@ public class GameClickHandler {
         return gameScreen.handlePaymentCardClick(x, y);
     }
 
+    // Handles forced deal selection.
     private boolean handleForcedDealSelection(double x, double y) {
         if (!gameScreen.isForcedDealSelecting()) {
             return false;
@@ -196,6 +203,7 @@ public class GameClickHandler {
         return handleForcedDealConfirmOrCancel(x, y);
     }
 
+    // Handles forced deal detail click.
     private boolean handleForcedDealDetailClick(double x, double y) {
         if (gameScreen.isForcedDealDetailCloseClicked(x, y)
                 || gameScreen.isForcedDealDetailBackClicked(x, y)) {
@@ -217,6 +225,7 @@ public class GameClickHandler {
         return gameScreen.handleForcedDealDetailPageButtonClick(x, y);
     }
 
+    // Handles forced deal page click.
     private boolean handleForcedDealPageClick(double x, double y) {
         if (gameScreen.isForcedDealMyPrevPageClicked(x, y)) {
             gameScreen.previousForcedDealMyPage();
@@ -241,6 +250,7 @@ public class GameClickHandler {
         return false;
     }
 
+    // Handles forced deal target click.
     private boolean handleForcedDealTargetClick(double x, double y) {
         Player targetPlayer = gameScreen.getClickedForcedDealTarget(x, y);
 
@@ -252,6 +262,7 @@ public class GameClickHandler {
         return false;
     }
 
+    // Handles forced deal property click.
     private boolean handleForcedDealPropertyClick(double x, double y) {
         PropertiesCards myCard = gameScreen.getClickedForcedDealMyProperty(x, y);
 
@@ -270,6 +281,7 @@ public class GameClickHandler {
         return false;
     }
 
+    // Handles forced deal confirm or cancel.
     private boolean handleForcedDealConfirmOrCancel(double x, double y) {
         if (gameScreen.isForcedDealCancelClicked(x, y)) {
             gameScreen.cancelForcedDealSelection();
@@ -299,6 +311,7 @@ public class GameClickHandler {
         return true;
     }
 
+    // Handles sly deal selection.
     private boolean handleSlyDealSelection(double x, double y) {
         if (!gameScreen.isSlyDealSelecting()) {
             return false;
@@ -367,6 +380,7 @@ public class GameClickHandler {
         return true;
     }
 
+    // Handles multiple color rent selection.
     private boolean handleMultipleColorRentSelection(double x, double y) {
         if (!gameScreen.isMultipleColorRentSelecting()) {
             return false;
@@ -387,6 +401,7 @@ public class GameClickHandler {
         return handleMultipleColorRentConfirmOrCancel(x, y);
     }
 
+    // Handles multiple color rent detail click.
     private boolean handleMultipleColorRentDetailClick(double x, double y) {
         if (gameScreen.isMultipleColorRentDetailCloseClicked(x, y)
                 || gameScreen.isMultipleColorRentDetailBackClicked(x, y)) {
@@ -408,6 +423,7 @@ public class GameClickHandler {
         return gameScreen.handleMultipleColorRentDetailPageButtonClick(x, y);
     }
 
+    // Handles multiple color rent option click.
     private boolean handleMultipleColorRentOptionClick(double x, double y) {
         if (gameScreen.isMultipleColorDoubleRentClicked(x, y)) {
             gameScreen.toggleMultipleColorDoubleRent();
@@ -424,6 +440,7 @@ public class GameClickHandler {
         return false;
     }
 
+    // Handles multiple color rent target click.
     private boolean handleMultipleColorRentTargetClick(double x, double y) {
         Player targetPlayer = gameScreen.getClickedMultipleColorRentTarget(x, y);
 
@@ -435,6 +452,7 @@ public class GameClickHandler {
         return false;
     }
 
+    // Handles multiple color rent confirm or cancel.
     private boolean handleMultipleColorRentConfirmOrCancel(double x, double y) {
         if (gameScreen.isMultipleColorRentCancelClicked(x, y)) {
             gameScreen.cancelMultipleColorRentSelection();
@@ -459,6 +477,7 @@ public class GameClickHandler {
         return true;
     }
 
+    // Handles debt collector selection.
     private boolean handleDebtCollectorSelection(double x, double y) {
         if (!gameScreen.isDebtCollectorSelecting()) {
             return false;
@@ -507,6 +526,7 @@ public class GameClickHandler {
         return true;
     }
 
+    // Handles deal breaker selection.
     private boolean handleDealBreakerSelection(double x, double y) {
         if (!gameScreen.isDealBreakerSelecting()) {
             return false;
@@ -563,6 +583,7 @@ public class GameClickHandler {
         return true;
     }
 
+    // Handles two color rent selection.
     private boolean handleTwoColorRentSelection(double x, double y) {
         if (!gameScreen.isTwoColorRentSelecting()) {
             return false;
@@ -593,6 +614,7 @@ public class GameClickHandler {
         return true;
     }
 
+    // Handles wild card click.
     private boolean handleWildCardClick(double x, double y) {
         PropertyColor selectedColor = gameScreen.getClickedWildColorButton(x, y);
 
@@ -617,6 +639,7 @@ public class GameClickHandler {
         return false;
     }
 
+    // Handles building selection.
     private boolean handleBuildingSelection(double x, double y) {
         if (!gameScreen.isBuildingSelecting()) {
             return false;
@@ -638,6 +661,7 @@ public class GameClickHandler {
         return true;
     }
 
+    // Handles button click.
     private boolean handleButtonClick(double x, double y) {
         if (gameScreen.isEndTurnClicked(x, y)) {
             gameScreen.clearSelectedWildCard();
@@ -665,6 +689,7 @@ public class GameClickHandler {
         return false;
     }
 
+    // Handles hand card click.
     private void handleHandCardClick(double x, double y) {
         int handIndex = gameScreen.getClickedHandCardIndex(x, y);
 

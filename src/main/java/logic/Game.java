@@ -39,14 +39,17 @@ public class Game implements GameFacade {
 
     private boolean isWin;
 
+    // Creates a Game instance.
     public Game() {
         this(DEFAULT_PLAYER_COUNT, new StandardDeckCardFactory());
     }
 
+    // Creates a Game instance.
     public Game(int playerCount) {
         this(playerCount, new StandardDeckCardFactory());
     }
 
+    // Creates a Game instance.
     public Game(int playerCount, DeckCardFactory cardFactory) {
         this.playerCount = normalizePlayerCount(playerCount);
         this.cardFactory = Objects.requireNonNull(cardFactory);
@@ -62,6 +65,7 @@ public class Game implements GameFacade {
         isWin = false;
     }
 
+    // Normalizes player count.
     private int normalizePlayerCount(int playerCount) {
         if (playerCount < MIN_PLAYER_COUNT) {
             return MIN_PLAYER_COUNT;
@@ -74,6 +78,7 @@ public class Game implements GameFacade {
         return playerCount;
     }
 
+    // Starts game.
     public void startGame() {
         resetGame();
         setupNewPlayers();
@@ -81,16 +86,19 @@ public class Game implements GameFacade {
         notifyObservers();
     }
 
+    // Starts game.
     public void startGame(int playerCount) {
         this.playerCount = normalizePlayerCount(playerCount);
         startGame();
     }
 
+    // Runs reset game.
     private void resetGame() {
         initializeGameObjects();
         isWin = false;
     }
 
+    // Initializes game objects.
     private void initializeGameObjects() {
         drawCards = new DrawPileAndDiscardPile(cardFactory);
         paymentManager = new PaymentManager();
@@ -98,19 +106,23 @@ public class Game implements GameFacade {
         turnManager = new TurnManager(players, drawCards);
     }
 
+    // Creates action card service.
     private ActionCardService createActionCardService() {
         return new ActionCardService(players, paymentManager, rentCalculator);
     }
 
+    // Runs setup new players.
     private void setupNewPlayers() {
         gameSetupService.setupPlayers(players, drawCards, playerCount);
     }
 
+    // Starts turn.
     public void startTurn(Player currentPlayer) {
         turnManager.startTurn(currentPlayer);
         notifyObservers();
     }
 
+    // Runs gui end turn.
     public void guiEndTurn() {
         if (checkAnyPlayerWin()) {
             notifyObservers();
@@ -121,6 +133,7 @@ public class Game implements GameFacade {
         notifyObservers();
     }
 
+    // Forces advance turn for absent player.
     public void forceAdvanceTurnForAbsentPlayer() {
         if (checkAnyPlayerWin()) {
             notifyObservers();
@@ -131,26 +144,32 @@ public class Game implements GameFacade {
         notifyObservers();
     }
 
+    // Discards this operation.
     public boolean discard(Card card) {
         return finishAction(turnManager.discard(card));
     }
 
+    // Plays card.
     public boolean playCard(Card card) {
         return finishAction(cardPlayService.playCard(getCurrentPlayer(), card));
     }
 
+    // Plays action card as money.
     public boolean playActionCardAsMoney(ActionCards card) {
         return finishAction(cardPlayService.playActionCardAsMoney(getCurrentPlayer(), card));
     }
 
+    // Finishes pass go.
     public boolean finishPassGo(ActionCards passGoCard) {
         return finishAction(actionCardService.finishPassGo(getCurrentPlayer(), passGoCard));
     }
 
+    // Finishes birthday.
     public boolean finishBirthday(ActionCards birthdayCard) {
         return finishAction(actionCardService.finishBirthday(getCurrentPlayer(), birthdayCard));
     }
 
+    // Finishes sly deal.
     public boolean finishSlyDeal(ActionCards slyDealCard, Player targetPlayer, PropertiesCards stolenCard) {
         return finishAction(actionCardService.finishSlyDeal(
                 getCurrentPlayer(),
@@ -160,6 +179,7 @@ public class Game implements GameFacade {
         ));
     }
 
+    // Finishes deal breaker.
     public boolean finishDealBreaker(ActionCards dealBreakerCard,
                                      Player targetPlayer,
                                      ArrayList<PropertiesCards> selectedSet) {
@@ -171,6 +191,7 @@ public class Game implements GameFacade {
         ));
     }
 
+    // Finishes debt collector.
     public boolean finishDebtCollector(ActionCards debtCollectorCard, Player targetPlayer) {
         return finishAction(actionCardService.finishDebtCollector(
                 getCurrentPlayer(),
@@ -179,6 +200,7 @@ public class Game implements GameFacade {
         ));
     }
 
+    // Finishes two color rent.
     public boolean finishTwoColorRent(ActionCards rentCard,
                                       PropertyColor selectedColor,
                                       boolean useDoubleRent) {
@@ -190,6 +212,7 @@ public class Game implements GameFacade {
         ));
     }
 
+    // Finishes multiple color rent.
     public boolean finishMultipleColorRent(ActionCards rentCard,
                                            Player targetPlayer,
                                            PropertyColor selectedColor,
@@ -203,14 +226,17 @@ public class Game implements GameFacade {
         ));
     }
 
+    // Finishes house.
     public boolean finishHouse(ActionCards houseCard, PropertyColor selectedColor) {
         return finishAction(actionCardService.finishHouse(getCurrentPlayer(), houseCard, selectedColor));
     }
 
+    // Finishes hotel.
     public boolean finishHotel(ActionCards hotelCard, PropertyColor selectedColor) {
         return finishAction(actionCardService.finishHotel(getCurrentPlayer(), hotelCard, selectedColor));
     }
 
+    // Finishes forced deal.
     public boolean finishForcedDeal(ActionCards forcedDealCard,
                                     Player targetPlayer,
                                     PropertiesCards currentPlayerCard,
@@ -224,30 +250,37 @@ public class Game implements GameFacade {
         ));
     }
 
+    // Checks whether this has double the rent card.
     public boolean hasDoubleTheRentCard(Player player) {
         return actionCardService.hasDoubleTheRentCard(player);
     }
 
+    // Checks whether payment selecting.
     public boolean isPaymentSelecting() {
         return paymentManager.isPaymentSelecting();
     }
 
+    // Finds current payment request.
     public PaymentRequest getCurrentPaymentRequest() {
         return paymentManager.getCurrentPaymentRequest();
     }
 
+    // Checks whether this can current payment use just say no.
     public boolean canCurrentPaymentUseJustSayNo() {
         return paymentManager.canCurrentPaymentUseJustSayNo();
     }
 
+    // Runs current payment use just say no.
     public void currentPaymentUseJustSayNo() {
         paymentManager.currentPaymentUseJustSayNo();
     }
 
+    // Finishes current payment.
     public boolean finishCurrentPayment(ArrayList<Card> selectedCards) {
         return finishAction(paymentManager.finishCurrentPayment(selectedCards));
     }
 
+    // Runs set property color.
     public boolean setPropertyColor(Player player, PropertiesCards propertyCard, PropertyColor color) {
         if (player == null || propertyCard == null || color == null) {
             return false;
@@ -267,18 +300,22 @@ public class Game implements GameFacade {
         return true;
     }
 
+    // Finds total assets value.
     public int getTotalAssetsValue(Player player) {
         return paymentManager.getTotalAssetsValue(player);
     }
 
+    // Finds cards value.
     public int getCardsValue(ArrayList<Card> cards) {
         return paymentManager.getCardsValue(cards);
     }
 
+    // Finds payment cards value.
     public int getPaymentCardsValue(Player payer, ArrayList<Card> cards) {
         return paymentManager.getPaymentCardsValue(payer, cards);
     }
 
+    // Finishes action.
     private boolean finishAction(boolean success) {
         if (success) {
             checkAnyPlayerWin();
@@ -288,6 +325,7 @@ public class Game implements GameFacade {
         return success;
     }
 
+    // Runs check any player win.
     private boolean checkAnyPlayerWin() {
         for (Player player : players) {
             if (player.checkIfWin()) {
@@ -299,10 +337,12 @@ public class Game implements GameFacade {
         return false;
     }
 
+    // Finds current player.
     public Player getCurrentPlayer() {
         return turnManager.getCurrentPlayer();
     }
 
+    // Finds current player index.
     public int getCurrentPlayerIndex() {
         return turnManager.getCurrentPlayerIndex();
     }
@@ -311,6 +351,7 @@ public class Game implements GameFacade {
         return players;
     }
 
+    // Applies online state.
     public void applyOnlineState(ArrayList<Player> snapshotPlayers,
                                  int currentPlayerIndex,
                                  boolean discard,
@@ -336,25 +377,30 @@ public class Game implements GameFacade {
         return isWin;
     }
 
+    // Runs set win.
     public void setWin(boolean win) {
         isWin = win;
         notifyObservers();
     }
 
+    // Checks whether discard.
     public boolean isDiscard() {
         return turnManager.isDiscard();
     }
 
+    // Adds observer.
     public void addObserver(GameObserver observer) {
         if (observer != null && !observers.contains(observer)) {
             observers.add(observer);
         }
     }
 
+    // Removes observer.
     public void removeObserver(GameObserver observer) {
         observers.remove(observer);
     }
 
+    // Runs notify observers.
     private void notifyObservers() {
         for (GameObserver observer : new ArrayList<>(observers)) {
             observer.onGameStateChanged();
@@ -366,6 +412,7 @@ public class Game implements GameFacade {
         private final Player payer;
         private final int amount;
 
+        // Runs payment request.
         public PaymentRequest(Player receiver, Player payer, int amount) {
             this.receiver = receiver;
             this.payer = payer;

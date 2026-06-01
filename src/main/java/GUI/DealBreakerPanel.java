@@ -44,11 +44,13 @@ public class DealBreakerPanel {
     private final double detailButtonWidth = 140;
     private final double detailButtonHeight = 40;
 
+    // Creates a DealBreakerPanel instance.
     public DealBreakerPanel(Game game) {
         this.game = game;
         this.detailPopupPanel = new PlayerDetailPopupPanel(game);
     }
 
+    // Starts selection.
     public void startSelection(ActionCards card) {
         pendingDealBreakerCard = card;
         pageIndex = 0;
@@ -56,6 +58,7 @@ public class DealBreakerPanel {
         detailPopupPanel.close();
     }
 
+    // Checks whether this can cel selection.
     public void cancelSelection() {
         pendingDealBreakerCard = null;
         pageIndex = 0;
@@ -63,6 +66,7 @@ public class DealBreakerPanel {
         detailPopupPanel.close();
     }
 
+    // Checks whether selecting.
     public boolean isSelecting() {
         return pendingDealBreakerCard != null;
     }
@@ -71,6 +75,7 @@ public class DealBreakerPanel {
         return pendingDealBreakerCard;
     }
 
+    // Checks whether cancel clicked.
     public boolean isCancelClicked(double mouseX, double mouseY) {
         if (!isSelecting()) {
             return false;
@@ -85,6 +90,7 @@ public class DealBreakerPanel {
                 && mouseY >= 505 && mouseY <= 545;
     }
 
+    // Finds clicked choice.
     public GameScreen.DealBreakerChoice getClickedChoice(double mouseX, double mouseY) {
         if (!isSelecting()) {
             return null;
@@ -109,6 +115,7 @@ public class DealBreakerPanel {
         return null;
     }
 
+    // Draws this screen area.
     public void draw(GraphicsContext gc) {
         if (detailChoice != null) {
             detailPopupPanel.draw(gc);
@@ -128,11 +135,13 @@ public class DealBreakerPanel {
         ScreenDrawHelper.drawButton(gc, 720, 505, 140, 40, "Cancel");
     }
 
+    // Draws overlay.
     private void drawOverlay(GraphicsContext gc) {
         gc.setFill(Color.rgb(0, 0, 0, 0.75));
         gc.fillRect(0, 0, Game.SCREEN_WIDTH, Game.SCREEN_HEIGHT);
     }
 
+    // Draws title.
     private void drawTitle(GraphicsContext gc) {
         gc.setFill(Color.WHITE);
         gc.setFont(Font.font("Arial", 26));
@@ -144,6 +153,7 @@ public class DealBreakerPanel {
         gc.fillText("Only completed property sets can be stolen.", Game.SCREEN_WIDTH / 2, 70);
     }
 
+    // Draws completed sets.
     private void drawCompletedSets(GraphicsContext gc) {
         ArrayList<GameScreen.DealBreakerChoice> choices = getAllChoices();
 
@@ -174,6 +184,7 @@ public class DealBreakerPanel {
         drawPageButtons(gc, choices.size(), maxPage);
     }
 
+    // Draws completed set card.
     private void drawCompletedSetCard(GraphicsContext gc,
                                       int playerIndex,
                                       PropertyColor color,
@@ -200,6 +211,7 @@ public class DealBreakerPanel {
         gc.fillText("Click to steal set", x + cardWidth / 2, y + 90);
     }
 
+    // Draws no completed set message.
     private void drawNoCompletedSetMessage(GraphicsContext gc) {
         gc.setFill(Color.LIGHTYELLOW);
         gc.setFont(Font.font("Arial", 22));
@@ -208,6 +220,7 @@ public class DealBreakerPanel {
         gc.fillText("This Deal Breaker card cannot be used now.", Game.SCREEN_WIDTH / 2, 295);
     }
 
+    // Finds all choices.
     private ArrayList<GameScreen.DealBreakerChoice> getAllChoices() {
         ArrayList<GameScreen.DealBreakerChoice> choices = new ArrayList<>();
 
@@ -231,24 +244,28 @@ public class DealBreakerPanel {
         return choices;
     }
 
+    // Checks whether prev page clicked.
     public boolean isPrevPageClicked(double mouseX, double mouseY) {
         return isSelecting()
                 && ScreenDrawHelper.isInside(mouseX, mouseY, prevX, pageY,
                 pageButtonWidth, pageButtonHeight);
     }
 
+    // Checks whether next page clicked.
     public boolean isNextPageClicked(double mouseX, double mouseY) {
         return isSelecting()
                 && ScreenDrawHelper.isInside(mouseX, mouseY, nextX, pageY,
                 pageButtonWidth, pageButtonHeight);
     }
 
+    // Runs previous page.
     public void previousPage() {
         if (pageIndex > 0) {
             pageIndex--;
         }
     }
 
+    // Runs next page.
     public void nextPage() {
         int maxPage = ScreenDrawHelper.getMaxPage(getAllChoices().size(), setsPerPage);
 
@@ -257,6 +274,7 @@ public class DealBreakerPanel {
         }
     }
 
+    // Draws page buttons.
     private void drawPageButtons(GraphicsContext gc, int totalChoices, int maxPage) {
         if (totalChoices <= setsPerPage) {
             return;
@@ -285,6 +303,7 @@ public class DealBreakerPanel {
         gc.setTextBaseline(VPos.TOP);
     }
 
+    // Shows detail choice.
     public void showDetailChoice(GameScreen.DealBreakerChoice choice) {
         detailChoice = choice;
 
@@ -301,20 +320,24 @@ public class DealBreakerPanel {
         return detailChoice;
     }
 
+    // Checks whether detail close clicked.
     public boolean isDetailCloseClicked(double mouseX, double mouseY) {
         return detailChoice != null && detailPopupPanel.isCloseClicked(mouseX, mouseY);
     }
 
+    // Handles detail page button click.
     public boolean handleDetailPageButtonClick(double mouseX, double mouseY) {
         return detailChoice != null && detailPopupPanel.handlePageButtonClick(mouseX, mouseY);
     }
 
+    // Checks whether detail confirm clicked.
     public boolean isDetailConfirmClicked(double mouseX, double mouseY) {
         return detailChoice != null
                 && ScreenDrawHelper.isInside(mouseX, mouseY,
                 detailConfirmX, detailButtonY, detailButtonWidth, detailButtonHeight);
     }
 
+    // Checks whether detail back clicked.
     public boolean isDetailBackClicked(double mouseX, double mouseY) {
         return detailChoice != null
                 && ScreenDrawHelper.isInside(mouseX, mouseY,

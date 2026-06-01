@@ -23,19 +23,23 @@ public class BuildingSelectionPanel {
     private final double buttonGapY = 14;
     private final int buttonsPerRow = 3;
 
+    // Creates a BuildingSelectionPanel instance.
     public BuildingSelectionPanel(Game game) {
         this.game = game;
         this.pendingCard = null;
     }
 
+    // Starts selection.
     public void startSelection(ActionCards card) {
         pendingCard = card;
     }
 
+    // Checks whether this can cel selection.
     public void cancelSelection() {
         pendingCard = null;
     }
 
+    // Checks whether selecting.
     public boolean isSelecting() {
         return pendingCard != null;
     }
@@ -44,12 +48,14 @@ public class BuildingSelectionPanel {
         return pendingCard;
     }
 
+    // Checks whether cancel clicked.
     public boolean isCancelClicked(double mouseX, double mouseY) {
         return isSelecting()
                 && mouseX >= 720 && mouseX <= 860
                 && mouseY >= 505 && mouseY <= 545;
     }
 
+    // Finds clicked color.
     public PropertyColor getClickedColor(double mouseX, double mouseY) {
         if (!isSelecting()) {
             return null;
@@ -79,6 +85,7 @@ public class BuildingSelectionPanel {
         return null;
     }
 
+    // Draws this screen area.
     public void draw(GraphicsContext gc) {
         if (!isSelecting()) {
             return;
@@ -90,11 +97,13 @@ public class BuildingSelectionPanel {
         ScreenDrawHelper.drawButton(gc, 720, 505, 140, 40, "CANCEL");
     }
 
+    // Draws overlay.
     private void drawOverlay(GraphicsContext gc) {
         gc.setFill(Color.rgb(0, 0, 0, 0.75));
         gc.fillRect(0, 0, Game.SCREEN_WIDTH, Game.SCREEN_HEIGHT);
     }
 
+    // Draws title.
     private void drawTitle(GraphicsContext gc) {
         gc.setFill(Color.WHITE);
         gc.setFont(Font.font("Arial", 26));
@@ -107,6 +116,7 @@ public class BuildingSelectionPanel {
                 Game.SCREEN_WIDTH / 2, 82);
     }
 
+    // Draws color buttons.
     private void drawColorButtons(GraphicsContext gc) {
         Player currentPlayer = game.getCurrentPlayer();
         int displayIndex = 0;
@@ -145,6 +155,7 @@ public class BuildingSelectionPanel {
         gc.setTextBaseline(VPos.TOP);
     }
 
+    // Draws no available set message.
     private void drawNoAvailableSetMessage(GraphicsContext gc) {
         gc.setFill(Color.WHITE);
         gc.setFont(Font.font("Arial", 20));
@@ -154,6 +165,7 @@ public class BuildingSelectionPanel {
                 Game.SCREEN_WIDTH / 2, 245);
     }
 
+    // Checks whether this can add building to color.
     private boolean canAddBuildingToColor(Player player, PropertyColor color) {
         int count = PlayerInfoHelper.getPropertyCountByCurrentColor(player, color);
 
@@ -173,11 +185,13 @@ public class BuildingSelectionPanel {
         return true;
     }
 
+    // Checks whether house card.
     private boolean isHouseCard() {
         return pendingCard != null
                 && pendingCard.getActionCardType().name().contains("HOUSE");
     }
 
+    // Checks whether hotel card.
     private boolean isHotelCard() {
         return pendingCard != null
                 && pendingCard.getActionCardType().name().contains("HOTEL");

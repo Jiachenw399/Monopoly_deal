@@ -24,9 +24,11 @@ public final class OnlineLauncher {
     private static Thread gameServerThread;
     private static OnlinePlayWindow activeWindow;
 
+    // Creates a OnlineLauncher instance.
     private OnlineLauncher() {
     }
 
+    // Opens lan menu.
     public static void openLanMenu(Stage owner, MusicPlayer musicPlayer) {
         if (showActiveWindowIfPresent()) {
             return;
@@ -51,6 +53,7 @@ public final class OnlineLauncher {
         }
     }
 
+    // Shows active window if present.
     private static boolean showActiveWindowIfPresent() {
         if (activeWindow == null || !activeWindow.isShowing()) {
             return false;
@@ -61,6 +64,7 @@ public final class OnlineLauncher {
         return true;
     }
 
+    // Starts host server if needed.
     private static void startHostServerIfNeeded() {
         synchronized (SERVER_LOCK) {
             if (gameServerThread != null && gameServerThread.isAlive()) {
@@ -73,6 +77,7 @@ public final class OnlineLauncher {
         }
     }
 
+    // Shows host info.
     private static void showHostInfo(Stage owner) {
         String ips = formatLanAddresses();
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
@@ -89,6 +94,7 @@ public final class OnlineLauncher {
         alert.showAndWait();
     }
 
+    // Opens client.
     private static void openClient(Stage owner, String host, MusicPlayer musicPlayer) {
         if (showActiveWindowIfPresent()) {
             return;
@@ -104,6 +110,7 @@ public final class OnlineLauncher {
         window.show();
     }
 
+    // Runs prompt join.
     private static void promptJoin(Stage owner, MusicPlayer musicPlayer) {
         TextInputDialog dialog = new TextInputDialog("127.0.0.1");
         dialog.initOwner(owner);
@@ -124,6 +131,7 @@ public final class OnlineLauncher {
         openClient(owner, host, musicPlayer);
     }
 
+    // Runs format lan addresses.
     private static String formatLanAddresses() {
         List<String> lines = new ArrayList<>();
         try {

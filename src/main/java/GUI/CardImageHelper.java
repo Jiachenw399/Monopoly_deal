@@ -19,9 +19,11 @@ import java.util.Map;
 public class CardImageHelper {
     private static final Map<String, Image> IMAGE_CACHE = new HashMap<>();
 
+    // Creates a CardImageHelper instance.
     private CardImageHelper() {
     }
 
+    // Draws card image.
     public static boolean drawCardImage(GraphicsContext gc,
                                         Card card,
                                         double x,
@@ -38,6 +40,7 @@ public class CardImageHelper {
         return true;
     }
 
+    // Finds card image.
     private static Image getCardImage(Card card) {
         String path = getCardImagePath(card);
 
@@ -48,6 +51,7 @@ public class CardImageHelper {
         return loadImage(path);
     }
 
+    // Finds card image path.
     private static String getCardImagePath(Card card) {
         if (card instanceof MoneyCards) {
             return "/images/money/money_" + card.getValue() + ".png";
@@ -75,10 +79,12 @@ public class CardImageHelper {
         return null;
     }
 
+    // Checks whether rent card.
     private static boolean isRentCard(ActionCardType type) {
         return type.name().startsWith("RENT_WITH");
     }
 
+    // Runs load image.
     private static Image loadImage(String path) {
         if (IMAGE_CACHE.containsKey(path)) {
             return IMAGE_CACHE.get(path);
@@ -102,6 +108,7 @@ public class CardImageHelper {
         return image;
     }
 
+    // Draws hand number badge.
     public static void drawHandNumberBadge(GraphicsContext gc,
                                            int number,
                                            double x,

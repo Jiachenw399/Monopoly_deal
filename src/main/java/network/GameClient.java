@@ -11,10 +11,12 @@ public class GameClient {
     private static final int PORT = 5555;
     private final String host;
 
+    // Creates a GameClient instance.
     public GameClient(String host) {
         this.host = host;
     }
 
+    // Starts the application entry point.
     public static void main(String[] args) {
         String host = "localhost";
 
@@ -25,6 +27,7 @@ public class GameClient {
         new GameClient(host).start();
     }
 
+    // Starts this operation.
     public void start() {
         try (
                 Socket socket = new Socket(host, PORT);
@@ -56,6 +59,7 @@ public class GameClient {
         }
     }
 
+    // Parses input.
     private NetworkMessage parseInput(String input) {
         String[] parts = input.trim().split("\\s+", 2);
         String type = parts[0].toUpperCase();
@@ -64,6 +68,7 @@ public class GameClient {
         return new NetworkMessage(type, body);
     }
 
+    // Starts server listener.
     private void startServerListener(BufferedReader in) {
         Thread listenerThread = new Thread(() -> {
             try {

@@ -13,12 +13,14 @@ public class MainMenu {
     private boolean isShow;
     private boolean choosingPlayerCount;
 
+    // Creates a MainMenu instance.
     public MainMenu() {
         canvas = new Canvas(GuiScale.canvasWidth(), GuiScale.canvasHeight());
         isShow = true;
         choosingPlayerCount = false;
     }
 
+    // Runs paint.
     public void paint() {
         GraphicsContext gc = canvas.getGraphicsContext2D();
         GuiScale.prepare(gc);
@@ -32,6 +34,7 @@ public class MainMenu {
         }
     }
 
+    // Clears the current state.
     public void clear() {
         GuiScale.clear(canvas);
     }
@@ -47,6 +50,7 @@ public class MainMenu {
         gc.strokeRoundRect(220, 80, 595, 510, 36, 36);
     }
 
+    // Draws menu text.
     private void drawMenuText(GraphicsContext gc) {
         gc.setTextAlign(TextAlignment.CENTER);
         gc.setTextBaseline(VPos.CENTER);
@@ -60,6 +64,7 @@ public class MainMenu {
         gc.fillText("Build property sets, collect rent, and win the deal.", Game.SCREEN_WIDTH / 2, 180);
     }
 
+    // Draws menu cards.
     private void drawMenuCards(GraphicsContext gc) {
         drawMenuOption(gc, 365, 235, "A", "Start New Game");
         drawMenuOption(gc, 365, 310, "N", "View Game Rules");
@@ -67,6 +72,7 @@ public class MainMenu {
         drawMenuOption(gc, 365, 460, "X", "Exit Game");
     }
 
+    // Draws player count choice.
     private void drawPlayerCountChoice(GraphicsContext gc) {
         gc.setTextAlign(TextAlignment.CENTER);
         gc.setTextBaseline(VPos.CENTER);
@@ -88,6 +94,7 @@ public class MainMenu {
         gc.fillText("Esc returns to the main menu.", Game.SCREEN_WIDTH / 2, 442);
     }
 
+    // Draws player count option.
     private void drawPlayerCountOption(GraphicsContext gc, double x, double y, String key, String text) {
         ScreenDrawHelper.drawPanel(gc, x, y, 135, 110);
 
@@ -102,6 +109,7 @@ public class MainMenu {
         gc.fillText(text, x + 67.5, y + 78);
     }
 
+    // Draws menu option.
     private void drawMenuOption(GraphicsContext gc, double x, double y, String key, String text) {
         ScreenDrawHelper.drawPanel(gc, x, y, 305, 52);
 

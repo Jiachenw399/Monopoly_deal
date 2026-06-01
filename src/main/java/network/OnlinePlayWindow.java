@@ -45,6 +45,7 @@ public class OnlinePlayWindow extends Stage {
     private int myPlayerId;
     private String connectionText = "Connecting...";
 
+    // Creates a OnlinePlayWindow instance.
     public OnlinePlayWindow(Stage owner, String host, MusicPlayer musicPlayer) {
         this.host = host;
         this.session = new GameSession(new Game(), musicPlayer);
@@ -73,6 +74,7 @@ public class OnlinePlayWindow extends Stage {
         new Thread(this::runConnection, "online-socket").start();
     }
 
+    // Starts render loop.
     private void startRenderLoop() {
         GameScreen gameScreen = session.getGameScreen();
         new AnimationTimer() {
@@ -92,6 +94,7 @@ public class OnlinePlayWindow extends Stage {
         }.start();
     }
 
+    // Runs paint lobby.
     private void paintLobby() {
         GraphicsContext gc = lobbyCanvas.getGraphicsContext2D();
         GuiScale.prepare(gc);
@@ -122,6 +125,7 @@ public class OnlinePlayWindow extends Stage {
         }
     }
 
+    // Handles mouse click.
     private void handleMouseClick(double x, double y) {
         if (!started) {
             if (isRect(x, y, 390, 320, 255, 48)) {
@@ -139,6 +143,7 @@ public class OnlinePlayWindow extends Stage {
         clickHandler.handleMouseClick(x, y);
     }
 
+    // Runs run connection.
     private void runConnection() {
         try {
             Socket s = new Socket(host, PORT);
@@ -171,6 +176,7 @@ public class OnlinePlayWindow extends Stage {
         }
     }
 
+    // Handles server message.
     private void handleServerMessage(NetworkMessage message) {
         appendLog(message.getType() + ": " + message.getBody());
         switch (message.getType()) {
@@ -199,16 +205,19 @@ public class OnlinePlayWindow extends Stage {
         }
     }
 
+    // Checks whether rect.
     private boolean isRect(double x, double y, double rx, double ry, double rw, double rh) {
         return x >= rx && x <= rx + rw && y >= ry && y <= ry + rh;
     }
 
+    // Sends this operation.
     private void send(String type, String body) {
         if (out != null) {
             out.println(new NetworkMessage(type, body == null ? "" : body).encode());
         }
     }
 
+    // Runs append log.
     private void appendLog(String text) {
         logLines.add(text);
         while (logLines.size() > 20) {
@@ -216,6 +225,7 @@ public class OnlinePlayWindow extends Stage {
         }
     }
 
+    // Runs shutdown.
     private void shutdown() {
         closed = true;
         try {
@@ -227,6 +237,7 @@ public class OnlinePlayWindow extends Stage {
         }
     }
 
+    // Parses int.
     private static int parseInt(String text) {
         try {
             return Integer.parseInt(text);

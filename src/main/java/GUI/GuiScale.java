@@ -14,7 +14,7 @@ import logic.Game;
  */
 public class GuiScale {
 
-    public static final double DISPLAY_SCALE = 1.26;
+    public static final double DISPLAY_SCALE = 1.2;
 
     private static final GuiScale DEFAULT =
             new GuiScale(Game.SCREEN_WIDTH, Game.SCREEN_HEIGHT);
@@ -31,19 +31,23 @@ public class GuiScale {
     private double scaleX = 1.0;
     private double scaleY = 1.0;
 
+    // Creates a GuiScale instance.
     public GuiScale(double designWidth, double designHeight) {
         this.designWidth = designWidth;
         this.designHeight = designHeight;
     }
 
+    // Checks whether this can vas width.
     public static double canvasWidth() {
         return DEFAULT.s(DEFAULT.designWidth);
     }
 
+    // Checks whether this can vas height.
     public static double canvasHeight() {
         return DEFAULT.s(DEFAULT.designHeight);
     }
 
+    // Prepares this operation.
     public static void prepare(GraphicsContext gc) {
         gc.clearRect(0, 0, canvasWidth(), canvasHeight());
         Affine transform = new Affine();
@@ -51,6 +55,7 @@ public class GuiScale {
         gc.setTransform(transform);
     }
 
+    // Clears the current state.
     public static void clear(Canvas canvas) {
         if (canvas == null) {
             return;
@@ -60,10 +65,12 @@ public class GuiScale {
         gc.clearRect(0, 0, canvas.getWidth(), canvas.getHeight());
     }
 
+    // Runs to logical.
     public static double toLogical(double displayCoordinate) {
         return DEFAULT.toLogicalX(displayCoordinate);
     }
 
+    // Runs update.
     public void update(double displayWidth, double displayHeight) {
         if (displayWidth <= 0 || displayHeight <= 0) {
             scaleX = 1.0;
@@ -74,10 +81,12 @@ public class GuiScale {
         scaleY = displayHeight / designHeight;
     }
 
+    // Runs s.
     public double s(double designValue) {
         return designValue * scaleX;
     }
 
+    // Runs to logical x.
     public double toLogicalX(double displayX) {
         return scaleX == 0 ? displayX : displayX / scaleX;
     }

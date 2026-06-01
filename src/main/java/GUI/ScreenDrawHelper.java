@@ -21,6 +21,7 @@ public class ScreenDrawHelper {
     public static final Color WARNING = Color.rgb(255, 210, 93);
     public static final Color DANGER = Color.rgb(255, 112, 112);
 
+    // Draws page background.
     public static void drawPageBackground(GraphicsContext gc, double width, double height) {
         gc.clearRect(0, 0, width, height);
         gc.setFill(BACKGROUND);
@@ -36,11 +37,13 @@ public class ScreenDrawHelper {
         gc.fillOval(width - 220, height - 170, 330, 230);
     }
 
+    // Draws overlay.
     public static void drawOverlay(GraphicsContext gc) {
         gc.setFill(Color.rgb(5, 8, 14, 0.78));
         gc.fillRect(0, 0, 1035, 625);
     }
 
+    // Draws panel.
     public static void drawPanel(GraphicsContext gc,
                                  double x,
                                  double y,
@@ -52,6 +55,7 @@ public class ScreenDrawHelper {
         gc.strokeRoundRect(x, y, width, height, 20, 20);
     }
 
+    // Draws light panel.
     public static void drawLightPanel(GraphicsContext gc,
                                       double x,
                                       double y,
@@ -63,6 +67,7 @@ public class ScreenDrawHelper {
         gc.strokeRoundRect(x, y, width, height, 20, 20);
     }
 
+    // Draws section title.
     public static void drawSectionTitle(GraphicsContext gc, String title, double x, double y) {
         gc.setFill(TEXT);
         gc.setFont(Font.font("Arial", 18));
@@ -71,6 +76,7 @@ public class ScreenDrawHelper {
         gc.fillText(title, x, y);
     }
 
+    // Draws badge.
     public static void drawBadge(GraphicsContext gc,
                                  double x,
                                  double y,
@@ -88,6 +94,7 @@ public class ScreenDrawHelper {
         gc.setTextBaseline(VPos.TOP);
     }
 
+    // Draws button.
     public static void drawButton(GraphicsContext gc,
                                   double x,
                                   double y,
@@ -111,6 +118,7 @@ public class ScreenDrawHelper {
         gc.setTextBaseline(VPos.TOP);
     }
 
+    // Draws disabled button.
     public static void drawDisabledButton(GraphicsContext gc,
                                           double x,
                                           double y,
@@ -131,6 +139,7 @@ public class ScreenDrawHelper {
         gc.setTextBaseline(VPos.TOP);
     }
 
+    // Draws page text.
     public static void drawPageText(GraphicsContext gc,
                                     int pageIndex,
                                     int maxPage,
@@ -144,6 +153,7 @@ public class ScreenDrawHelper {
         gc.fillText("Page " + (pageIndex + 1) + "/" + (maxPage + 1), x, y);
     }
 
+    // Draws arrow buttons.
     public static void drawArrowButtons(GraphicsContext gc,
                                         double prevX,
                                         double nextX,
@@ -165,6 +175,7 @@ public class ScreenDrawHelper {
         }
     }
 
+    // Draws double rent option.
     public static void drawDoubleRentOption(GraphicsContext gc,
                                             double x,
                                             double y,
@@ -196,6 +207,7 @@ public class ScreenDrawHelper {
         gc.setTextBaseline(VPos.TOP);
     }
 
+    // Draws small card.
     public static void drawSmallCard(GraphicsContext gc,
                                      double x,
                                      double y,
@@ -216,6 +228,7 @@ public class ScreenDrawHelper {
         drawWrappedText(gc, text, x + 5, y + 35, 50, 11);
     }
 
+    // Draws wrapped text.
     public static void drawWrappedText(GraphicsContext gc,
                                        String text,
                                        double x,
@@ -243,6 +256,7 @@ public class ScreenDrawHelper {
         }
     }
 
+    // Finds max page.
     public static int getMaxPage(int itemCount, int itemsPerPage) {
         if (itemCount <= 0) {
             return 0;
@@ -251,6 +265,7 @@ public class ScreenDrawHelper {
         return (itemCount - 1) / itemsPerPage;
     }
 
+    // Keeps page in range.
     public static int keepPageInRange(int pageIndex, int maxPage) {
         if (pageIndex < 0) {
             return 0;
@@ -259,6 +274,7 @@ public class ScreenDrawHelper {
         return Math.min(pageIndex, maxPage);
     }
 
+    // Checks whether inside.
     public static boolean isInside(double mouseX,
                                    double mouseY,
                                    double x,
@@ -271,23 +287,12 @@ public class ScreenDrawHelper {
                 && mouseY <= y + height;
     }
 
+    // Finds display color name.
     public static String getDisplayColorName(PropertyColor color) {
         if (color == null) {
             return "No Color";
         }
 
-        String[] words = color.name().toLowerCase().split("_");
-        StringBuilder builder = new StringBuilder();
-
-        for (String word : words) {
-            if (!builder.isEmpty()) {
-                builder.append(" ");
-            }
-
-            builder.append(word.substring(0, 1).toUpperCase());
-            builder.append(word.substring(1));
-        }
-
-        return builder.toString();
+        return color.getDisplayName();
     }
 }

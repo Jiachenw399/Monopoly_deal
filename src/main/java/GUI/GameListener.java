@@ -7,6 +7,7 @@ public class GameListener {
     private final GameScreen gameScreen;
     private final GameClickHandler clickHandler;
 
+    // Creates a GameListener instance.
     public GameListener(MainMenu menu, GameScreen gameScreen, GameFacade game) {
         this.gameScreen = gameScreen;
         this.clickHandler = new GameClickHandler(
@@ -16,6 +17,7 @@ public class GameListener {
         );
     }
 
+    // Adds listener.
     public void addListener(Scene scene) {
         scene.setOnMouseClicked(event -> {
             if (!gameScreen.isShow()) {

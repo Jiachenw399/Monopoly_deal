@@ -34,6 +34,7 @@ public class MultipleColorRentSelectionPanel {
     private final double detailButtonWidth = 140;
     private final double detailButtonHeight = 40;
 
+    // Creates a MultipleColorRentSelectionPanel instance.
     public MultipleColorRentSelectionPanel(Game game) {
         this.game = game;
         this.rentCalculator = new RentCalculator();
@@ -45,6 +46,7 @@ public class MultipleColorRentSelectionPanel {
         this.useDoubleRent = false;
     }
 
+    // Starts selection.
     public void startSelection(ActionCards card) {
         pendingCard = card;
         selectedTarget = null;
@@ -54,6 +56,7 @@ public class MultipleColorRentSelectionPanel {
         detailPopupPanel.close();
     }
 
+    // Checks whether this can cel selection.
     public void cancelSelection() {
         pendingCard = null;
         selectedTarget = null;
@@ -63,6 +66,7 @@ public class MultipleColorRentSelectionPanel {
         detailPopupPanel.close();
     }
 
+    // Checks whether selecting.
     public boolean isSelecting() {
         return pendingCard != null;
     }
@@ -87,18 +91,22 @@ public class MultipleColorRentSelectionPanel {
         this.selectedColor = selectedColor;
     }
 
+    // Checks whether this should use double rent.
     public boolean shouldUseDoubleRent() {
         return useDoubleRent;
     }
 
+    // Toggles double rent.
     public void toggleDoubleRent() {
         useDoubleRent = !useDoubleRent;
     }
 
+    // Checks whether this can confirm.
     public boolean canConfirm() {
         return selectedTarget != null && selectedColor != null;
     }
 
+    // Checks whether detail showing.
     public boolean isDetailShowing() {
         return detailTarget != null;
     }
@@ -107,6 +115,7 @@ public class MultipleColorRentSelectionPanel {
         return detailTarget;
     }
 
+    // Shows target detail.
     public void showTargetDetail(Player player) {
         detailTarget = player;
 
@@ -119,10 +128,12 @@ public class MultipleColorRentSelectionPanel {
         detailPopupPanel.showPlayer(index);
     }
 
+    // Handles detail page button click.
     public boolean handleDetailPageButtonClick(double mouseX, double mouseY) {
         return detailTarget != null && detailPopupPanel.handlePageButtonClick(mouseX, mouseY);
     }
 
+    // Checks whether detail confirm clicked.
     public boolean isDetailConfirmClicked(double mouseX, double mouseY) {
         return isSelecting()
                 && detailTarget != null
@@ -130,6 +141,7 @@ public class MultipleColorRentSelectionPanel {
                 detailConfirmX, detailButtonY, detailButtonWidth, detailButtonHeight);
     }
 
+    // Checks whether detail back clicked.
     public boolean isDetailBackClicked(double mouseX, double mouseY) {
         return isSelecting()
                 && detailTarget != null
@@ -137,6 +149,7 @@ public class MultipleColorRentSelectionPanel {
                 detailBackX, detailButtonY, detailButtonWidth, detailButtonHeight);
     }
 
+    // Checks whether double rent clicked.
     public boolean isDoubleRentClicked(double mouseX, double mouseY) {
         return isSelecting()
                 && detailTarget == null
@@ -146,6 +159,7 @@ public class MultipleColorRentSelectionPanel {
                 && mouseY >= 450 && mouseY <= 485;
     }
 
+    // Checks whether cancel clicked.
     public boolean isCancelClicked(double mouseX, double mouseY) {
         if (!isSelecting()) {
             return false;
@@ -160,6 +174,7 @@ public class MultipleColorRentSelectionPanel {
                 && mouseY >= 535 && mouseY <= 575;
     }
 
+    // Checks whether confirm clicked.
     public boolean isConfirmClicked(double mouseX, double mouseY) {
         return isSelecting()
                 && detailTarget == null
@@ -167,6 +182,7 @@ public class MultipleColorRentSelectionPanel {
                 && mouseY >= 535 && mouseY <= 575;
     }
 
+    // Finds clicked target.
     public Player getClickedTarget(double mouseX, double mouseY) {
         if (!isSelecting() || detailTarget != null) {
             return null;
@@ -195,6 +211,7 @@ public class MultipleColorRentSelectionPanel {
         return null;
     }
 
+    // Finds clicked color.
     public PropertyColor getClickedColor(double mouseX, double mouseY) {
         if (!isSelecting() || detailTarget != null) {
             return null;
@@ -231,6 +248,7 @@ public class MultipleColorRentSelectionPanel {
         return null;
     }
 
+    // Draws this screen area.
     public void draw(GraphicsContext gc) {
         if (!isSelecting()) {
             return;
@@ -260,11 +278,13 @@ public class MultipleColorRentSelectionPanel {
         ScreenDrawHelper.drawButton(gc, 690, 535, 140, 40, "CANCEL");
     }
 
+    // Draws overlay.
     private void drawOverlay(GraphicsContext gc) {
         gc.setFill(Color.rgb(0, 0, 0, 0.76));
         gc.fillRect(0, 0, Game.SCREEN_WIDTH, Game.SCREEN_HEIGHT);
     }
 
+    // Draws title.
     private void drawTitle(GraphicsContext gc) {
         gc.setFill(Color.WHITE);
         gc.setFont(Font.font("Arial", 26));
@@ -277,6 +297,7 @@ public class MultipleColorRentSelectionPanel {
                 Game.SCREEN_WIDTH / 2, 70);
     }
 
+    // Draws targets.
     private void drawTargets(GraphicsContext gc) {
         double x = panelX;
         double y = panelY + 80;
@@ -321,6 +342,7 @@ public class MultipleColorRentSelectionPanel {
         gc.setTextBaseline(VPos.TOP);
     }
 
+    // Draws colors.
     private void drawColors(GraphicsContext gc) {
         Player currentPlayer = game.getCurrentPlayer();
 
@@ -381,6 +403,7 @@ public class MultipleColorRentSelectionPanel {
         gc.setTextBaseline(VPos.TOP);
     }
 
+    // Draws status.
     private void drawStatus(GraphicsContext gc) {
         gc.setFill(Color.WHITE);
         gc.setFont(Font.font("Arial", 16));
@@ -412,6 +435,7 @@ public class MultipleColorRentSelectionPanel {
         }
     }
 
+    // Draws double rent option.
     private void drawDoubleRentOption(GraphicsContext gc) {
         if (!game.hasDoubleTheRentCard(game.getCurrentPlayer())
                 || game.getCurrentPlayer().getUseCardTimes() > 1) {
@@ -444,10 +468,12 @@ public class MultipleColorRentSelectionPanel {
         gc.setTextBaseline(VPos.TOP);
     }
 
+    // Calculates preview rent.
     private int calculatePreviewRent(Player player, PropertyColor color) {
         return rentCalculator.calculateRent(player, color, useDoubleRent);
     }
 
+    // Checks whether detail close clicked.
     public boolean isDetailCloseClicked(double mouseX, double mouseY) {
         return detailTarget != null && detailPopupPanel.isCloseClicked(mouseX, mouseY);
     }

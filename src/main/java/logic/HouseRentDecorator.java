@@ -6,10 +6,12 @@ import model.PropertyColor;
 public class HouseRentDecorator extends RentCalculatorDecorator {
     private static final int HOUSE_RENT_BONUS = 3;
 
+    // Creates a HouseRentDecorator instance.
     public HouseRentDecorator(RentCalculation wrappedCalculator) {
         super(wrappedCalculator);
     }
 
+    // Calculates rent.
     @Override
     public int calculateRent(Player player, PropertyColor color) {
         int rent = super.calculateRent(player, color);

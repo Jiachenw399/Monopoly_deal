@@ -42,11 +42,13 @@ public class SlyDealPanel {
     private final double detailButtonWidth = 140;
     private final double detailButtonHeight = 40;
 
+    // Creates a SlyDealPanel instance.
     public SlyDealPanel(Game game) {
         this.game = game;
         this.detailPopupPanel = new PlayerDetailPopupPanel(game);
     }
 
+    // Starts selection.
     public void startSelection(ActionCards card) {
         pendingCard = card;
         selectedTargetPlayer = null;
@@ -55,6 +57,7 @@ public class SlyDealPanel {
         pageIndex = 0;
     }
 
+    // Checks whether this can cel selection.
     public void cancelSelection() {
         pendingCard = null;
         selectedTargetPlayer = null;
@@ -63,6 +66,7 @@ public class SlyDealPanel {
         pageIndex = 0;
     }
 
+    // Checks whether selecting.
     public boolean isSelecting() {
         return pendingCard != null;
     }
@@ -71,6 +75,7 @@ public class SlyDealPanel {
         return pendingCard;
     }
 
+    // Checks whether cancel clicked.
     public boolean isCancelClicked(double mouseX, double mouseY) {
         if (!isSelecting()) {
             return false;
@@ -86,6 +91,7 @@ public class SlyDealPanel {
                 && mouseY >= 505 && mouseY <= 545;
     }
 
+    // Finds clicked choice.
     public GameScreen.SlyDealChoice getClickedChoice(double mouseX, double mouseY) {
         if (!isSelecting() || selectedTargetPlayer == null || detailTargetPlayer != null) {
             return null;
@@ -113,6 +119,7 @@ public class SlyDealPanel {
         return null;
     }
 
+    // Finds clicked target player.
     public Player getClickedTargetPlayer(double mouseX, double mouseY) {
         if (!isSelecting() || selectedTargetPlayer != null || detailTargetPlayer != null) {
             return null;
@@ -144,6 +151,7 @@ public class SlyDealPanel {
         return null;
     }
 
+    // Draws this screen area.
     public void draw(GraphicsContext gc) {
         if (!isSelecting()) {
             return;
@@ -168,11 +176,13 @@ public class SlyDealPanel {
         ScreenDrawHelper.drawButton(gc, 720, 505, 140, 40, "CANCEL");
     }
 
+    // Draws background.
     private void drawBackground(GraphicsContext gc) {
         gc.setFill(Color.rgb(0, 0, 0, 0.75));
         gc.fillRect(0, 0, Game.SCREEN_WIDTH, Game.SCREEN_HEIGHT);
     }
 
+    // Draws title.
     private void drawTitle(GraphicsContext gc) {
         gc.setFill(Color.WHITE);
         gc.setFont(Font.font("Arial", 26));
@@ -185,6 +195,7 @@ public class SlyDealPanel {
                 Game.SCREEN_WIDTH / 2, 70);
     }
 
+    // Draws target player choices.
     private void drawTargetPlayerChoices(GraphicsContext gc) {
         gc.setFill(Color.WHITE);
         gc.setFont(Font.font("Arial", 20));
@@ -210,6 +221,7 @@ public class SlyDealPanel {
         }
     }
 
+    // Draws target player box.
     private void drawTargetPlayerBox(GraphicsContext gc,
                                      Player player,
                                      int playerIndex,
@@ -235,6 +247,7 @@ public class SlyDealPanel {
         gc.fillText("Stealable: " + getStealableProperties(player).size(), x + width / 2, y + 43);
     }
 
+    // Draws choices.
     private void drawChoices(GraphicsContext gc) {
         ArrayList<PropertiesCards> choices = getStealableProperties(selectedTargetPlayer);
         int targetIndex = game.getPlayers().indexOf(selectedTargetPlayer) + 1;
@@ -270,6 +283,7 @@ public class SlyDealPanel {
         drawPageButtons(gc, choices.size(), maxPage);
     }
 
+    // Draws choice card.
     private void drawChoiceCard(GraphicsContext gc,
                                 int playerIndex,
                                 PropertiesCards card,
@@ -289,6 +303,7 @@ public class SlyDealPanel {
         }
     }
 
+    // Draws owner badge.
     private void drawOwnerBadge(GraphicsContext gc, int playerIndex, double x, double y) {
         gc.setFill(Color.rgb(255, 255, 255, 0.88));
         gc.fillRoundRect(x + 6, y + 6, 54, 22, 8, 8);
@@ -305,6 +320,7 @@ public class SlyDealPanel {
         gc.setTextBaseline(VPos.TOP);
     }
 
+    // Draws empty message.
     private void drawEmptyMessage(GraphicsContext gc) {
         gc.setFill(Color.LIGHTYELLOW);
         gc.setFont(Font.font("Arial", 22));
@@ -312,11 +328,13 @@ public class SlyDealPanel {
         gc.fillText("No property can be stolen.", Game.SCREEN_WIDTH / 2, 280);
     }
 
+    // Draws card shadow.
     private void drawCardShadow(GraphicsContext gc, double x, double y, double width, double height) {
         gc.setFill(Color.rgb(0, 0, 0, 0.35));
         gc.fillRoundRect(x + 4, y + 5, width, height, 15, 15);
     }
 
+    // Draws fallback property card.
     private void drawFallbackPropertyCard(GraphicsContext gc, PropertiesCards card, double x, double y) {
         gc.setFill(Color.rgb(225, 241, 255));
         gc.fillRoundRect(x, y, cardWidth, cardHeight, 15, 15);
@@ -335,6 +353,7 @@ public class SlyDealPanel {
         ScreenDrawHelper.drawWrappedText(gc, colorText, x + 8, y + 58, cardWidth - 16, 12);
     }
 
+    // Draws current color badge.
     private void drawCurrentColorBadge(GraphicsContext gc, PropertiesCards card, double x, double y) {
         String colorText = card.getCurrentColor() == null
                 ? "No Color"
@@ -355,6 +374,7 @@ public class SlyDealPanel {
         gc.setTextBaseline(VPos.TOP);
     }
 
+    // Draws wild badge.
     private void drawWildBadge(GraphicsContext gc, double x, double y) {
         gc.setFill(Color.rgb(255, 80, 80));
         gc.fillRoundRect(x, y, 38, 18, 8, 8);
@@ -368,21 +388,12 @@ public class SlyDealPanel {
         gc.setTextBaseline(VPos.TOP);
     }
 
+    // Finds short color name.
     private String getShortColorName(model.PropertyColor color) {
-        return switch (color) {
-            case DARK_BLUE -> "Dark Blue";
-            case ORANGE -> "Orange";
-            case BLACK -> "Black";
-            case RED -> "Red";
-            case DARK_GREEN -> "Dark Green";
-            case BROWN -> "Brown";
-            case PINK -> "Pink";
-            case LIGHT_BLUE -> "Light Blue";
-            case LIGHT_GREEN -> "Light Green";
-            case YELLOW -> "Yellow";
-        };
+        return ScreenDrawHelper.getDisplayColorName(color);
     }
 
+    // Finds stealable properties.
     private ArrayList<PropertiesCards> getStealableProperties(Player targetPlayer) {
         ArrayList<PropertiesCards> choices = new ArrayList<>();
 
@@ -399,10 +410,12 @@ public class SlyDealPanel {
         return choices;
     }
 
+    // Checks whether this has stealable property.
     private boolean hasStealableProperty(Player player) {
         return !getStealableProperties(player).isEmpty();
     }
 
+    // Checks whether prev page clicked.
     public boolean isPrevPageClicked(double mouseX, double mouseY) {
         return isSelecting()
                 && selectedTargetPlayer != null
@@ -411,6 +424,7 @@ public class SlyDealPanel {
                 pageButtonWidth, pageButtonHeight);
     }
 
+    // Checks whether next page clicked.
     public boolean isNextPageClicked(double mouseX, double mouseY) {
         return isSelecting()
                 && selectedTargetPlayer != null
@@ -419,12 +433,14 @@ public class SlyDealPanel {
                 pageButtonWidth, pageButtonHeight);
     }
 
+    // Runs previous page.
     public void previousPage() {
         if (pageIndex > 0) {
             pageIndex--;
         }
     }
 
+    // Runs next page.
     public void nextPage() {
         int maxPage = ScreenDrawHelper.getMaxPage(getStealableProperties(selectedTargetPlayer).size(), cardsPerPage);
 
@@ -433,6 +449,7 @@ public class SlyDealPanel {
         }
     }
 
+    // Draws page buttons.
     private void drawPageButtons(GraphicsContext gc, int totalChoices, int maxPage) {
         if (totalChoices <= cardsPerPage) {
             return;
@@ -461,6 +478,7 @@ public class SlyDealPanel {
         gc.setTextBaseline(VPos.TOP);
     }
 
+    // Shows target detail.
     public void showTargetDetail(Player player) {
         detailTargetPlayer = player;
 
@@ -481,31 +499,37 @@ public class SlyDealPanel {
         return selectedTargetPlayer;
     }
 
+    // Runs set selected target player.
     public void setSelectedTargetPlayer(Player player) {
         selectedTargetPlayer = player;
         pageIndex = 0;
     }
 
+    // Checks whether detail close clicked.
     public boolean isDetailCloseClicked(double mouseX, double mouseY) {
         return detailTargetPlayer != null && detailPopupPanel.isCloseClicked(mouseX, mouseY);
     }
 
+    // Checks whether detail back clicked.
     public boolean isDetailBackClicked(double mouseX, double mouseY) {
         return detailTargetPlayer != null
                 && ScreenDrawHelper.isInside(mouseX, mouseY,
                 detailBackX, detailButtonY, detailButtonWidth, detailButtonHeight);
     }
 
+    // Checks whether detail confirm clicked.
     public boolean isDetailConfirmClicked(double mouseX, double mouseY) {
         return detailTargetPlayer != null
                 && ScreenDrawHelper.isInside(mouseX, mouseY,
                 detailConfirmX, detailButtonY, detailButtonWidth, detailButtonHeight);
     }
 
+    // Handles detail page button click.
     public boolean handleDetailPageButtonClick(double mouseX, double mouseY) {
         return detailTargetPlayer != null && detailPopupPanel.handlePageButtonClick(mouseX, mouseY);
     }
 
+    // Checks whether back clicked.
     public boolean isBackClicked(double mouseX, double mouseY) {
         return isSelecting()
                 && selectedTargetPlayer != null

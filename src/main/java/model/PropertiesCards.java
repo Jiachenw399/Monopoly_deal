@@ -8,10 +8,12 @@ public class PropertiesCards extends Card {
     private boolean hasHouse;
     private boolean hasHotel;
 
+    // Creates a PropertiesCards instance.
     public PropertiesCards(PropertiesCardsType type) {
         this(type, type.name(), type.name().toLowerCase() + ".png");
     }
 
+    // Creates a PropertiesCards instance.
     public PropertiesCards(PropertiesCardsType type, String propertyName, String imageFileName) {
         this.type = type;
         this.propertyName = propertyName;
@@ -21,6 +23,7 @@ public class PropertiesCards extends Card {
         this.hasHotel = false;
     }
 
+    // Finds default color.
     private PropertyColor getDefaultColor(PropertiesCardsType type) {
         if (type.getColors().size() == 1) {
             return type.getColors().get(0);
@@ -33,19 +36,9 @@ public class PropertiesCards extends Card {
         return type;
     }
 
+    // Finds short color name.
     public static String getShortColorName(PropertyColor color) {
-        return switch (color) {
-            case DARK_BLUE -> "D.BLUE";
-            case ORANGE -> "ORANGE";
-            case BLACK -> "BLACK";
-            case RED -> "RED";
-            case DARK_GREEN -> "D.GREEN";
-            case BROWN -> "BROWN";
-            case PINK -> "PINK";
-            case LIGHT_BLUE -> "L.BLUE";
-            case LIGHT_GREEN -> "L.GREEN";
-            case YELLOW -> "YELLOW";
-        };
+        return color.getShortName();
     }
 
     public String getImageFileName() {
@@ -60,15 +53,18 @@ public class PropertiesCards extends Card {
         this.currentColor = currentColor;
     }
 
+    // Finds value.
     @Override
     public int getValue() {
         return type.getValue();
     }
 
+    // Checks whether wild card.
     public boolean isWildCard() {
         return type.getColors().size() > 1;
     }
 
+    // Checks whether this has house.
     public boolean hasHouse() {
         return hasHouse;
     }
@@ -77,6 +73,7 @@ public class PropertiesCards extends Card {
         this.hasHouse = hasHouse;
     }
 
+    // Checks whether this has hotel.
     public boolean hasHotel() {
         return hasHotel;
     }

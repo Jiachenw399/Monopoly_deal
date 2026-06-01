@@ -6,6 +6,7 @@ public class NetworkMessage {
     private final String type;
     private final String body;
 
+    // Creates a NetworkMessage instance.
     public NetworkMessage(String type, String body) {
         this.type = type;
         this.body = body;
@@ -19,10 +20,12 @@ public class NetworkMessage {
         return body;
     }
 
+    // Runs encode.
     public String encode() {
         return type + SEPARATOR + body;
     }
 
+    // Runs decode.
     public static NetworkMessage decode(String rawMessage) {
         if (rawMessage == null || rawMessage.isBlank()) {
             return new NetworkMessage("EMPTY", "");

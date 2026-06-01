@@ -85,6 +85,7 @@ public class PaymentSelectionPanel {
         }
     }
 
+    // Runs rebuild bank payment cards.
     private void rebuildBankPaymentCards(Game.PaymentRequest request) {
         bankPaymentCards.clear();
 
@@ -464,6 +465,7 @@ public class PaymentSelectionPanel {
         }
     }
 
+    // Removes blocked property selections.
     private void removeBlockedPropertySelections(Player payer) {
         selectedCards.removeIf(card -> card instanceof PropertiesCards propertyCard
                 && isPropertyBlockedByUnpaidBuildings(payer, propertyCard));
@@ -478,6 +480,7 @@ public class PaymentSelectionPanel {
         return handlePropertyPageButtonClick(mouseX, mouseY, payer);
     }
 
+    // Handles bank page button click.
     private boolean handleBankPageButtonClick(double mouseX, double mouseY, Player payer) {
         int maxPage = ScreenDrawHelper.getMaxPage(bankPaymentCards.size(), cardsPerPage);
 
@@ -500,6 +503,7 @@ public class PaymentSelectionPanel {
         return false;
     }
 
+    // Handles property page button click.
     private boolean handlePropertyPageButtonClick(double mouseX, double mouseY, Player payer) {
         int maxPage = ScreenDrawHelper.getMaxPage(payer.getPropertyCards().size(), cardsPerPage);
 
@@ -570,16 +574,19 @@ public class PaymentSelectionPanel {
         return null;
     }
 
+    // Finds building text.
     private String getBuildingText(BuildingPaymentCard buildingCard) {
         return ScreenDrawHelper.getDisplayColorName(buildingCard.getColor()) + " " + buildingCard.getValue() + "M";
     }
 
+    // Checks whether house blocked by unpaid hotel.
     private boolean isHouseBlockedByUnpaidHotel(Player payer, BuildingPaymentCard buildingCard) {
         return buildingCard.getActionCardType() == ActionCardType.HOUSE
                 && PlayerInfoHelper.hasHotel(payer, buildingCard.getColor())
                 && !hasSelectedBuilding(buildingCard.getColor(), ActionCardType.HOTEL);
     }
 
+    // Checks whether property blocked by unpaid buildings.
     private boolean isPropertyBlockedByUnpaidBuildings(Player payer, PropertiesCards propertyCard) {
         PropertyColor color = propertyCard.getCurrentColor();
         if (color == null) {
@@ -595,6 +602,7 @@ public class PaymentSelectionPanel {
                 && !hasSelectedBuilding(color, ActionCardType.HOUSE);
     }
 
+    // Checks whether this has selected building.
     private boolean hasSelectedBuilding(PropertyColor color, ActionCardType type) {
         for (Card card : selectedCards) {
             if (card instanceof BuildingPaymentCard buildingCard

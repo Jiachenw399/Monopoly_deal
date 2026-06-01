@@ -13,6 +13,7 @@ public class MonopolyApp extends Application {
     private RuleScreen ruleScreen;
     private MusicPlayer musicPlayer;
 
+    // Starts this operation.
     @Override
     public void start(Stage primaryStage) {
         initializeScreens();
@@ -27,6 +28,7 @@ public class MonopolyApp extends Application {
         root.requestFocus();
     }
 
+    // Initializes screens.
     private void initializeScreens() {
         musicPlayer = new MusicPlayer();
         musicPlayer.play();
@@ -35,6 +37,7 @@ public class MonopolyApp extends Application {
         ruleScreen = new RuleScreen();
     }
 
+    // Creates root.
     private Group createRoot() {
         Group root = new Group();
 
@@ -47,6 +50,7 @@ public class MonopolyApp extends Application {
         return root;
     }
 
+    // Registers listeners.
     private void registerListeners(Scene scene) {
         MenuListener menuListener = new MenuListener(
                 menu,
@@ -61,6 +65,7 @@ public class MonopolyApp extends Application {
         gameListener.addListener(scene);
     }
 
+    // Runs setup stage.
     private void setupStage(Stage primaryStage, Scene scene) {
         primaryStage.setScene(scene);
         primaryStage.setTitle("Monopoly Deal");
@@ -69,6 +74,7 @@ public class MonopolyApp extends Application {
         primaryStage.show();
     }
 
+    // Starts render loop.
     private void startRenderLoop() {
         GameScreen gameScreen = session.getGameScreen();
         new AnimationTimer() {
@@ -81,18 +87,22 @@ public class MonopolyApp extends Application {
         }.start();
     }
 
+    // Renders menu.
     private void renderMenu() {
         renderCanvas(menu.isShow(), menu.getCanvas(), menu::paint, menu::clear);
     }
 
+    // Renders game screen.
     private void renderGameScreen(GameScreen gameScreen) {
         renderCanvas(gameScreen.isShow(), gameScreen.getCanvas(), gameScreen::paint, gameScreen::clear);
     }
 
+    // Renders rule screen.
     private void renderRuleScreen() {
         renderCanvas(ruleScreen.isShow(), ruleScreen.getCanvas(), ruleScreen::paint, ruleScreen::clear);
     }
 
+    // Renders canvas.
     private void renderCanvas(boolean shouldShow, Canvas canvas, Runnable paintAction, Runnable clearAction) {
         if (shouldShow) {
             paintAction.run();

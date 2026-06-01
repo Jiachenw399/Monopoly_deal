@@ -12,16 +12,19 @@ public class TurnManager {
     private int currentPlayerIndex;
     private boolean isDiscard;
 
+    // Creates a TurnManager instance.
     public TurnManager(ArrayList<Player> players, DrawPileAndDiscardPile drawCards) {
         this.players = players;
         this.currentPlayerIndex = 0;
         this.isDiscard = false;
     }
 
+    // Starts first turn.
     public void startFirstTurn() {
         startTurn(getCurrentPlayer());
     }
 
+    // Starts turn.
     public void startTurn(Player currentPlayer) {
         currentPlayer.setUseCardTimes(0);
 
@@ -29,6 +32,7 @@ public class TurnManager {
         currentPlayer.takeCard(drawNumber);
     }
 
+    // Runs end turn.
     public void endTurn() {
         Player currentPlayer = getCurrentPlayer();
 
@@ -40,6 +44,7 @@ public class TurnManager {
         moveToNextPlayer();
     }
 
+    // Forces advance turn for absent player.
     public void forceAdvanceTurnForAbsentPlayer() {
         Player currentPlayer = getCurrentPlayer();
 
@@ -53,6 +58,7 @@ public class TurnManager {
         moveToNextPlayer();
     }
 
+    // Discards this operation.
     public boolean discard(Card card) {
         Player currentPlayer = getCurrentPlayer();
 
@@ -70,6 +76,7 @@ public class TurnManager {
         return true;
     }
 
+    // Finds current player.
     public Player getCurrentPlayer() {
         return players.get(currentPlayerIndex);
     }
@@ -82,6 +89,7 @@ public class TurnManager {
         return isDiscard;
     }
 
+    // Applies online state.
     public void applyOnlineState(int currentPlayerIndex, boolean isDiscard) {
         if (players.isEmpty()) {
             this.currentPlayerIndex = 0;
@@ -96,6 +104,7 @@ public class TurnManager {
         this.isDiscard = isDiscard;
     }
 
+    // Finds draw number at turn start.
     private int getDrawNumberAtTurnStart(Player player) {
         if (player.getHandCards().isEmpty()) {
             return 5;
@@ -104,12 +113,14 @@ public class TurnManager {
         return 2;
     }
 
+    // Checks whether this can discard.
     private boolean canDiscard(Player currentPlayer, Card card) {
         return isDiscard
                 && card != null
                 && currentPlayer.getHandCards().contains(card);
     }
 
+    // Moves to next player.
     private void moveToNextPlayer() {
         Player currentPlayer = getCurrentPlayer();
         currentPlayer.setUseCardTimes(0);

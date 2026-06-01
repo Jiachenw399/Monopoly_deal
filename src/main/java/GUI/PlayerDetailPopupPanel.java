@@ -123,21 +123,25 @@ public class PlayerDetailPopupPanel {
         return false;
     }
 
+    // Checks whether bank prev clicked.
     private boolean isBankPrevClicked(double mouseX, double mouseY) {
         return ScreenDrawHelper.isInside(mouseX, mouseY, bankPrevX, bankButtonY,
                 pageButtonWidth, pageButtonHeight);
     }
 
+    // Checks whether bank next clicked.
     private boolean isBankNextClicked(double mouseX, double mouseY) {
         return ScreenDrawHelper.isInside(mouseX, mouseY, bankNextX, bankButtonY,
                 pageButtonWidth, pageButtonHeight);
     }
 
+    // Checks whether property prev clicked.
     private boolean isPropertyPrevClicked(double mouseX, double mouseY) {
         return ScreenDrawHelper.isInside(mouseX, mouseY, propertyPrevX, propertyButtonY,
                 pageButtonWidth, pageButtonHeight);
     }
 
+    // Checks whether property next clicked.
     private boolean isPropertyNextClicked(double mouseX, double mouseY) {
         return ScreenDrawHelper.isInside(mouseX, mouseY, propertyNextX, propertyButtonY,
                 pageButtonWidth, pageButtonHeight);
@@ -444,6 +448,7 @@ public class PlayerDetailPopupPanel {
         return Color.WHITE;
     }
 
+    // Draws color summary.
     private void drawColorSummary(GraphicsContext gc, Player player) {
         double panelX = popupX + 620;
         double panelY = popupY + 100;
@@ -489,6 +494,7 @@ public class PlayerDetailPopupPanel {
         gc.setTextBaseline(VPos.TOP);
     }
 
+    // Finds property dot color.
     private Color getPropertyDotColor(PropertyColor color) {
         return switch (color) {
             case DARK_BLUE -> Color.rgb(25, 76, 140);
@@ -504,18 +510,8 @@ public class PlayerDetailPopupPanel {
         };
     }
 
+    // Finds short color name.
     private String getShortColorName(PropertyColor color) {
-        return switch (color) {
-            case DARK_BLUE -> "Dark Blue";
-            case ORANGE -> "Orange";
-            case BLACK -> "Black";
-            case RED -> "Red";
-            case DARK_GREEN -> "Dark Green";
-            case BROWN -> "Brown";
-            case PINK -> "Pink";
-            case LIGHT_BLUE -> "Light Blue";
-            case LIGHT_GREEN -> "Light Green";
-            case YELLOW -> "Yellow";
-        };
+        return ScreenDrawHelper.getDisplayColorName(color);
     }
 }
