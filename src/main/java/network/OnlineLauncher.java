@@ -47,7 +47,7 @@ public final class OnlineLauncher {
         if ("Host".equals(result.get())) {
             startHostServerIfNeeded();
             showHostInfo(owner);
-            openClient(owner, "127.0.0.1", musicPlayer);
+            promptPlayerName(owner).ifPresent(playerName -> openClient(owner, "127.0.0.1", playerName, musicPlayer));
         } else {
             promptJoin(owner, musicPlayer);
         }
@@ -95,12 +95,12 @@ public final class OnlineLauncher {
     }
 
     // Opens client.
-    private static void openClient(Stage owner, String host, MusicPlayer musicPlayer) {
+    private static void openClient(Stage owner, String host, String playerName, MusicPlayer musicPlayer) {
         if (showActiveWindowIfPresent()) {
             return;
         }
 
-        OnlinePlayWindow window = new OnlinePlayWindow(owner, host, musicPlayer);
+        OnlinePlayWindow window = new OnlinePlayWindow(owner, host, playerName, musicPlayer);
         activeWindow = window;
         window.setOnHidden(event -> {
             if (activeWindow == window) {
@@ -128,7 +128,40 @@ public final class OnlineLauncher {
             return;
         }
 
-        openClient(owner, host, musicPlayer);
+        promptPlayerName(owner).ifPresent(playerName -> openClient(owner, host, playerName, musicPlayer));
+    }
+
+    // Prompts player name before joining the online lobby.
+    private static Optional<String> promptPlayerName(Stage owner) {
+        TextInputDialog dialog = new TextInputDialog("Player");
+        dialog.initOwner(owner);
+        dialog.setTitle("Player name");
+        dialog.setHeaderText("Enter the name shown in the lobby before the game starts.");
+        dialog.setContentText("Name:");
+
+        Optional<String> result = dialog.showAndWait();
+        if (result.isEmpty()) {
+            return Optional.empty();
+        }
+
+        String name = sanitizePlayerName(result.get());
+        if (name.isEmpty()) {
+            name = "Player";
+        }
+
+        return Optional.of(name);
+    }
+
+    // Sanitizes player name for the simple text network protocol.
+    private static String sanitizePlayerName(String name) {
+        return name == null
+                ? ""
+                : name.trim()
+                .replace("|", "")
+                .replace(",", "")
+                .replace(";", "")
+                .replace("[", "")
+                .replace("]", "");
     }
 
     // Runs format lan addresses.

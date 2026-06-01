@@ -131,7 +131,7 @@ public class GameServer {
                 builder.append(",");
             }
 
-            builder.append("PLAYER ").append(clients.get(i).getPlayerId());
+            builder.append(clients.get(i).getPlayerName());
         }
 
         return builder.toString();
@@ -795,17 +795,24 @@ public class GameServer {
         private final Socket socket;
         private final int playerId;
         private final Map<String, Consumer<NetworkMessage>> messageHandlers;
+        private String playerName;
+        private boolean nameAnnounced;
         private PrintWriter out;
 
         // Runs client handler.
         private ClientHandler(Socket socket, int playerId) {
             this.socket = socket;
             this.playerId = playerId;
+            this.playerName = "Player";
             this.messageHandlers = createMessageHandlers();
         }
 
         public int getPlayerId() {
             return playerId;
+        }
+
+        public String getPlayerName() {
+            return playerName;
         }
 
         // Runs run.
@@ -818,8 +825,6 @@ public class GameServer {
             ) {
                 out = writer;
                 send(new NetworkMessage("WELCOME", "PLAYER " + playerId).encode());
-                broadcast(new NetworkMessage("BROADCAST", "Player " + playerId + " joined the game"));
-                broadcast(new NetworkMessage("PLAYER_LIST", getPlayerListText()));
 
                 String line;
 
@@ -832,7 +837,7 @@ public class GameServer {
                 System.out.println("Connection error for Player " + playerId + ": " + e.getMessage());
             } finally {
                 removeClient(this);
-                broadcast(new NetworkMessage("BROADCAST", "Player " + playerId + " left the game"));
+                broadcast(new NetworkMessage("BROADCAST", playerName + " left the game"));
                 broadcast(new NetworkMessage("PLAYER_LIST", getPlayerListText()));
             }
         }
@@ -853,7 +858,8 @@ public class GameServer {
         // Creates message handlers.
         private Map<String, Consumer<NetworkMessage>> createMessageHandlers() {
             Map<String, Consumer<NetworkMessage>> handlers = new HashMap<>();
-            handlers.put("HELLO", message -> broadcast(new NetworkMessage("BROADCAST", "Player " + playerId + " says hello")));
+            handlers.put("HELLO", message -> broadcast(new NetworkMessage("BROADCAST", playerName + " says hello")));
+            handlers.put("NAME", message -> updatePlayerName(message.getBody()));
             handlers.put("PLAYERS", message -> send(new NetworkMessage("PLAYER_LIST", getPlayerListText()).encode()));
             handlers.put("STATE", message -> sendGameStateTo(this));
             handlers.put("START_GAME", message -> startGameIfReady());
@@ -865,6 +871,26 @@ public class GameServer {
             handlers.put("SET_PROPERTY_COLOR", message -> setPropertyColorIfValid(this, message.getBody()));
             handlers.put("END_TURN", message -> endTurnIfGameStarted(this));
             return handlers;
+        }
+
+        // Updates player name before the game starts.
+        private void updatePlayerName(String requestedName) {
+            synchronized (GameServer.this) {
+                if (gameStarted) {
+                    send(new NetworkMessage("SERVER", "Name cannot be changed after game starts").encode());
+                    return;
+                }
+
+                playerName = sanitizePlayerName(requestedName, playerId);
+            }
+
+            if (!nameAnnounced) {
+                nameAnnounced = true;
+                broadcast(new NetworkMessage("BROADCAST", playerName + " joined the game"));
+            } else {
+                broadcast(new NetworkMessage("BROADCAST", playerName + " updated name"));
+            }
+            broadcast(new NetworkMessage("PLAYER_LIST", getPlayerListText()));
         }
 
         // Starts game if ready.
@@ -889,6 +915,24 @@ public class GameServer {
                 out.println(encodedMessage);
             }
         }
+    }
+
+    // Sanitizes player name for the simple text network protocol.
+    private static String sanitizePlayerName(String requestedName, int playerId) {
+        String sanitized = requestedName == null
+                ? ""
+                : requestedName.trim()
+                .replace("|", "")
+                .replace(",", "")
+                .replace(";", "")
+                .replace("[", "")
+                .replace("]", "");
+
+        if (sanitized.isEmpty()) {
+            sanitized = "Player";
+        }
+
+        return sanitized.length() > 16 ? sanitized.substring(0, 16) : sanitized;
     }
 
     @FunctionalInterface

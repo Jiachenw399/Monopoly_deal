@@ -36,6 +36,8 @@ public class GameClient {
                 Scanner scanner = new Scanner(System.in)
         ) {
             System.out.println("Connected to server: " + host + ":" + PORT);
+            System.out.print("Enter your player name: ");
+            out.println(new NetworkMessage("NAME", sanitizePlayerName(scanner.nextLine())).encode());
             startServerListener(in);
             System.out.println("Type HELP for commands, or QUIT.");
 
@@ -66,6 +68,19 @@ public class GameClient {
         String body = parts.length > 1 ? parts[1].trim() : "";
 
         return new NetworkMessage(type, body);
+    }
+
+    private String sanitizePlayerName(String name) {
+        String sanitized = name == null
+                ? ""
+                : name.trim()
+                .replace("|", "")
+                .replace(",", "")
+                .replace(";", "")
+                .replace("[", "")
+                .replace("]", "");
+
+        return sanitized.isEmpty() ? "Player" : sanitized;
     }
 
     // Starts server listener.

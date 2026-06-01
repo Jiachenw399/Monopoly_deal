@@ -32,6 +32,7 @@ public class OnlinePlayWindow extends Stage {
     private static final int PORT = 5555;
 
     private final String host;
+    private final String playerName;
     private final GameSession session;
     private final OnlineGameClickActions clickActions;
     private final GameClickHandler clickHandler;
@@ -44,10 +45,12 @@ public class OnlinePlayWindow extends Stage {
     private boolean started;
     private int myPlayerId;
     private String connectionText = "Connecting...";
+    private String playerListText = "Waiting for players...";
 
     // Creates a OnlinePlayWindow instance.
-    public OnlinePlayWindow(Stage owner, String host, MusicPlayer musicPlayer) {
+    public OnlinePlayWindow(Stage owner, String host, String playerName, MusicPlayer musicPlayer) {
         this.host = host;
+        this.playerName = sanitizePlayerName(playerName);
         this.session = new GameSession(new Game(), musicPlayer);
         initOwner(owner);
         setTitle("LAN Game - " + host + ":" + PORT);
@@ -109,11 +112,14 @@ public class OnlinePlayWindow extends Stage {
         gc.setFill(ScreenDrawHelper.TEXT);
         gc.setFont(Font.font("Arial", 18));
         gc.fillText(connectionText + "  " + host + ":" + PORT, Game.SCREEN_WIDTH / 2, 235);
-        gc.fillText(myPlayerId > 0 ? "You are Player " + myPlayerId : "Waiting for player id",
+        gc.fillText(myPlayerId > 0 ? "You are " + playerName : "Waiting for server",
                 Game.SCREEN_WIDTH / 2, 270);
 
-        ScreenDrawHelper.drawButton(gc, 390, 320, 255, 48, "Start Game");
-        ScreenDrawHelper.drawButton(gc, 390, 390, 255, 48, "Refresh Players");
+        gc.setFont(Font.font("Arial", 16));
+        gc.fillText("Players: " + playerListText, Game.SCREEN_WIDTH / 2, 300);
+
+        ScreenDrawHelper.drawButton(gc, 390, 340, 255, 48, "Start Game");
+        ScreenDrawHelper.drawButton(gc, 390, 410, 255, 48, "Refresh Players");
 
         gc.setFill(ScreenDrawHelper.MUTED_TEXT);
         gc.setFont(Font.font("Arial", 13));
@@ -128,9 +134,9 @@ public class OnlinePlayWindow extends Stage {
     // Handles mouse click.
     private void handleMouseClick(double x, double y) {
         if (!started) {
-            if (isRect(x, y, 390, 320, 255, 48)) {
+            if (isRect(x, y, 390, 340, 255, 48)) {
                 send("START_GAME", "");
-            } else if (isRect(x, y, 390, 390, 255, 48)) {
+            } else if (isRect(x, y, 390, 410, 255, 48)) {
                 send("PLAYERS", "");
             }
             return;
@@ -159,6 +165,7 @@ public class OnlinePlayWindow extends Stage {
             Platform.runLater(() -> {
                 connectionText = "Connected";
                 appendLog("Connected.");
+                send("NAME", playerName);
                 send("PLAYERS", "");
             });
             String line;
@@ -185,6 +192,7 @@ public class OnlinePlayWindow extends Stage {
                 clickActions.setMyPlayerId(myPlayerId);
             }
             case "FULL" -> connectionText = "Rejected";
+            case "PLAYER_LIST" -> playerListText = message.getBody();
             case "GAME_STARTED" -> send("STATE", "");
             case "GAME_STATE" -> {
                 try {
@@ -244,5 +252,23 @@ public class OnlinePlayWindow extends Stage {
         } catch (NumberFormatException | NullPointerException e) {
             return 0;
         }
+    }
+
+    // Sanitizes player name for display and the simple text network protocol.
+    private static String sanitizePlayerName(String name) {
+        String sanitized = name == null
+                ? ""
+                : name.trim()
+                .replace("|", "")
+                .replace(",", "")
+                .replace(";", "")
+                .replace("[", "")
+                .replace("]", "");
+
+        if (sanitized.isEmpty()) {
+            return "Player";
+        }
+
+        return sanitized.length() > 16 ? sanitized.substring(0, 16) : sanitized;
     }
 }
