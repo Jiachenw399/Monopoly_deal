@@ -20,6 +20,10 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 
@@ -27,10 +31,14 @@ public class GameServer {
     private static final int PORT = 5555;
     private static final int MIN_PLAYERS = 2;
     private static final int MAX_PLAYERS = 4;
+    private static final int TURN_SECONDS = 120;
 
     private final AtomicInteger nextPlayerId = new AtomicInteger(1);
     private final List<ClientHandler> clients = new ArrayList<>();
     private final Map<String, ActionCommand> actionCommands = createActionCommands();
+    private final ScheduledExecutorService turnTimer = Executors.newSingleThreadScheduledExecutor();
+    private ScheduledFuture<?> turnTimeoutTask;
+    private long turnDeadlineMillis = -1;
     private boolean gameStarted = false;
     private Game game;
 
@@ -110,6 +118,7 @@ public class GameServer {
         }
 
         game.forceAdvanceTurnForAbsentPlayer();
+        restartTurnTimer();
         broadcast(new NetworkMessage(
                 "BROADCAST",
                 "Player " + disconnectedPlayerId + " left; turn advanced to Player " + (game.getCurrentPlayerIndex() + 1)
@@ -161,6 +170,7 @@ public class GameServer {
         gameStarted = true;
         game = new Game(clients.size());
         game.startGame();
+        restartTurnTimer();
         return true;
     }
 
@@ -176,6 +186,7 @@ public class GameServer {
         }
 
         game.guiEndTurn();
+        restartTurnTimer();
         sendGameStateToAll();
     }
 
@@ -186,7 +197,11 @@ public class GameServer {
             return;
         }
 
-        client.send(new NetworkMessage("GAME_STATE", GameStateCodec.encode(game, client.getPlayerId())).encode());
+        cancelTurnTimerIfGameWon();
+        client.send(new NetworkMessage(
+                "GAME_STATE",
+                GameStateCodec.encode(game, client.getPlayerId(), getTurnRemainingSeconds())
+        ).encode());
     }
 
     // Plays card if valid.
@@ -283,12 +298,14 @@ public class GameServer {
 
         Card selectedCard = player.getHandCards().get(cardIndex);
         String selectedCardText = cardToText(selectedCard);
+        int currentPlayerIndexBeforeDiscard = game.getCurrentPlayerIndex();
 
         if (!game.discard(selectedCard)) {
             requester.send(new NetworkMessage("SERVER", "Could not discard " + selectedCardText).encode());
             return;
         }
 
+        restartTurnTimerIfTurnChanged(currentPlayerIndexBeforeDiscard);
         broadcast(new NetworkMessage("BROADCAST", "Player " + requester.getPlayerId() + " discarded " + selectedCardText));
         sendGameStateToAll();
     }
@@ -365,8 +382,7 @@ public class GameServer {
 
     // Runs set property color if valid.
     private synchronized void setPropertyColorIfValid(ClientHandler requester, String body) {
-        if (!isGameStarted()) {
-            requester.send(new NetworkMessage("SERVER", "Game has not started yet").encode());
+        if (!requireGameStarted(requester) || !requireCurrentTurn(requester)) {
             return;
         }
 
@@ -755,15 +771,93 @@ public class GameServer {
         return card.getActionCardType().isTwoColorRentCard();
     }
 
+    // Restarts the timer when an action advances to another player.
+    private synchronized void restartTurnTimerIfTurnChanged(int previousPlayerIndex) {
+        if (isGameStarted() && game.getCurrentPlayerIndex() != previousPlayerIndex) {
+            restartTurnTimer();
+        }
+    }
+
     // Sends game state to all.
     private synchronized void sendGameStateToAll() {
         if (game == null) {
             return;
         }
 
+        cancelTurnTimerIfGameWon();
         for (ClientHandler client : clients) {
-            client.send(new NetworkMessage("GAME_STATE", GameStateCodec.encode(game, client.getPlayerId())).encode());
+            client.send(new NetworkMessage(
+                    "GAME_STATE",
+                    GameStateCodec.encode(game, client.getPlayerId(), getTurnRemainingSeconds())
+            ).encode());
         }
+    }
+
+    // Restarts the authoritative server-side turn timer.
+    private synchronized void restartTurnTimer() {
+        cancelTurnTimer();
+
+        if (!isGameStarted() || game.isWin()) {
+            turnDeadlineMillis = -1;
+            return;
+        }
+
+        int timedPlayerIndex = game.getCurrentPlayerIndex();
+        turnDeadlineMillis = System.currentTimeMillis() + TURN_SECONDS * 1000L;
+        turnTimeoutTask = turnTimer.schedule(
+                () -> handleTurnTimeout(timedPlayerIndex),
+                TURN_SECONDS,
+                TimeUnit.SECONDS
+        );
+    }
+
+    // Cancels the current turn timer task.
+    private synchronized void cancelTurnTimer() {
+        if (turnTimeoutTask != null) {
+            turnTimeoutTask.cancel(false);
+            turnTimeoutTask = null;
+        }
+    }
+
+    // Cancels the timer once the game has already been won.
+    private synchronized void cancelTurnTimerIfGameWon() {
+        if (isGameStarted() && game.isWin()) {
+            cancelTurnTimer();
+            turnDeadlineMillis = -1;
+        }
+    }
+
+    // Handles a timed-out turn and advances the game when the same player is still active.
+    private synchronized void handleTurnTimeout(int timedPlayerIndex) {
+        if (!isGameStarted() || game.isWin() || game.getCurrentPlayerIndex() != timedPlayerIndex) {
+            return;
+        }
+
+        if (game.isPaymentSelecting()) {
+            restartTurnTimer();
+            sendGameStateToAll();
+            return;
+        }
+
+        int timedOutPlayerId = timedPlayerIndex + 1;
+        game.forceAdvanceTurnForAbsentPlayer();
+        restartTurnTimer();
+        broadcast(new NetworkMessage(
+                "BROADCAST",
+                "Player " + timedOutPlayerId + " timed out; turn advanced to Player "
+                        + (game.getCurrentPlayerIndex() + 1)
+        ));
+        sendGameStateToAll();
+    }
+
+    // Finds the remaining seconds for the current turn timer.
+    private synchronized int getTurnRemainingSeconds() {
+        if (turnDeadlineMillis < 0) {
+            return -1;
+        }
+
+        long remainingMillis = turnDeadlineMillis - System.currentTimeMillis();
+        return (int) Math.max(0, (remainingMillis + 999) / 1000);
     }
 
     // Runs card to text.
