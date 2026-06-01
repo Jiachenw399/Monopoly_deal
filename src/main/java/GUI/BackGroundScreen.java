@@ -27,6 +27,7 @@ public class BackGroundScreen {
     private int bankPageIndex = 0;
     private int propertyPageIndex = 0;
     private int lastPlayerIndex = -1;
+    private boolean endTurnEnabled = true;
 
     private final int cardsPerPage = 8;
 
@@ -44,6 +45,11 @@ public class BackGroundScreen {
     // Creates a BackGroundScreen instance.
     public BackGroundScreen(Game game) {
         this.game = game;
+    }
+
+    // Sets whether the End Turn button can be used.
+    public void setEndTurnEnabled(boolean endTurnEnabled) {
+        this.endTurnEnabled = endTurnEnabled;
     }
 
     // Draws all background.
@@ -425,7 +431,17 @@ public class BackGroundScreen {
     private void drawButtons(Canvas canvas) {
         GraphicsContext gc = canvas.getGraphicsContext2D();
 
-        ScreenDrawHelper.drawButton(gc, 820, 520, 170, 40, "End Turn");
+        if (endTurnEnabled) {
+            ScreenDrawHelper.drawButton(gc, 820, 520, 170, 40, "End Turn");
+        } else {
+            ScreenDrawHelper.drawDisabledButton(gc, 820, 520, 170, 40, "End Turn");
+            gc.setFill(ScreenDrawHelper.MUTED_TEXT);
+            gc.setFont(Font.font("Arial", 12));
+            gc.setTextAlign(TextAlignment.CENTER);
+            gc.setTextBaseline(VPos.TOP);
+            gc.fillText("Waiting for your turn", 905, 505);
+        }
+
         ScreenDrawHelper.drawButton(gc, 820, 570, 170, 40, "Back Menu");
     }
 

@@ -201,6 +201,7 @@ public class OnlinePlayWindow extends Stage {
                     clickActions.setMyPlayerId(myPlayerId);
                     session.applyOnlineSnapshot(snapshot);
                     session.getGameScreen().lockViewedPlayer(myPlayerId - 1);
+                    session.getGameScreen().setEndTurnEnabled(snapshot.currentPlayerIndex + 1 == myPlayerId);
                     started = true;
                 } catch (RuntimeException e) {
                     connectionText = "State error";
