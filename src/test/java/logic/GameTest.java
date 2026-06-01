@@ -75,6 +75,19 @@ public class GameTest {
     }
 
     @Test
+    public void testGameAllowsFivePlayers() {
+        Game game = new Game(5);
+
+        assertEquals(5, game.getPlayers().size());
+    }
+
+    @Test
+    public void testGameClampsPlayerCountToRulesRange() {
+        assertEquals(2, new Game(1).getPlayers().size());
+        assertEquals(5, new Game(6).getPlayers().size());
+    }
+
+    @Test
     public void testChangingWildPropertyColorChecksWinImmediately() {
         Game game = new Game();
         game.startGame();

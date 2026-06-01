@@ -77,6 +77,8 @@ public class MenuListener {
         keys.put(KeyCode.NUMPAD3, 3);
         keys.put(KeyCode.DIGIT4, 4);
         keys.put(KeyCode.NUMPAD4, 4);
+        keys.put(KeyCode.DIGIT5, 5);
+        keys.put(KeyCode.NUMPAD5, 5);
         return keys;
     }
 

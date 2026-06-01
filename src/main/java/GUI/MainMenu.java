@@ -83,15 +83,16 @@ public class MainMenu {
 
         gc.setFill(ScreenDrawHelper.MUTED_TEXT);
         gc.setFont(new Font("Arial", 18));
-        gc.fillText("Press 2, 3, or 4 to start a local game.", Game.SCREEN_WIDTH / 2, 192);
+        gc.fillText("Press 2, 3, 4, or 5 to start a local game.", Game.SCREEN_WIDTH / 2, 192);
 
-        drawPlayerCountOption(gc, 285, 285, "2", "2 Players");
-        drawPlayerCountOption(gc, 440, 285, "3", "3 Players");
-        drawPlayerCountOption(gc, 595, 285, "4", "4 Players");
+        drawPlayerCountOption(gc, 285, 265, "2", "2 Players");
+        drawPlayerCountOption(gc, 440, 265, "3", "3 Players");
+        drawPlayerCountOption(gc, 285, 395, "4", "4 Players");
+        drawPlayerCountOption(gc, 440, 395, "5", "5 Players");
 
         gc.setFill(ScreenDrawHelper.MUTED_TEXT);
         gc.setFont(Font.font("Arial", 15));
-        gc.fillText("Esc returns to the main menu.", Game.SCREEN_WIDTH / 2, 442);
+        gc.fillText("Esc returns to the main menu.", Game.SCREEN_WIDTH / 2, 542);
     }
 
     // Draws player count option.
