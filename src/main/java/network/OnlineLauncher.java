@@ -89,7 +89,7 @@ public final class OnlineLauncher {
                 + "Detected IPv4 addresses:\n"
                 + ips
                 + "\n\n"
-                + "Click Start Game in the LAN window when at least two players are connected.");
+                + "Click Start Game in the LAN window when you are ready (solo or with others).");
         alert.getButtonTypes().setAll(ButtonType.OK);
         alert.showAndWait();
     }

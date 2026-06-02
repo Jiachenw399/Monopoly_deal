@@ -83,7 +83,7 @@ public class GameTest {
 
     @Test
     public void testGameClampsPlayerCountToRulesRange() {
-        assertEquals(2, new Game(1).getPlayers().size());
+        assertEquals(1, new Game(1).getPlayers().size());
         assertEquals(5, new Game(6).getPlayers().size());
     }
 
