@@ -82,13 +82,12 @@ public class SlyDealPanel {
         }
 
         if (detailTargetPlayer != null) {
-            return ScreenDrawHelper.isInside(mouseX, mouseY,
+            return ScreenDrawHelper.handleButtonClick(mouseX, mouseY,
                     detailCancelX, detailButtonY, detailButtonWidth, detailButtonHeight);
         }
 
         return isSelecting()
-                && mouseX >= 720 && mouseX <= 860
-                && mouseY >= 505 && mouseY <= 545;
+                && ScreenDrawHelper.handleButtonClick(mouseX, mouseY, 720, 505, 140, 40);
     }
 
     // Finds clicked choice.
@@ -420,7 +419,7 @@ public class SlyDealPanel {
         return isSelecting()
                 && selectedTargetPlayer != null
                 && detailTargetPlayer == null
-                && ScreenDrawHelper.isInside(mouseX, mouseY, prevX, pageY,
+                && ScreenDrawHelper.handleButtonClick(mouseX, mouseY, prevX, pageY,
                 pageButtonWidth, pageButtonHeight);
     }
 
@@ -429,7 +428,7 @@ public class SlyDealPanel {
         return isSelecting()
                 && selectedTargetPlayer != null
                 && detailTargetPlayer == null
-                && ScreenDrawHelper.isInside(mouseX, mouseY, nextX, pageY,
+                && ScreenDrawHelper.handleButtonClick(mouseX, mouseY, nextX, pageY,
                 pageButtonWidth, pageButtonHeight);
     }
 
@@ -513,14 +512,14 @@ public class SlyDealPanel {
     // Checks whether detail back clicked.
     public boolean isDetailBackClicked(double mouseX, double mouseY) {
         return detailTargetPlayer != null
-                && ScreenDrawHelper.isInside(mouseX, mouseY,
+                && ScreenDrawHelper.handleButtonClick(mouseX, mouseY,
                 detailBackX, detailButtonY, detailButtonWidth, detailButtonHeight);
     }
 
     // Checks whether detail confirm clicked.
     public boolean isDetailConfirmClicked(double mouseX, double mouseY) {
         return detailTargetPlayer != null
-                && ScreenDrawHelper.isInside(mouseX, mouseY,
+                && ScreenDrawHelper.handleButtonClick(mouseX, mouseY,
                 detailConfirmX, detailButtonY, detailButtonWidth, detailButtonHeight);
     }
 
@@ -534,6 +533,6 @@ public class SlyDealPanel {
         return isSelecting()
                 && selectedTargetPlayer != null
                 && detailTargetPlayer == null
-                && ScreenDrawHelper.isInside(mouseX, mouseY, 560, 505, 140, 40);
+                && ScreenDrawHelper.handleButtonClick(mouseX, mouseY, 560, 505, 140, 40);
     }
 }

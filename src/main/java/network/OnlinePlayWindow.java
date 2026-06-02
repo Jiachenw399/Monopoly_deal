@@ -135,9 +135,9 @@ public class OnlinePlayWindow extends Stage {
     // Handles mouse click.
     private void handleMouseClick(double x, double y) {
         if (!started) {
-            if (isRect(x, y, 390, 340, 255, 48)) {
+            if (ScreenDrawHelper.handleButtonClick(x, y, 390, 340, 255, 48)) {
                 send("START_GAME", "");
-            } else if (isRect(x, y, 390, 410, 255, 48)) {
+            } else if (ScreenDrawHelper.handleButtonClick(x, y, 390, 410, 255, 48)) {
                 send("PLAYERS", "");
             }
             return;
@@ -263,11 +263,6 @@ public class OnlinePlayWindow extends Stage {
         }
 
         lastMyTurn = myTurn;
-    }
-
-    // Checks whether rect.
-    private boolean isRect(double x, double y, double rx, double ry, double rw, double rh) {
-        return x >= rx && x <= rx + rw && y >= ry && y <= ry + rh;
     }
 
     // Sends this operation.

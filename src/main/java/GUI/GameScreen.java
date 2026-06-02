@@ -345,9 +345,8 @@ public class GameScreen implements GameObserver {
 
     // Checks whether end turn clicked.
     public boolean isEndTurnClicked(double mouseX, double mouseY) {
-        return mouseX >= 820 && mouseX <= 990
-                && mouseY >= 520 && mouseY <= 560
-                && isEndTurnEnabled();
+        return isEndTurnEnabled()
+                && ScreenDrawHelper.handleButtonClick(mouseX, mouseY, 820, 520, 170, 40);
     }
 
     // Checks whether End Turn can currently be used.
@@ -357,14 +356,13 @@ public class GameScreen implements GameObserver {
 
     // Checks whether back menu clicked.
     public boolean isBackMenuClicked(double mouseX, double mouseY) {
-        return mouseX >= 820 && mouseX <= 990 && mouseY >= 570 && mouseY <= 610;
+        return ScreenDrawHelper.handleButtonClick(mouseX, mouseY, 820, 570, 170, 40);
     }
 
     // Checks whether mute clicked.
     public boolean isMuteClicked(double mouseX, double mouseY) {
         return musicPlayer != null
-                && mouseX >= 895 && mouseX <= 1015
-                && mouseY >= 20 && mouseY <= 56;
+                && ScreenDrawHelper.handleButtonClick(mouseX, mouseY, 895, 20, 120, 36);
     }
 
     // Toggles mute.

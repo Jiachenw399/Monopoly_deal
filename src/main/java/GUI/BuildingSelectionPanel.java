@@ -51,8 +51,7 @@ public class BuildingSelectionPanel {
     // Checks whether cancel clicked.
     public boolean isCancelClicked(double mouseX, double mouseY) {
         return isSelecting()
-                && mouseX >= 720 && mouseX <= 860
-                && mouseY >= 505 && mouseY <= 545;
+                && ScreenDrawHelper.handleButtonClick(mouseX, mouseY, 720, 505, 140, 40);
     }
 
     // Finds clicked color.
@@ -75,7 +74,7 @@ public class BuildingSelectionPanel {
             double x = panelX + col * (buttonWidth + buttonGapX);
             double y = panelY + 100 + row * (buttonHeight + buttonGapY);
 
-            if (ScreenDrawHelper.isInside(mouseX, mouseY, x, y, buttonWidth, buttonHeight)) {
+            if (ScreenDrawHelper.handleButtonClick(mouseX, mouseY, x, y, buttonWidth, buttonHeight)) {
                 return color;
             }
 
@@ -135,6 +134,13 @@ public class BuildingSelectionPanel {
 
             double x = panelX + col * (buttonWidth + buttonGapX);
             double y = panelY + 100 + row * (buttonHeight + buttonGapY);
+
+            if (ScreenDrawHelper.isButtonPressed(x, y, buttonWidth, buttonHeight)) {
+                ScreenDrawHelper.drawPressedButton(gc, x, y, buttonWidth, buttonHeight,
+                        ScreenDrawHelper.getDisplayColorName(color));
+                displayIndex++;
+                continue;
+            }
 
             gc.setFill(Color.LIGHTGREEN);
             gc.fillRoundRect(x, y, buttonWidth, buttonHeight, 12, 12);

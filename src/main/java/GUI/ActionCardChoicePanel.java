@@ -54,21 +54,21 @@ public class ActionCardChoicePanel {
     // Checks whether money clicked.
     public boolean isMoneyClicked(double mouseX, double mouseY) {
         return isShowing()
-                && ScreenDrawHelper.isInside(mouseX, mouseY,
+                && ScreenDrawHelper.handleButtonClick(mouseX, mouseY,
                 moneyButtonX, moneyButtonY, moneyButtonWidth, moneyButtonHeight);
     }
 
     // Checks whether action clicked.
     public boolean isActionClicked(double mouseX, double mouseY) {
         return isShowing()
-                && ScreenDrawHelper.isInside(mouseX, mouseY,
+                && ScreenDrawHelper.handleButtonClick(mouseX, mouseY,
                 actionButtonX, actionButtonY, actionButtonWidth, actionButtonHeight);
     }
 
     // Checks whether cancel clicked.
     public boolean isCancelClicked(double mouseX, double mouseY) {
         return isShowing()
-                && ScreenDrawHelper.isInside(mouseX, mouseY,
+                && ScreenDrawHelper.handleButtonClick(mouseX, mouseY,
                 cancelButtonX, cancelButtonY, cancelButtonWidth, cancelButtonHeight);
     }
 
@@ -141,6 +141,11 @@ public class ActionCardChoicePanel {
 
     // Draws button can be used.
     private void drawButtonCanBeUsed(GraphicsContext gc, double x, double y, double width, double height, String text) {
+        if (ScreenDrawHelper.isButtonPressed(x, y, width, height)) {
+            ScreenDrawHelper.drawPressedButton(gc, x, y, width, height, text);
+            return;
+        }
+
         gc.setFill(Color.rgb(255, 184, 77));
         gc.fillRoundRect(x, y, width, height, 12, 12);
 
@@ -171,6 +176,11 @@ public class ActionCardChoicePanel {
 
     // Draws cancel button.
     private void drawCancelButton(GraphicsContext gc) {
+        if (ScreenDrawHelper.isButtonPressed(cancelButtonX, cancelButtonY, cancelButtonWidth, cancelButtonHeight)) {
+            ScreenDrawHelper.drawPressedButton(gc, cancelButtonX, cancelButtonY, cancelButtonWidth, cancelButtonHeight, "Cancel");
+            return;
+        }
+
         gc.setFill(Color.rgb(45, 55, 72));
         gc.fillRoundRect(cancelButtonX, cancelButtonY, cancelButtonWidth, cancelButtonHeight, 10, 10);
 

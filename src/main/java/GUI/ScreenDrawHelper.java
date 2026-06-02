@@ -20,6 +20,9 @@ public class ScreenDrawHelper {
     public static final Color SUCCESS = Color.rgb(99, 230, 156);
     public static final Color WARNING = Color.rgb(255, 210, 93);
     public static final Color DANGER = Color.rgb(255, 112, 112);
+    private static final long BUTTON_PRESSED_MS = 180;
+    private static String pressedButtonKey;
+    private static long pressedUntilMillis;
 
     // Draws page background.
     public static void drawPageBackground(GraphicsContext gc, double width, double height) {
@@ -101,6 +104,11 @@ public class ScreenDrawHelper {
                                   double width,
                                   double height,
                                   String text) {
+        if (isButtonPressed(x, y, width, height)) {
+            drawPressedButton(gc, x, y, width, height, text);
+            return;
+        }
+
         gc.setFill(ACCENT_DARK);
         gc.fillRoundRect(x + 3, y + 4, width, height, 14, 14);
 
@@ -111,6 +119,30 @@ public class ScreenDrawHelper {
         gc.strokeRoundRect(x, y, width, height, 14, 14);
 
         gc.setFill(Color.rgb(34, 26, 10));
+        gc.setFont(Font.font("Arial", 16));
+        gc.setTextAlign(TextAlignment.CENTER);
+        gc.setTextBaseline(VPos.CENTER);
+        gc.fillText(text, x + width / 2, y + height / 2);
+        gc.setTextBaseline(VPos.TOP);
+    }
+
+    // Draws a button in pressed (light gray) state.
+    public static void drawPressedButton(GraphicsContext gc,
+                                         double x,
+                                         double y,
+                                         double width,
+                                         double height,
+                                         String text) {
+        gc.setFill(Color.rgb(165, 170, 180));
+        gc.fillRoundRect(x + 2, y + 3, width, height, 14, 14);
+
+        gc.setFill(Color.rgb(205, 210, 220));
+        gc.fillRoundRect(x, y, width, height, 14, 14);
+
+        gc.setStroke(Color.rgb(255, 255, 255, 0.25));
+        gc.strokeRoundRect(x, y, width, height, 14, 14);
+
+        gc.setFill(Color.rgb(70, 75, 85));
         gc.setFont(Font.font("Arial", 16));
         gc.setTextAlign(TextAlignment.CENTER);
         gc.setTextBaseline(VPos.CENTER);
@@ -180,6 +212,20 @@ public class ScreenDrawHelper {
                                             double x,
                                             double y,
                                             boolean selected) {
+        if (isButtonPressed(x, y, 280, 35)) {
+            gc.setFill(Color.rgb(205, 210, 220));
+            gc.fillRoundRect(x, y, 280, 35, 12, 12);
+            gc.setStroke(Color.rgb(255, 255, 255, 0.25));
+            gc.strokeRoundRect(x, y, 280, 35, 12, 12);
+            gc.setFill(Color.rgb(70, 75, 85));
+            gc.setFont(Font.font("Arial", 14));
+            gc.setTextAlign(TextAlignment.LEFT);
+            gc.setTextBaseline(VPos.CENTER);
+            gc.fillText("Use DOUBLE THE RENT  ×2", x + 42, y + 17.5);
+            gc.setTextBaseline(VPos.TOP);
+            return;
+        }
+
         gc.setFill(Color.rgb(255, 240, 199));
         gc.fillRoundRect(x, y, 280, 35, 12, 12);
 
@@ -285,6 +331,38 @@ public class ScreenDrawHelper {
                 && mouseX <= x + width
                 && mouseY >= y
                 && mouseY <= y + height;
+    }
+
+    // Checks whether a button was clicked and marks it for pressed feedback.
+    public static boolean handleButtonClick(double mouseX,
+                                            double mouseY,
+                                            double x,
+                                            double y,
+                                            double width,
+                                            double height) {
+        if (!isInside(mouseX, mouseY, x, y, width, height)) {
+            return false;
+        }
+
+        markButtonPressed(x, y, width, height);
+        return true;
+    }
+
+    // Checks whether a button should currently show pressed feedback.
+    public static boolean isButtonPressed(double x, double y, double width, double height) {
+        return pressedButtonKey != null
+                && System.currentTimeMillis() < pressedUntilMillis
+                && pressedButtonKey.equals(buttonKey(x, y, width, height));
+    }
+
+    // Marks a button as recently pressed for visual feedback.
+    private static void markButtonPressed(double x, double y, double width, double height) {
+        pressedButtonKey = buttonKey(x, y, width, height);
+        pressedUntilMillis = System.currentTimeMillis() + BUTTON_PRESSED_MS;
+    }
+
+    private static String buttonKey(double x, double y, double width, double height) {
+        return x + ":" + y + ":" + width + ":" + height;
     }
 
     // Finds display color name.

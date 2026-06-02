@@ -107,24 +107,21 @@ public class DebtCollectorPanel {
     // Checks whether cancel clicked.
     public boolean isCancelClicked(double mouseX, double mouseY) {
         return isSelecting()
-                && mouseX >= cancelX && mouseX <= cancelX + buttonWidth
-                && mouseY >= cancelY && mouseY <= cancelY + buttonHeight;
+                && ScreenDrawHelper.handleButtonClick(mouseX, mouseY, cancelX, cancelY, buttonWidth, buttonHeight);
     }
 
     // Checks whether back clicked.
     public boolean isBackClicked(double mouseX, double mouseY) {
         return isSelecting()
                 && selectedTarget != null
-                && mouseX >= backX && mouseX <= backX + buttonWidth
-                && mouseY >= backY && mouseY <= backY + buttonHeight;
+                && ScreenDrawHelper.handleButtonClick(mouseX, mouseY, backX, backY, buttonWidth, buttonHeight);
     }
 
     // Checks whether confirm clicked.
     public boolean isConfirmClicked(double mouseX, double mouseY) {
         return isSelecting()
                 && selectedTarget != null
-                && mouseX >= confirmX && mouseX <= confirmX + buttonWidth
-                && mouseY >= confirmY && mouseY <= confirmY + buttonHeight;
+                && ScreenDrawHelper.handleButtonClick(mouseX, mouseY, confirmX, confirmY, buttonWidth, buttonHeight);
     }
 
     // Handles detail page button click.

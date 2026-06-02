@@ -132,27 +132,24 @@ public class ForcedDealPanel {
         }
 
         if (detailTargetPlayer != null) {
-            return ScreenDrawHelper.isInside(mouseX, mouseY,
+            return ScreenDrawHelper.handleButtonClick(mouseX, mouseY,
                     detailCancelX, detailButtonY, detailButtonWidth, detailButtonHeight);
         }
 
-        return mouseX >= 720 && mouseX <= 860
-                && mouseY >= actionButtonY && mouseY <= actionButtonY + 40;
+        return ScreenDrawHelper.handleButtonClick(mouseX, mouseY, 720, actionButtonY, 140, 40);
     }
 
     // Checks whether back clicked.
     public boolean isBackClicked(double mouseX, double mouseY) {
         return isSelecting()
                 && selectedTargetPlayer != null
-                && mouseX >= 560 && mouseX <= 700
-                && mouseY >= actionButtonY && mouseY <= actionButtonY + 40;
+                && ScreenDrawHelper.handleButtonClick(mouseX, mouseY, 560, actionButtonY, 140, 40);
     }
 
     // Checks whether confirm clicked.
     public boolean isConfirmClicked(double mouseX, double mouseY) {
         return isSelecting()
-                && mouseX >= 380 && mouseX <= 520
-                && mouseY >= actionButtonY && mouseY <= actionButtonY + 40;
+                && ScreenDrawHelper.handleButtonClick(mouseX, mouseY, 380, actionButtonY, 140, 40);
     }
 
     // Finds clicked target player.
@@ -487,32 +484,28 @@ public class ForcedDealPanel {
     public boolean isMyPrevPageClicked(double mouseX, double mouseY) {
         return isSelecting()
                 && selectedTargetPlayer != null
-                && mouseX >= myPrevX && mouseX <= myPrevX + pageButtonWidth
-                && mouseY >= pageButtonY && mouseY <= pageButtonY + pageButtonHeight;
+                && ScreenDrawHelper.handleButtonClick(mouseX, mouseY, myPrevX, pageButtonY, pageButtonWidth, pageButtonHeight);
     }
 
     // Checks whether my next page clicked.
     public boolean isMyNextPageClicked(double mouseX, double mouseY) {
         return isSelecting()
                 && selectedTargetPlayer != null
-                && mouseX >= myNextX && mouseX <= myNextX + pageButtonWidth
-                && mouseY >= pageButtonY && mouseY <= pageButtonY + pageButtonHeight;
+                && ScreenDrawHelper.handleButtonClick(mouseX, mouseY, myNextX, pageButtonY, pageButtonWidth, pageButtonHeight);
     }
 
     // Checks whether target prev page clicked.
     public boolean isTargetPrevPageClicked(double mouseX, double mouseY) {
         return isSelecting()
                 && selectedTargetPlayer != null
-                && mouseX >= targetPrevX && mouseX <= targetPrevX + pageButtonWidth
-                && mouseY >= pageButtonY && mouseY <= pageButtonY + pageButtonHeight;
+                && ScreenDrawHelper.handleButtonClick(mouseX, mouseY, targetPrevX, pageButtonY, pageButtonWidth, pageButtonHeight);
     }
 
     // Checks whether target next page clicked.
     public boolean isTargetNextPageClicked(double mouseX, double mouseY) {
         return isSelecting()
                 && selectedTargetPlayer != null
-                && mouseX >= targetNextX && mouseX <= targetNextX + pageButtonWidth
-                && mouseY >= pageButtonY && mouseY <= pageButtonY + pageButtonHeight;
+                && ScreenDrawHelper.handleButtonClick(mouseX, mouseY, targetNextX, pageButtonY, pageButtonWidth, pageButtonHeight);
     }
 
     // Runs previous my page.
@@ -619,14 +612,14 @@ public class ForcedDealPanel {
     // Checks whether detail confirm clicked.
     public boolean isDetailConfirmClicked(double mouseX, double mouseY) {
         return detailTargetPlayer != null
-                && ScreenDrawHelper.isInside(mouseX, mouseY,
+                && ScreenDrawHelper.handleButtonClick(mouseX, mouseY,
                 detailConfirmX, detailButtonY, detailButtonWidth, detailButtonHeight);
     }
 
     // Checks whether detail back clicked.
     public boolean isDetailBackClicked(double mouseX, double mouseY) {
         return detailTargetPlayer != null
-                && ScreenDrawHelper.isInside(mouseX, mouseY,
+                && ScreenDrawHelper.handleButtonClick(mouseX, mouseY,
                 detailBackX, detailButtonY, detailButtonWidth, detailButtonHeight);
     }
 }

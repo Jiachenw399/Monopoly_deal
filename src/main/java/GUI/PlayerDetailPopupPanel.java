@@ -80,8 +80,7 @@ public class PlayerDetailPopupPanel {
     // Checks whether the close button was clicked.
     public boolean isCloseClicked(double mouseX, double mouseY) {
         return isShowing()
-                && mouseX >= closeX && mouseX <= closeX + closeWidth
-                && mouseY >= closeY && mouseY <= closeY + closeHeight;
+                && ScreenDrawHelper.handleButtonClick(mouseX, mouseY, closeX, closeY, closeWidth, closeHeight);
     }
 
     // Handles page switching for bank and property areas.
@@ -125,25 +124,25 @@ public class PlayerDetailPopupPanel {
 
     // Checks whether bank prev clicked.
     private boolean isBankPrevClicked(double mouseX, double mouseY) {
-        return ScreenDrawHelper.isInside(mouseX, mouseY, bankPrevX, bankButtonY,
+        return ScreenDrawHelper.handleButtonClick(mouseX, mouseY, bankPrevX, bankButtonY,
                 pageButtonWidth, pageButtonHeight);
     }
 
     // Checks whether bank next clicked.
     private boolean isBankNextClicked(double mouseX, double mouseY) {
-        return ScreenDrawHelper.isInside(mouseX, mouseY, bankNextX, bankButtonY,
+        return ScreenDrawHelper.handleButtonClick(mouseX, mouseY, bankNextX, bankButtonY,
                 pageButtonWidth, pageButtonHeight);
     }
 
     // Checks whether property prev clicked.
     private boolean isPropertyPrevClicked(double mouseX, double mouseY) {
-        return ScreenDrawHelper.isInside(mouseX, mouseY, propertyPrevX, propertyButtonY,
+        return ScreenDrawHelper.handleButtonClick(mouseX, mouseY, propertyPrevX, propertyButtonY,
                 pageButtonWidth, pageButtonHeight);
     }
 
     // Checks whether property next clicked.
     private boolean isPropertyNextClicked(double mouseX, double mouseY) {
-        return ScreenDrawHelper.isInside(mouseX, mouseY, propertyNextX, propertyButtonY,
+        return ScreenDrawHelper.handleButtonClick(mouseX, mouseY, propertyNextX, propertyButtonY,
                 pageButtonWidth, pageButtonHeight);
     }
 
@@ -207,6 +206,12 @@ public class PlayerDetailPopupPanel {
 
     // Draws the close button.
     private void drawCloseButton(GraphicsContext gc) {
+        if (ScreenDrawHelper.isButtonPressed(closeX, closeY, closeWidth, closeHeight)) {
+            ScreenDrawHelper.drawPressedButton(gc, closeX, closeY, closeWidth, closeHeight, "Close");
+            gc.setTextBaseline(VPos.TOP);
+            return;
+        }
+
         gc.setFill(Color.rgb(255, 184, 77));
         gc.fillRoundRect(closeX, closeY, closeWidth, closeHeight, 10, 10);
 
@@ -344,6 +349,11 @@ public class PlayerDetailPopupPanel {
 
     // Draws a single page button.
     private void drawPageButton(GraphicsContext gc, double x, double y, String text, boolean enabled) {
+        if (enabled && ScreenDrawHelper.isButtonPressed(x, y, pageButtonWidth, pageButtonHeight)) {
+            ScreenDrawHelper.drawPressedButton(gc, x, y, pageButtonWidth, pageButtonHeight, text);
+            return;
+        }
+
         if (enabled) {
             gc.setFill(Color.rgb(255, 184, 77));
         } else {

@@ -329,6 +329,12 @@ public class BackGroundScreen {
             double buttonX = x + col * (w + gapX);
             double buttonY = y + row * (h + gapY);
 
+            if (ScreenDrawHelper.isButtonPressed(buttonX, buttonY, w, h)) {
+                ScreenDrawHelper.drawPressedButton(gc, buttonX, buttonY, w, h,
+                        ScreenDrawHelper.getDisplayColorName(color));
+                continue;
+            }
+
             gc.setFill(Color.LIGHTYELLOW);
             gc.fillRoundRect(buttonX, buttonY, w, h, 8, 8);
 
@@ -529,7 +535,7 @@ public class BackGroundScreen {
         Player currentPlayer = getDisplayPlayer(displayPlayerIndex);
         int maxPage = ScreenDrawHelper.getMaxPage(currentPlayer.getBankCards().size(), cardsPerPage);
 
-        if (ScreenDrawHelper.isInside(mouseX, mouseY, bankPrevX, bankArrowY, arrowWidth, arrowHeight)) {
+        if (ScreenDrawHelper.handleButtonClick(mouseX, mouseY, bankPrevX, bankArrowY, arrowWidth, arrowHeight)) {
             if (bankPageIndex > 0) {
                 bankPageIndex--;
             }
@@ -537,7 +543,7 @@ public class BackGroundScreen {
             return true;
         }
 
-        if (ScreenDrawHelper.isInside(mouseX, mouseY, bankNextX, bankArrowY, arrowWidth, arrowHeight)) {
+        if (ScreenDrawHelper.handleButtonClick(mouseX, mouseY, bankNextX, bankArrowY, arrowWidth, arrowHeight)) {
             if (bankPageIndex < maxPage) {
                 bankPageIndex++;
             }
@@ -553,7 +559,7 @@ public class BackGroundScreen {
         Player currentPlayer = getDisplayPlayer(displayPlayerIndex);
         int maxPage = ScreenDrawHelper.getMaxPage(currentPlayer.getPropertyCards().size(), cardsPerPage);
 
-        if (ScreenDrawHelper.isInside(mouseX, mouseY, propertyPrevX, propertyArrowY, arrowWidth, arrowHeight)) {
+        if (ScreenDrawHelper.handleButtonClick(mouseX, mouseY, propertyPrevX, propertyArrowY, arrowWidth, arrowHeight)) {
             if (propertyPageIndex > 0) {
                 propertyPageIndex--;
             }
@@ -561,7 +567,7 @@ public class BackGroundScreen {
             return true;
         }
 
-        if (ScreenDrawHelper.isInside(mouseX, mouseY, propertyNextX, propertyArrowY, arrowWidth, arrowHeight)) {
+        if (ScreenDrawHelper.handleButtonClick(mouseX, mouseY, propertyNextX, propertyArrowY, arrowWidth, arrowHeight)) {
             if (propertyPageIndex < maxPage) {
                 propertyPageIndex++;
             }

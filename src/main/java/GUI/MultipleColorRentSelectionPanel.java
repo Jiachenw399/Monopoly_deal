@@ -137,7 +137,7 @@ public class MultipleColorRentSelectionPanel {
     public boolean isDetailConfirmClicked(double mouseX, double mouseY) {
         return isSelecting()
                 && detailTarget != null
-                && ScreenDrawHelper.isInside(mouseX, mouseY,
+                && ScreenDrawHelper.handleButtonClick(mouseX, mouseY,
                 detailConfirmX, detailButtonY, detailButtonWidth, detailButtonHeight);
     }
 
@@ -145,7 +145,7 @@ public class MultipleColorRentSelectionPanel {
     public boolean isDetailBackClicked(double mouseX, double mouseY) {
         return isSelecting()
                 && detailTarget != null
-                && ScreenDrawHelper.isInside(mouseX, mouseY,
+                && ScreenDrawHelper.handleButtonClick(mouseX, mouseY,
                 detailBackX, detailButtonY, detailButtonWidth, detailButtonHeight);
     }
 
@@ -155,8 +155,7 @@ public class MultipleColorRentSelectionPanel {
                 && detailTarget == null
                 && game.hasDoubleTheRentCard(game.getCurrentPlayer())
                 && game.getCurrentPlayer().getUseCardTimes() <= 1
-                && mouseX >= 370 && mouseX <= 650
-                && mouseY >= 450 && mouseY <= 485;
+                && ScreenDrawHelper.handleButtonClick(mouseX, mouseY, 370, 450, 280, 35);
     }
 
     // Checks whether cancel clicked.
@@ -166,20 +165,18 @@ public class MultipleColorRentSelectionPanel {
         }
 
         if (detailTarget != null) {
-            return ScreenDrawHelper.isInside(mouseX, mouseY,
+            return ScreenDrawHelper.handleButtonClick(mouseX, mouseY,
                     detailCancelX, detailButtonY, detailButtonWidth, detailButtonHeight);
         }
 
-        return mouseX >= 690 && mouseX <= 830
-                && mouseY >= 535 && mouseY <= 575;
+        return ScreenDrawHelper.handleButtonClick(mouseX, mouseY, 690, 535, 140, 40);
     }
 
     // Checks whether confirm clicked.
     public boolean isConfirmClicked(double mouseX, double mouseY) {
         return isSelecting()
                 && detailTarget == null
-                && mouseX >= 500 && mouseX <= 660
-                && mouseY >= 535 && mouseY <= 575;
+                && ScreenDrawHelper.handleButtonClick(mouseX, mouseY, 500, 535, 160, 40);
     }
 
     // Finds clicked target.
@@ -201,7 +198,7 @@ public class MultipleColorRentSelectionPanel {
 
             double buttonY = y + displayIndex * (buttonHeight + gap);
 
-            if (ScreenDrawHelper.isInside(mouseX, mouseY, x, buttonY, buttonWidth, buttonHeight)) {
+            if (ScreenDrawHelper.handleButtonClick(mouseX, mouseY, x, buttonY, buttonWidth, buttonHeight)) {
                 return game.getPlayers().get(i);
             }
 
@@ -238,7 +235,7 @@ public class MultipleColorRentSelectionPanel {
             double buttonX = x + col * (buttonWidth + gapX);
             double buttonY = y + row * (buttonHeight + gapY);
 
-            if (ScreenDrawHelper.isInside(mouseX, mouseY, buttonX, buttonY, buttonWidth, buttonHeight)) {
+            if (ScreenDrawHelper.handleButtonClick(mouseX, mouseY, buttonX, buttonY, buttonWidth, buttonHeight)) {
                 return color;
             }
 
@@ -319,6 +316,12 @@ public class MultipleColorRentSelectionPanel {
             Player player = game.getPlayers().get(i);
             double buttonY = y + displayIndex * (buttonHeight + gap);
 
+            if (ScreenDrawHelper.isButtonPressed(x, buttonY, buttonWidth, buttonHeight)) {
+                ScreenDrawHelper.drawPressedButton(gc, x, buttonY, buttonWidth, buttonHeight, "Player " + (i + 1));
+                displayIndex++;
+                continue;
+            }
+
             if (player == selectedTarget) {
                 gc.setFill(Color.LIGHTGREEN);
             } else {
@@ -370,6 +373,13 @@ public class MultipleColorRentSelectionPanel {
 
             double buttonX = x + col * (buttonWidth + gapX);
             double buttonY = y + row * (buttonHeight + gapY);
+
+            if (ScreenDrawHelper.isButtonPressed(buttonX, buttonY, buttonWidth, buttonHeight)) {
+                ScreenDrawHelper.drawPressedButton(gc, buttonX, buttonY, buttonWidth, buttonHeight,
+                        ScreenDrawHelper.getDisplayColorName(color));
+                displayIndex++;
+                continue;
+            }
 
             if (color == selectedColor) {
                 gc.setFill(Color.LIGHTGREEN);

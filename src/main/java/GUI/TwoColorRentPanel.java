@@ -66,15 +66,13 @@ public class TwoColorRentPanel {
         return isSelecting()
                 && game.hasDoubleTheRentCard(game.getCurrentPlayer())
                 && game.getCurrentPlayer().getUseCardTimes() <= 1
-                && mouseX >= 370 && mouseX <= 650
-                && mouseY >= 410 && mouseY <= 445;
+                && ScreenDrawHelper.handleButtonClick(mouseX, mouseY, 370, 410, 280, 35);
     }
 
     // Checks whether the cancel button was clicked.
     public boolean isCancelClicked(double mouseX, double mouseY) {
         return isSelecting()
-                && mouseX >= 720 && mouseX <= 860
-                && mouseY >= 505 && mouseY <= 545;
+                && ScreenDrawHelper.handleButtonClick(mouseX, mouseY, 720, 505, 140, 40);
     }
 
     // Returns the clicked rent color if it is usable.
@@ -91,9 +89,9 @@ public class TwoColorRentPanel {
             double x = panelX + i * (buttonWidth + 40);
             double y = panelY;
 
-            if (mouseX >= x && mouseX <= x + buttonWidth
-                    && mouseY >= y && mouseY <= y + buttonHeight) {
+            if (ScreenDrawHelper.isInside(mouseX, mouseY, x, y, buttonWidth, buttonHeight)) {
                 if (PlayerInfoHelper.hasPropertyColor(game.getCurrentPlayer(), color)) {
+                    ScreenDrawHelper.handleButtonClick(mouseX, mouseY, x, y, buttonWidth, buttonHeight);
                     return color;
                 }
 
@@ -166,6 +164,11 @@ public class TwoColorRentPanel {
 
     // Draws one color button.
     private void drawColorButton(GraphicsContext gc, PropertyColor color, double x, double y, boolean usable) {
+        if (usable && ScreenDrawHelper.isButtonPressed(x, y, buttonWidth, buttonHeight)) {
+            ScreenDrawHelper.drawPressedButton(gc, x, y, buttonWidth, buttonHeight, color.name());
+            return;
+        }
+
         gc.fillRoundRect(x, y, buttonWidth, buttonHeight, 14, 14);
 
         gc.setStroke(Color.WHITE);
