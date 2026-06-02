@@ -155,10 +155,8 @@ public class GameClickHandler {
             return true;
         }
 
-        if (gameScreen.isPaymentJustSayNoPassClicked(x, y)) {
-            actions.passJustSayNo();
-            gameScreen.clearPaymentSelection();
-            return true;
+        if (game.isCurrentPaymentWaitingForJustSayNoResponse()) {
+            return handleJustSayNoResponseClick(x, y);
         }
 
         if (gameScreen.isPaymentJustSayNoClicked(x, y)) {
@@ -182,6 +180,23 @@ public class GameClickHandler {
         }
 
         return gameScreen.handlePaymentCardClick(x, y);
+    }
+
+    // Handles the Just Say No counter-response step.
+    private boolean handleJustSayNoResponseClick(double x, double y) {
+        if (gameScreen.isPaymentJustSayNoPassClicked(x, y)) {
+            actions.passJustSayNo();
+            gameScreen.clearPaymentSelection();
+            return true;
+        }
+
+        if (gameScreen.isPaymentJustSayNoClicked(x, y)) {
+            actions.useJustSayNo();
+            gameScreen.clearPaymentSelection();
+            return true;
+        }
+
+        return true;
     }
 
     // Handles forced deal selection.

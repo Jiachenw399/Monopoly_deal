@@ -70,4 +70,32 @@ public class PaymentSelectionPanelTest {
         assertEquals(2, panel.getSelectedCards().size());
         assertTrue(panel.canConfirm());
     }
+
+    @Test
+    public void testUnselectingHotelAlsoRemovesBlockedHouseSelection() {
+        Game game = new Game(2);
+        DrawPileAndDiscardPile drawPile = new DrawPileAndDiscardPile();
+        Player receiver = new Player(drawPile);
+        Player payer = new Player(drawPile);
+        PropertiesCards property = new PropertiesCards(PropertiesCardsType.BROWN);
+        property.setHasHouse(true);
+        property.setHasHotel(true);
+        payer.getPropertyCards().add(property);
+
+        ArrayList<Player> players = new ArrayList<>();
+        players.add(receiver);
+        players.add(payer);
+        game.applyOnlineState(players, 0, false, new Game.PaymentRequest(receiver, payer, 7), false);
+
+        PaymentSelectionPanel panel = new PaymentSelectionPanel(game);
+
+        assertTrue(panel.handleCardClick(61, 181));
+        assertTrue(panel.handleCardClick(151, 181));
+        assertEquals(2, panel.getSelectedCards().size());
+
+        assertTrue(panel.handleCardClick(61, 181));
+
+        assertEquals(0, panel.getSelectedCards().size());
+        assertFalse(panel.canConfirm());
+    }
 }

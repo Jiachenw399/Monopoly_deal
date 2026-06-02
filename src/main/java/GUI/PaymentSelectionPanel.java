@@ -517,9 +517,17 @@ public class PaymentSelectionPanel {
             selectedCards.add(card);
         }
 
-        if (card instanceof BuildingPaymentCard && game.isPaymentSelecting()) {
-            removeBlockedPropertySelections(game.getCurrentPaymentRequest().getPayer());
+        if (game.isPaymentSelecting()) {
+            Player payer = game.getCurrentPaymentRequest().getPayer();
+            removeBlockedBuildingSelections(payer);
+            removeBlockedPropertySelections(payer);
         }
+    }
+
+    // Removes building selections that became invalid after another building was unselected.
+    private void removeBlockedBuildingSelections(Player payer) {
+        selectedCards.removeIf(card -> card instanceof BuildingPaymentCard buildingCard
+                && isHouseBlockedByUnpaidHotel(payer, buildingCard));
     }
 
     // Removes blocked property selections.
