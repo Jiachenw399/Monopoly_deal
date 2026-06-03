@@ -174,6 +174,12 @@ public class OnlinePlayWindow extends Stage {
                 NetworkMessage message = NetworkMessage.decode(line);
                 Platform.runLater(() -> handleServerMessage(message));
             }
+            if (!closed) {
+                Platform.runLater(() -> {
+                    connectionText = "Disconnected";
+                    appendLog("Server closed the connection.");
+                });
+            }
         } catch (IOException e) {
             if (!closed) {
                 Platform.runLater(() -> {

@@ -975,6 +975,10 @@ public class GameServer {
                 }
             } catch (IOException e) {
                 System.out.println("Connection error for Player " + playerId + ": " + e.getMessage());
+            } catch (RuntimeException e) {
+                System.out.println("Runtime error for Player " + playerId + ": " + e.getMessage());
+                e.printStackTrace();
+                send(new NetworkMessage("SERVER", "Connection closed by server error: " + e.getMessage()).encode());
             } finally {
                 removeClient(this);
                 broadcast(new NetworkMessage("BROADCAST", playerName + " left the game"));
