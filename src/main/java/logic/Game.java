@@ -13,10 +13,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-/**
- * Facade for game rules. UI and network layers use this entry point instead of
- * coordinating turn, payment, card-play, and action-card services directly.
- */
 public class Game implements GameFacade {
     public static final double SCREEN_WIDTH = 1035;
     public static final double SCREEN_HEIGHT = 700;
@@ -92,15 +88,35 @@ public class Game implements GameFacade {
         startGame();
     }
 
+    // Starts game with a prepared draw pile.
+    public void startGame(int playerCount, DrawPileAndDiscardPile preparedDrawCards) {
+        this.playerCount = normalizePlayerCount(playerCount);
+        resetGame(Objects.requireNonNull(preparedDrawCards));
+        setupNewPlayers();
+        turnManager.startFirstTurn();
+        notifyObservers();
+    }
+
     // Runs reset game.
     private void resetGame() {
         initializeGameObjects();
         isWin = false;
     }
 
+    // Runs reset game.
+    private void resetGame(DrawPileAndDiscardPile preparedDrawCards) {
+        initializeGameObjects(preparedDrawCards);
+        isWin = false;
+    }
+
     // Initializes game objects.
     private void initializeGameObjects() {
-        drawCards = new DrawPileAndDiscardPile(cardFactory);
+        initializeGameObjects(new DrawPileAndDiscardPile(cardFactory));
+    }
+
+    // Initializes game objects.
+    private void initializeGameObjects(DrawPileAndDiscardPile preparedDrawCards) {
+        drawCards = preparedDrawCards;
         paymentManager = new PaymentManager();
         actionCardService = createActionCardService();
         turnManager = new TurnManager(players, drawCards);
