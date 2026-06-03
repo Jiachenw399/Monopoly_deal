@@ -12,6 +12,7 @@ public class Player {
     private DrawPileAndDiscardPile drawCardsAndDiscardPile;
     private int useCardTimes;
     private String name;
+    private boolean isAI;
 
     // Creates a Player instance.
     public Player(DrawPileAndDiscardPile drawCardsAndDiscardPile) {
@@ -21,6 +22,7 @@ public class Player {
         this.drawCardsAndDiscardPile = drawCardsAndDiscardPile;
         useCardTimes = 0;
         this.name = null;
+        this.isAI = false;
     }
 
     // Creates a Player instance with a name.
@@ -31,6 +33,18 @@ public class Player {
         this.drawCardsAndDiscardPile = drawCardsAndDiscardPile;
         useCardTimes = 0;
         this.name = (name != null && !name.trim().isEmpty()) ? name.trim() : null;
+        this.isAI = false;
+    }
+
+    // Creates a Player instance with name and AI flag.
+    public Player(DrawPileAndDiscardPile drawCardsAndDiscardPile, String name, boolean isAI) {
+        handCards = new ArrayList<>();
+        propertyCards = new ArrayList<>();
+        bankCards = new ArrayList<>();
+        this.drawCardsAndDiscardPile = drawCardsAndDiscardPile;
+        useCardTimes = 0;
+        this.name = (name != null && !name.trim().isEmpty()) ? name.trim() : null;
+        this.isAI = isAI;
     }
 
     // Takes card.
@@ -376,5 +390,13 @@ public class Player {
 
     public void setName(String name) {
         this.name = (name != null && !name.trim().isEmpty()) ? name.trim() : null;
+    }
+
+    public boolean isAI() {
+        return isAI;
+    }
+
+    public void setAI(boolean AI) {
+        this.isAI = AI;
     }
 }

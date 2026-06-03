@@ -91,8 +91,9 @@ public class CardImageHelper {
 
     // Runs load image.
     private static Image loadImage(String path) {
-        if (IMAGE_CACHE.containsKey(path)) {
-            return IMAGE_CACHE.get(path);
+        Image cached = IMAGE_CACHE.get(path);
+        if (cached != null || IMAGE_CACHE.containsKey(path)) {
+            return cached;
         }
 
         InputStream inputStream = CardImageHelper.class.getResourceAsStream(path);

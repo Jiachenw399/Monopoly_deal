@@ -12,12 +12,14 @@ public class MainMenu {
     private final Canvas canvas;
     private boolean isShow;
     private boolean choosingPlayerCount;
+    private boolean choosingAI;  // true = choosing AI player count, false = choosing local player count
 
     // Creates a MainMenu instance.
     public MainMenu() {
         canvas = new Canvas(GuiScale.canvasWidth(), GuiScale.canvasHeight());
         isShow = true;
         choosingPlayerCount = false;
+        choosingAI = false;
     }
 
     // Runs paint.
@@ -27,7 +29,11 @@ public class MainMenu {
 
         drawBackground(gc);
         if (choosingPlayerCount) {
-            drawPlayerCountChoice(gc);
+            if (choosingAI) {
+                drawAIPlayerCountChoice(gc);
+            } else {
+                drawPlayerCountChoice(gc);
+            }
         } else {
             drawMenuText(gc);
             drawMenuCards(gc);
@@ -44,10 +50,10 @@ public class MainMenu {
         ScreenDrawHelper.drawPageBackground(gc, Game.SCREEN_WIDTH, Game.SCREEN_HEIGHT);
 
         gc.setFill(Color.rgb(255, 184, 77, 0.08));
-        gc.fillRoundRect(220, 80, 595, 510, 36, 36);
+        gc.fillRoundRect(220, 80, 595, 575, 36, 36);
 
         gc.setStroke(Color.rgb(255, 255, 255, 0.15));
-        gc.strokeRoundRect(220, 80, 595, 510, 36, 36);
+        gc.strokeRoundRect(220, 80, 595, 575, 36, 36);
     }
 
     // Draws menu text.
@@ -66,10 +72,11 @@ public class MainMenu {
 
     // Draws menu cards.
     private void drawMenuCards(GraphicsContext gc) {
-        drawMenuOption(gc, 365, 235, "A", "Start New Game");
-        drawMenuOption(gc, 365, 310, "N", "View Game Rules");
-        drawMenuOption(gc, 365, 385, "L", "LAN / OnlinePlayWindow…");
-        drawMenuOption(gc, 365, 460, "X", "Exit Game");
+        drawMenuOption(gc, 365, 235, "A", "Local Multiplayer");
+        drawMenuOption(gc, 365, 310, "B", "Play vs AI");
+        drawMenuOption(gc, 365, 385, "N", "View Game Rules");
+        drawMenuOption(gc, 365, 460, "L", "LAN / Online…");
+        drawMenuOption(gc, 365, 535, "X", "Exit Game");
     }
 
     // Draws player count choice.
@@ -89,6 +96,29 @@ public class MainMenu {
         drawPlayerCountOption(gc, 440, 265, "3", "3 Players");
         drawPlayerCountOption(gc, 285, 395, "4", "4 Players");
         drawPlayerCountOption(gc, 440, 395, "5", "5 Players");
+
+        gc.setFill(ScreenDrawHelper.MUTED_TEXT);
+        gc.setFont(Font.font("Arial", 15));
+        gc.fillText("Esc returns to the main menu.", Game.SCREEN_WIDTH / 2, 542);
+    }
+
+    // Draws AI player count choice (1 human + AI opponents).
+    private void drawAIPlayerCountChoice(GraphicsContext gc) {
+        gc.setTextAlign(TextAlignment.CENTER);
+        gc.setTextBaseline(VPos.CENTER);
+
+        gc.setFill(ScreenDrawHelper.ACCENT);
+        gc.setFont(new Font("Arial", 42));
+        gc.fillText("vs AI", Game.SCREEN_WIDTH / 2, 145);
+
+        gc.setFill(ScreenDrawHelper.MUTED_TEXT);
+        gc.setFont(new Font("Arial", 18));
+        gc.fillText("You vs how many AI opponents?", Game.SCREEN_WIDTH / 2, 192);
+
+        drawPlayerCountOption(gc, 285, 265, "1", "1 AI");
+        drawPlayerCountOption(gc, 440, 265, "2", "2 AI");
+        drawPlayerCountOption(gc, 285, 395, "3", "3 AI");
+        drawPlayerCountOption(gc, 440, 395, "4", "4 AI");
 
         gc.setFill(ScreenDrawHelper.MUTED_TEXT);
         gc.setFont(Font.font("Arial", 15));
@@ -148,5 +178,13 @@ public class MainMenu {
 
     public void setChoosingPlayerCount(boolean choosingPlayerCount) {
         this.choosingPlayerCount = choosingPlayerCount;
+    }
+
+    public void setChoosingAI(boolean choosingAI) {
+        this.choosingAI = choosingAI;
+    }
+
+    public boolean isChoosingAI() {
+        return choosingAI;
     }
 }

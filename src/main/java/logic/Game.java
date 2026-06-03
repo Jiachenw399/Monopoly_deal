@@ -10,7 +10,9 @@ import model.PropertyColor;
 import model.StandardDeckCardFactory;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 public class Game implements GameFacade {
@@ -33,6 +35,8 @@ public class Game implements GameFacade {
     private ActionCardService actionCardService;
     private TurnManager turnManager;
     private List<String> playerNames;
+    private Map<Player, AIPlayer> aiPlayers;
+    private Runnable aiTurnCallback;
 
     private boolean isWin;
 
@@ -56,6 +60,7 @@ public class Game implements GameFacade {
         cardPlayService = new MoneyCardAndPropertyCardPlayService();
         gameSetupService = new GameSetupService();
         observers = new ArrayList<>();
+        aiPlayers = new HashMap<>();
 
         initializeGameObjects();
         setupNewPlayers();
@@ -156,6 +161,10 @@ public class Game implements GameFacade {
 
         turnManager.endTurn();
         notifyObservers();
+
+        if (!triggerAITurnIfNeeded()) {
+            return;
+        }
     }
 
     // Forces advance turn for absent player.
@@ -319,7 +328,11 @@ public class Game implements GameFacade {
 
     // Finishes current payment.
     public boolean finishCurrentPayment(ArrayList<Card> selectedCards) {
-        return finishAction(paymentManager.finishCurrentPayment(selectedCards));
+        boolean result = finishAction(paymentManager.finishCurrentPayment(selectedCards));
+        if (result && isPaymentSelecting()) {
+            triggerAIPaymentIfNeeded();
+        }
+        return result;
     }
 
     // Runs set property color.
@@ -383,6 +396,9 @@ public class Game implements GameFacade {
         if (success) {
             checkAnyPlayerWin();
             notifyObservers();
+            if (isPaymentSelecting()) {
+                triggerAIPaymentIfNeeded();
+            }
         }
 
         return success;
@@ -522,5 +538,60 @@ public class Game implements GameFacade {
             justSayNoResponder = null;
             lastJustSayNoUser = null;
         }
+    }
+
+    // Registers an AI player for the given player.
+    public void registerAI(Player player, AIPlayer ai) {
+        if (player != null && ai != null) {
+            aiPlayers.put(player, ai);
+        }
+    }
+
+    // Sets the callback invoked after each AI turn ends.
+    public void setAiTurnCallback(Runnable callback) {
+        this.aiTurnCallback = callback;
+    }
+
+    // Checks whether the given player is an AI.
+    public boolean isAI(Player player) {
+        return aiPlayers.containsKey(player);
+    }
+
+    // Triggers the AI turn for the current player if it is an AI.
+    // Returns true if an AI turn was triggered, false otherwise.
+    public boolean triggerAITurnIfNeeded() {
+        Player current = getCurrentPlayer();
+        AIPlayer ai = aiPlayers.get(current);
+        if (ai == null) {
+            return false;
+        }
+        ai.onTurnStart(this, current, () -> {
+            if (aiTurnCallback != null) {
+                aiTurnCallback.run();
+            }
+        });
+        return true;
+    }
+
+    // Triggers the AI to respond to a payment request if the payer is an AI.
+    public boolean triggerAIPaymentIfNeeded() {
+        if (!isPaymentSelecting()) {
+            return false;
+        }
+        Game.PaymentRequest request = getCurrentPaymentRequest();
+        if (request == null) {
+            return false;
+        }
+        Player payer = request.getPayer();
+        AIPlayer ai = aiPlayers.get(payer);
+        if (ai == null) {
+            return false;
+        }
+        ai.onPaymentRequested(this, payer, request, () -> {
+            if (aiTurnCallback != null) {
+                aiTurnCallback.run();
+            }
+        });
+        return true;
     }
 }

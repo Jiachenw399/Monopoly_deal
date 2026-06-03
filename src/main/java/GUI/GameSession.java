@@ -1,6 +1,7 @@
 package GUI;
 
 import logic.Game;
+import logic.GameObserver;
 import network.GameStateCodec;
 
 public class GameSession {
@@ -22,6 +23,9 @@ public class GameSession {
         this.game = game;
         this.gameScreen = new GameScreen(game, musicPlayer);
         this.game.addObserver(gameScreen);
+        this.game.setAiTurnCallback(() ->
+                javafx.application.Platform.runLater(gameScreen::paint)
+        );
     }
 
     public Game getGame() {
