@@ -519,17 +519,27 @@ public class BackGroundScreen {
 
         GraphicsContext gc = canvas.getGraphicsContext2D();
         ScreenDrawHelper.drawOverlay(gc);
-        ScreenDrawHelper.drawPanel(gc, 275, 220, 485, 155);
+        ScreenDrawHelper.drawPanel(gc, 275, 190, 485, 185);
 
         gc.setFill(ScreenDrawHelper.ACCENT);
         gc.setFont(Font.font("Arial", 42));
         gc.setTextAlign(TextAlignment.CENTER);
         gc.setTextBaseline(VPos.CENTER);
-        gc.fillText(getPlayerDisplayName(game.getCurrentPlayerIndex()) + " Wins!", Game.SCREEN_WIDTH / 2, 285);
+        gc.fillText(getPlayerDisplayName(game.getCurrentPlayerIndex()) + " Wins!", Game.SCREEN_WIDTH / 2, 255);
 
         gc.setFill(ScreenDrawHelper.MUTED_TEXT);
         gc.setFont(Font.font("Arial", 17));
-        gc.fillText("Congratulations!", Game.SCREEN_WIDTH / 2, 332);
+        gc.setTextBaseline(VPos.CENTER);
+        gc.fillText("Congratulations!", Game.SCREEN_WIDTH / 2, 305);
+
+        ScreenDrawHelper.drawButton(gc, 427.5, 335, 180, 40, "Play Again");
+
+        gc.setTextBaseline(VPos.TOP);
+    }
+
+    // Checks whether the play again button was clicked.
+    public boolean isPlayAgainClicked(double mouseX, double mouseY) {
+        return game.isWin() && ScreenDrawHelper.isInside(mouseX, mouseY, 427.5, 335, 180, 40);
     }
 
     // Handles page button click.

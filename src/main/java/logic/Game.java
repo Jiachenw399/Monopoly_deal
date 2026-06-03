@@ -467,6 +467,15 @@ public class Game implements GameFacade {
         return turnManager.isDiscard();
     }
 
+    // Restarts the game.
+    public void restartGame() {
+        if (playerNames != null && !playerNames.isEmpty()) {
+            startGame(playerCount, playerNames);
+        } else {
+            startGame(playerCount);
+        }
+    }
+
     // Adds observer.
     public void addObserver(GameObserver observer) {
         if (observer != null && !observers.contains(observer)) {

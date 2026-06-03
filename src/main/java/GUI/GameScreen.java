@@ -359,6 +359,11 @@ public class GameScreen implements GameObserver {
         return ScreenDrawHelper.handleButtonClick(mouseX, mouseY, 820, 570, 170, 40);
     }
 
+    // Checks whether play again clicked.
+    public boolean isPlayAgainClicked(double mouseX, double mouseY) {
+        return backGroundScreen.isPlayAgainClicked(mouseX, mouseY);
+    }
+
     // Checks whether mute clicked.
     public boolean isMuteClicked(double mouseX, double mouseY) {
         return musicPlayer != null

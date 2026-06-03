@@ -163,6 +163,12 @@ public class LocalGameClickActions extends GameClickActionAdapter {
         menu.setShow(true);
     }
 
+    // Restarts the game.
+    @Override
+    public void restartGame() {
+        game.restartGame();
+    }
+
     // Finishes immediate action.
     @Override
     protected void finishImmediateAction(ActionCards actionCard) {

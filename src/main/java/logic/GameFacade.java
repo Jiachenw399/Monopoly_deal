@@ -139,4 +139,7 @@ public interface GameFacade {
 
     // Adds an observer for game state changes.
     void addObserver(GameObserver observer);
+
+    // Restarts the game with the same player count and names.
+    void restartGame();
 }

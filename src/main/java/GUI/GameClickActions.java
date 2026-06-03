@@ -81,6 +81,9 @@ public interface GameClickActions {
     // Returns to the menu.
     void returnToMenu();
 
+    // Restarts the game.
+    void restartGame();
+
     // Starts the flow for an action card.
     void startActionCardFlow(ActionCards actionCard);
 }

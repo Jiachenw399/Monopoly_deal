@@ -238,6 +238,12 @@ public class OnlineGameClickActions extends GameClickActionAdapter {
         onExitToMenu.run();
     }
 
+    // Restarts the game.
+    @Override
+    public void restartGame() {
+        onExitToMenu.run();
+    }
+
     // Finishes immediate action.
     @Override
     protected void finishImmediateAction(ActionCards actionCard) {

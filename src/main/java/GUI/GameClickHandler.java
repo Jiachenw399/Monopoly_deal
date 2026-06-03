@@ -39,6 +39,9 @@ public class GameClickHandler {
         }
 
         if (game.isWin()) {
+            if (gameScreen.isPlayAgainClicked(x, y)) {
+                actions.restartGame();
+            }
             return;
         }
 
