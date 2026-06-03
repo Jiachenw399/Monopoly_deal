@@ -82,8 +82,7 @@ public class WildCardSelectionPanel {
             double buttonX = colorButtonX + col * (colorButtonWidth + colorButtonGapX);
             double buttonY = colorButtonY + row * (colorButtonHeight + colorButtonGapY);
 
-            if (mouseX >= buttonX && mouseX <= buttonX + colorButtonWidth
-                    && mouseY >= buttonY && mouseY <= buttonY + colorButtonHeight) {
+            if (ScreenDrawHelper.handleButtonClick(mouseX, mouseY, buttonX, buttonY, colorButtonWidth, colorButtonHeight)) {
                 return selectedWildCard.getType().getColors().get(i);
             }
         }

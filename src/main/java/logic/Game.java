@@ -21,7 +21,7 @@ public class Game implements GameFacade {
     public static final double SCREEN_WIDTH = 1035;
     public static final double SCREEN_HEIGHT = 700;
     private static final int DEFAULT_PLAYER_COUNT = 4;
-    private static final int MIN_PLAYER_COUNT = 2;
+    private static final int MIN_PLAYER_COUNT = 1;
     private static final int MAX_PLAYER_COUNT = 5;
 
     private final ArrayList<Player> players;

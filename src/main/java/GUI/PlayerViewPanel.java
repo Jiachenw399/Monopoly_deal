@@ -29,8 +29,7 @@ public class PlayerViewPanel {
         for (int i = 0; i < game.getPlayers().size(); i++) {
             double buttonY = BUTTON_Y + i * (BUTTON_HEIGHT + BUTTON_GAP);
 
-            if (mouseX >= BUTTON_X && mouseX <= BUTTON_X + BUTTON_WIDTH
-                    && mouseY >= buttonY && mouseY <= buttonY + BUTTON_HEIGHT) {
+            if (ScreenDrawHelper.handleButtonClick(mouseX, mouseY, BUTTON_X, buttonY, BUTTON_WIDTH, BUTTON_HEIGHT)) {
                 return i;
             }
         }
@@ -41,6 +40,11 @@ public class PlayerViewPanel {
     // Draws a single player view button.
     private static void drawPlayerViewButton(GraphicsContext gc, int playerIndex, boolean selected) {
         double y = BUTTON_Y + playerIndex * (BUTTON_HEIGHT + BUTTON_GAP);
+
+        if (ScreenDrawHelper.isButtonPressed(BUTTON_X, y, BUTTON_WIDTH, BUTTON_HEIGHT)) {
+            ScreenDrawHelper.drawPressedButton(gc, BUTTON_X, y, BUTTON_WIDTH, BUTTON_HEIGHT, "Player " + (playerIndex + 1));
+            return;
+        }
 
         if (selected) {
             gc.setFill(ScreenDrawHelper.ACCENT);

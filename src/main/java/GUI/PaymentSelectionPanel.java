@@ -417,37 +417,32 @@ public class PaymentSelectionPanel {
     // Checks whether the confirm button was clicked.
     public boolean isConfirmClicked(double mouseX, double mouseY) {
         return game.isPaymentSelecting()
-                && mouseX >= 330 && mouseX <= 490
-                && mouseY >= 555 && mouseY <= 595;
+                && ScreenDrawHelper.handleButtonClick(mouseX, mouseY, 330, 555, 160, 40);
     }
 
     // Checks whether the clear button was clicked.
     public boolean isClearClicked(double mouseX, double mouseY) {
         return game.isPaymentSelecting()
-                && mouseX >= 510 && mouseX <= 630
-                && mouseY >= 555 && mouseY <= 595;
+                && ScreenDrawHelper.handleButtonClick(mouseX, mouseY, 510, 555, 120, 40);
     }
 
     // Checks whether the Just Say No button was clicked.
     public boolean isJustSayNoClicked(double mouseX, double mouseY) {
         if (game.isPaymentSelecting() && game.isCurrentPaymentWaitingForJustSayNoResponse()) {
             return game.canCurrentPaymentUseJustSayNo()
-                    && mouseX >= 570 && mouseX <= 790
-                    && mouseY >= 555 && mouseY <= 595;
+                    && ScreenDrawHelper.handleButtonClick(mouseX, mouseY, 570, 555, 220, 40);
         }
 
         return game.isPaymentSelecting()
                 && game.canCurrentPaymentUseJustSayNo()
-                && mouseX >= 650 && mouseX <= 870
-                && mouseY >= 555 && mouseY <= 595;
+                && ScreenDrawHelper.handleButtonClick(mouseX, mouseY, 650, 555, 220, 40);
     }
 
     // Checks whether the Just Say No accept button was clicked.
     public boolean isJustSayNoPassClicked(double mouseX, double mouseY) {
         return game.isPaymentSelecting()
                 && game.isCurrentPaymentWaitingForJustSayNoResponse()
-                && mouseX >= 330 && mouseX <= 550
-                && mouseY >= 555 && mouseY <= 595;
+                && ScreenDrawHelper.handleButtonClick(mouseX, mouseY, 330, 555, 220, 40);
     }
 
     // Clears all selected payment cards.
@@ -549,7 +544,7 @@ public class PaymentSelectionPanel {
     private boolean handleBankPageButtonClick(double mouseX, double mouseY, Player payer) {
         int maxPage = ScreenDrawHelper.getMaxPage(bankPaymentCards.size(), cardsPerPage);
 
-        if (ScreenDrawHelper.isInside(mouseX, mouseY, bankPrevX, bankArrowY, arrowWidth, arrowHeight)) {
+        if (ScreenDrawHelper.handleButtonClick(mouseX, mouseY, bankPrevX, bankArrowY, arrowWidth, arrowHeight)) {
             if (bankPageIndex > 0) {
                 bankPageIndex--;
             }
@@ -557,7 +552,7 @@ public class PaymentSelectionPanel {
             return true;
         }
 
-        if (ScreenDrawHelper.isInside(mouseX, mouseY, bankNextX, bankArrowY, arrowWidth, arrowHeight)) {
+        if (ScreenDrawHelper.handleButtonClick(mouseX, mouseY, bankNextX, bankArrowY, arrowWidth, arrowHeight)) {
             if (bankPageIndex < maxPage) {
                 bankPageIndex++;
             }
@@ -572,7 +567,7 @@ public class PaymentSelectionPanel {
     private boolean handlePropertyPageButtonClick(double mouseX, double mouseY, Player payer) {
         int maxPage = ScreenDrawHelper.getMaxPage(payer.getPropertyCards().size(), cardsPerPage);
 
-        if (ScreenDrawHelper.isInside(mouseX, mouseY, propertyPrevX, propertyArrowY, arrowWidth, arrowHeight)) {
+        if (ScreenDrawHelper.handleButtonClick(mouseX, mouseY, propertyPrevX, propertyArrowY, arrowWidth, arrowHeight)) {
             if (propertyPageIndex > 0) {
                 propertyPageIndex--;
             }
@@ -580,7 +575,7 @@ public class PaymentSelectionPanel {
             return true;
         }
 
-        if (ScreenDrawHelper.isInside(mouseX, mouseY, propertyNextX, propertyArrowY, arrowWidth, arrowHeight)) {
+        if (ScreenDrawHelper.handleButtonClick(mouseX, mouseY, propertyNextX, propertyArrowY, arrowWidth, arrowHeight)) {
             if (propertyPageIndex < maxPage) {
                 propertyPageIndex++;
             }
