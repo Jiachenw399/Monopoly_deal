@@ -9,6 +9,7 @@ import javafx.scene.text.TextAlignment;
 import model.ActionCardType;
 import model.ActionCards;
 import model.Card;
+import model.HiddenCard;
 import model.MoneyCards;
 import model.PropertiesCards;
 
@@ -53,6 +54,10 @@ public class CardImageHelper {
 
     // Finds card image path.
     private static String getCardImagePath(Card card) {
+        if (card instanceof HiddenCard) {
+            return "/images/card_back.jpg";
+        }
+
         if (card instanceof MoneyCards) {
             return "/images/money/money_" + card.getValue() + ".png";
         }
