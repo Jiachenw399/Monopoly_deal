@@ -171,8 +171,9 @@ public class OnlinePlayWindow extends Stage {
             });
             String line;
             while (!closed && (line = in.readLine()) != null) {
+                String rawLine = line;
                 NetworkMessage message = NetworkMessage.decode(line);
-                Platform.runLater(() -> handleServerMessage(message));
+                Platform.runLater(() -> handleServerMessageSafely(message, rawLine));
             }
             if (!closed) {
                 Platform.runLater(() -> {
@@ -187,6 +188,26 @@ public class OnlinePlayWindow extends Stage {
                     appendLog("Error: " + e.getMessage());
                 });
             }
+        } catch (RuntimeException e) {
+            if (!closed) {
+                e.printStackTrace();
+                Platform.runLater(() -> {
+                    connectionText = "Client error";
+                    appendLog("Client socket error: " + e.getMessage());
+                });
+            }
+        }
+    }
+
+    // Handles a server message without letting JavaFX client-side errors disappear silently.
+    private void handleServerMessageSafely(NetworkMessage message, String rawLine) {
+        try {
+            handleServerMessage(message);
+        } catch (RuntimeException e) {
+            connectionText = "Client error";
+            appendLog("Client message error: " + e.getMessage());
+            appendLog("Raw: " + rawLine);
+            e.printStackTrace();
         }
     }
 
