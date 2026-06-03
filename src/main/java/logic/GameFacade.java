@@ -8,6 +8,7 @@ import model.PropertiesCards;
 import model.PropertyColor;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public interface GameFacade {
     // Starts a game with the current player count.
@@ -15,6 +16,9 @@ public interface GameFacade {
 
     // Starts a game with the given player count.
     void startGame(int playerCount);
+
+    // Starts a game with the given player count and player names.
+    void startGame(int playerCount, List<String> playerNames);
 
     // Starts a turn for the given player.
     void startTurn(Player currentPlayer);

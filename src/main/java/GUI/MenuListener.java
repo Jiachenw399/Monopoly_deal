@@ -9,7 +9,9 @@ import logic.GameFacade;
 import network.OnlineLauncher;
 
 import java.util.EnumMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.Consumer;
 
 public class MenuListener {
@@ -46,7 +48,7 @@ public class MenuListener {
         Integer selectedPlayerCount = playerCountKeys.get(code);
 
         if (selectedPlayerCount != null) {
-            startGameWithPlayerCount(selectedPlayerCount);
+            startGameWithPlayerCount(selectedPlayerCount, scene);
             return;
         }
 
@@ -118,11 +120,28 @@ public class MenuListener {
     }
 
     // Starts game with player count.
-    private void startGameWithPlayerCount(int playerCount) {
+    private void startGameWithPlayerCount(int playerCount, Scene scene) {
         if (!menu.isShow() || !menu.isChoosingPlayerCount() || gameScreen.isShuffleAnimating()) {
             return;
         }
 
+        if (scene.getWindow() instanceof Stage stage) {
+            TextInputDialogWrapper nameDialog = new TextInputDialogWrapper(stage, playerCount);
+            Optional<List<String>> result = nameDialog.showAndWait();
+
+            if (result.isEmpty()) {
+                return;
+            }
+
+            List<String> playerNames = result.get();
+            startGameWithNames(playerCount, playerNames);
+        } else {
+            game.startGame(playerCount);
+        }
+    }
+
+    // Starts game with player names.
+    private void startGameWithNames(int playerCount, List<String> playerNames) {
         menu.setChoosingPlayerCount(false);
         menu.setShow(false);
         ruleScreen.setShow(false);
@@ -131,7 +150,7 @@ public class MenuListener {
 
         PauseTransition delay = new PauseTransition(Duration.seconds(2.0));
         delay.setOnFinished(event -> {
-            game.startGame(playerCount);
+            game.startGame(playerCount, playerNames);
             gameScreen.stopShuffleAnimation();
         });
         delay.play();

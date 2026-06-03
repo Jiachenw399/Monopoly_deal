@@ -109,7 +109,7 @@ public class BackGroundScreen {
 
         gc.setFill(ScreenDrawHelper.TEXT);
         gc.setFont(Font.font("Arial", 22));
-        gc.fillText("Player " + (game.getCurrentPlayerIndex() + 1) + "'s Turn", 36, 28);
+        gc.fillText(getPlayerDisplayName(game.getCurrentPlayerIndex()) + "'s Turn", 36, 28);
 
         if (turnRemainingSeconds >= 0) {
             gc.setFill(ScreenDrawHelper.MUTED_TEXT);
@@ -120,7 +120,7 @@ public class BackGroundScreen {
         if (showViewingPlayer) {
             gc.setFill(ScreenDrawHelper.MUTED_TEXT);
             gc.setFont(Font.font("Arial", 14));
-            gc.fillText("Viewing Player " + (displayPlayerIndex + 1), 235, 33);
+            gc.fillText("Viewing " + getPlayerDisplayName(displayPlayerIndex), 235, 33);
         }
 
         ScreenDrawHelper.drawBadge(gc, 36, 62, 145, 28,
@@ -137,8 +137,19 @@ public class BackGroundScreen {
         if (game.isDiscard()) {
             gc.setFill(ScreenDrawHelper.DANGER);
             gc.setFont(Font.font("Arial", 15));
-            gc.fillText("Discard Phase: Player " + (game.getCurrentPlayerIndex() + 1) + " must discard", 500, 67);
+            gc.fillText("Discard Phase: " + getPlayerDisplayName(game.getCurrentPlayerIndex()) + " must discard", 500, 67);
         }
+    }
+
+    // Returns the display name for a player.
+    private String getPlayerDisplayName(int playerIndex) {
+        if (playerIndex >= 0 && playerIndex < game.getPlayers().size()) {
+            String name = game.getPlayers().get(playerIndex).getName();
+            if (name != null) {
+                return name;
+            }
+        }
+        return "Player " + (playerIndex + 1);
     }
 
     //Draw 'Draw pile'
@@ -476,7 +487,7 @@ public class BackGroundScreen {
         gc.setFont(Font.font("Arial", 42));
         gc.setTextAlign(TextAlignment.CENTER);
         gc.setTextBaseline(VPos.CENTER);
-        gc.fillText("Player " + (game.getCurrentPlayerIndex() + 1) + " Wins!", Game.SCREEN_WIDTH / 2, 285);
+        gc.fillText(getPlayerDisplayName(game.getCurrentPlayerIndex()) + " Wins!", Game.SCREEN_WIDTH / 2, 285);
 
         gc.setFill(ScreenDrawHelper.MUTED_TEXT);
         gc.setFont(Font.font("Arial", 17));

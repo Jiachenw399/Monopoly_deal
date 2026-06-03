@@ -11,6 +11,7 @@ public class Player {
     private ArrayList<Card> bankCards;
     private DrawPileAndDiscardPile drawCardsAndDiscardPile;
     private int useCardTimes;
+    private String name;
 
     // Creates a Player instance.
     public Player(DrawPileAndDiscardPile drawCardsAndDiscardPile) {
@@ -19,6 +20,17 @@ public class Player {
         bankCards = new ArrayList<>();
         this.drawCardsAndDiscardPile = drawCardsAndDiscardPile;
         useCardTimes = 0;
+        this.name = null;
+    }
+
+    // Creates a Player instance with a name.
+    public Player(DrawPileAndDiscardPile drawCardsAndDiscardPile, String name) {
+        handCards = new ArrayList<>();
+        propertyCards = new ArrayList<>();
+        bankCards = new ArrayList<>();
+        this.drawCardsAndDiscardPile = drawCardsAndDiscardPile;
+        useCardTimes = 0;
+        this.name = (name != null && !name.trim().isEmpty()) ? name.trim() : null;
     }
 
     // Takes card.
@@ -356,5 +368,13 @@ public class Player {
 
     public void setUseCardTimes(int useCardTimes) {
         this.useCardTimes = useCardTimes;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = (name != null && !name.trim().isEmpty()) ? name.trim() : null;
     }
 }

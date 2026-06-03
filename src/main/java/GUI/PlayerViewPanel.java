@@ -18,7 +18,7 @@ public class PlayerViewPanel {
     // Draws one button for each player.
     public void drawPlayerViewButtons(GraphicsContext gc, Game game, int viewedPlayerIndex) {
         for (int i = 0; i < game.getPlayers().size(); i++) {
-            drawPlayerViewButton(gc, i, i == viewedPlayerIndex);
+            drawPlayerViewButton(gc, i, i == viewedPlayerIndex, game);
         }
 
         gc.setTextBaseline(VPos.TOP);
@@ -38,11 +38,12 @@ public class PlayerViewPanel {
     }
 
     // Draws a single player view button.
-    private static void drawPlayerViewButton(GraphicsContext gc, int playerIndex, boolean selected) {
+    private static void drawPlayerViewButton(GraphicsContext gc, int playerIndex, boolean selected, Game game) {
+        String playerName = getPlayerDisplayName(game, playerIndex);
         double y = BUTTON_Y + playerIndex * (BUTTON_HEIGHT + BUTTON_GAP);
 
         if (ScreenDrawHelper.isButtonPressed(BUTTON_X, y, BUTTON_WIDTH, BUTTON_HEIGHT)) {
-            ScreenDrawHelper.drawPressedButton(gc, BUTTON_X, y, BUTTON_WIDTH, BUTTON_HEIGHT, "Player " + (playerIndex + 1));
+            ScreenDrawHelper.drawPressedButton(gc, BUTTON_X, y, BUTTON_WIDTH, BUTTON_HEIGHT, playerName);
             return;
         }
 
@@ -61,6 +62,17 @@ public class PlayerViewPanel {
         gc.setFont(Font.font("Arial", 14));
         gc.setTextAlign(TextAlignment.CENTER);
         gc.setTextBaseline(VPos.CENTER);
-        gc.fillText("Player " + (playerIndex + 1), BUTTON_X + BUTTON_WIDTH / 2, y + BUTTON_HEIGHT / 2);
+        gc.fillText(playerName, BUTTON_X + BUTTON_WIDTH / 2, y + BUTTON_HEIGHT / 2);
+    }
+
+    // Returns the display name for a player.
+    private static String getPlayerDisplayName(Game game, int playerIndex) {
+        if (playerIndex >= 0 && playerIndex < game.getPlayers().size()) {
+            String name = game.getPlayers().get(playerIndex).getName();
+            if (name != null) {
+                return name;
+            }
+        }
+        return "Player " + (playerIndex + 1);
     }
 }

@@ -167,9 +167,14 @@ public class GameServer {
             return false;
         }
 
+        List<String> playerNames = new ArrayList<>();
+        for (ClientHandler client : clients) {
+            playerNames.add(client.getPlayerName());
+        }
+
         gameStarted = true;
         game = new Game(clients.size());
-        game.startGame();
+        game.startGame(clients.size(), playerNames);
         restartTurnTimer();
         return true;
     }

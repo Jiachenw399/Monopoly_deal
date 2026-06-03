@@ -56,6 +56,10 @@ public final class GameStateCodec {
             }
 
             builder.append("P").append(i + 1);
+            String playerName = player.getName();
+            if (playerName != null) {
+                builder.append(playerName);
+            }
             builder.append("(hand=").append(player.getHandCards().size());
             builder.append(",bank=").append(player.getBankCards().size());
             builder.append(",properties=").append(player.getPropertyCards().size());
@@ -118,6 +122,10 @@ public final class GameStateCodec {
                 }
             }
             player.setUseCardTimes(playerSummaries.getOrDefault(i, PlayerSummary.EMPTY).usedCount);
+            PlayerSummary summary = playerSummaries.getOrDefault(i, PlayerSummary.EMPTY);
+            if (summary.name != null) {
+                player.setName(summary.name);
+            }
             snapshot.players.add(player);
         }
 
@@ -235,6 +243,7 @@ public final class GameStateCodec {
     }
 
     // Parses player hand and used-card summaries.
+    private static final Pattern PLAYER_TOKEN = Pattern.compile("P(\\d+)(.*?)\\(");
     private static Map<Integer, PlayerSummary> parsePlayerSummaries(String text) {
         Map<Integer, PlayerSummary> result = new LinkedHashMap<>();
         if (text == null || text.isBlank()) {
@@ -251,12 +260,17 @@ public final class GameStateCodec {
                 token = text.substring(cursor, next + 1);
                 cursor = next + 2;
             }
-            int open = token.indexOf('(');
-            int close = token.indexOf(')');
-            if (!token.startsWith("P") || open < 0 || close < open) {
+            java.util.regex.Matcher m = PLAYER_TOKEN.matcher(token);
+            if (!m.find()) {
                 continue;
             }
-            int parsedPlayerId = parseInt(token.substring(1, open));
+            int parsedPlayerId = parseInt(m.group(1));
+            String name = m.group(2);
+            if (name.isEmpty()) {
+                name = null;
+            }
+            int open = m.end() - 1;
+            int close = token.indexOf(')');
             int hand = 0;
             int used = 0;
             for (String item : token.substring(open + 1, close).split(",")) {
@@ -270,7 +284,7 @@ public final class GameStateCodec {
                     used = parseInt(pair[1]);
                 }
             }
-            result.put(parsedPlayerId, new PlayerSummary(hand, used));
+            result.put(parsedPlayerId, new PlayerSummary(hand, used, name));
         }
         return result;
     }
@@ -387,7 +401,7 @@ public final class GameStateCodec {
         public Game.PaymentRequest paymentRequest;
     }
 
-    private record PlayerSummary(int handCount, int usedCount) {
-        private static final PlayerSummary EMPTY = new PlayerSummary(0, 0);
+    private record PlayerSummary(int handCount, int usedCount, String name) {
+        private static final PlayerSummary EMPTY = new PlayerSummary(0, 0, null);
     }
 }

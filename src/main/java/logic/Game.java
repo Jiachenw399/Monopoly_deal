@@ -32,6 +32,7 @@ public class Game implements GameFacade {
     private PaymentManager paymentManager;
     private ActionCardService actionCardService;
     private TurnManager turnManager;
+    private List<String> playerNames;
 
     private boolean isWin;
 
@@ -48,6 +49,7 @@ public class Game implements GameFacade {
     // Creates a Game instance.
     public Game(int playerCount, DeckCardFactory cardFactory) {
         this.playerCount = normalizePlayerCount(playerCount);
+        this.playerNames = null;
         this.cardFactory = Objects.requireNonNull(cardFactory);
         players = new ArrayList<>();
         rentCalculator = new RentCalculator();
@@ -85,6 +87,13 @@ public class Game implements GameFacade {
     // Starts game.
     public void startGame(int playerCount) {
         this.playerCount = normalizePlayerCount(playerCount);
+        startGame();
+    }
+
+    // Starts game with player names.
+    public void startGame(int playerCount, List<String> playerNames) {
+        this.playerCount = normalizePlayerCount(playerCount);
+        this.playerNames = playerNames;
         startGame();
     }
 
@@ -129,7 +138,7 @@ public class Game implements GameFacade {
 
     // Runs setup new players.
     private void setupNewPlayers() {
-        gameSetupService.setupPlayers(players, drawCards, playerCount);
+        gameSetupService.setupPlayers(players, drawCards, playerCount, playerNames);
     }
 
     // Starts turn.
