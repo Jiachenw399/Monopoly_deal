@@ -10,7 +10,16 @@ import java.util.concurrent.TimeUnit;
  */
 public class SimpleAIPlayer implements AIPlayer {
     private static final long THINK_TIME_MS = 600;
-    private static final Random RANDOM = new Random();
+    private static final long DEFAULT_CARD_PLAY_INTERVAL_MS = 2500;
+    private final long cardPlayIntervalMs;
+
+    public SimpleAIPlayer() {
+        this(DEFAULT_CARD_PLAY_INTERVAL_MS);
+    }
+
+    public SimpleAIPlayer(long cardPlayIntervalMs) {
+        this.cardPlayIntervalMs = Math.max(0, cardPlayIntervalMs);
+    }
 
     @Override
     public void onTurnStart(GameFacade game, Player player, Runnable onDone) {
@@ -21,14 +30,11 @@ public class SimpleAIPlayer implements AIPlayer {
                     return;
                 }
 
-                TimeUnit.MILLISECONDS.sleep(THINK_TIME_MS);
-
+                pauseForInterval(game);
                 executeTurn(game, player);
                 if (!game.isPaymentSelecting() && player.getHandCards().size() > 7) {
                     game.forceAdvanceTurnForAbsentPlayer();
                 }
-            } catch (InterruptedException ignored) {
-                Thread.currentThread().interrupt();
             } catch (RuntimeException e) {
                 System.out.println("AI turn error for " + getPlayerLabel(player) + ": " + e.getMessage());
                 e.printStackTrace();
@@ -102,6 +108,24 @@ public class SimpleAIPlayer implements AIPlayer {
         playActionCardsAsMoney(game, player);
     }
 
+    private void pauseForInterval(GameFacade game) {
+        if (cardPlayIntervalMs <= 0) {
+            game.refreshAiUi();
+            return;
+        }
+        try {
+            TimeUnit.MILLISECONDS.sleep(cardPlayIntervalMs);
+            game.refreshAiUi();
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new RuntimeException(e);
+        }
+    }
+
+    private void pauseAfterCardPlayed(GameFacade game) {
+        pauseForInterval(game);
+    }
+
     private void setWildCardColors(GameFacade game, Player player) {
         for (PropertiesCards card : player.getPropertyCards()) {
             if (card.isWildCard() && card.getCurrentColor() == null) {
@@ -161,6 +185,7 @@ public class SimpleAIPlayer implements AIPlayer {
                 for (PropertyColor color : PropertyColor.values()) {
                     if (canBuildHouse(game, player, color)) {
                         game.finishHouse(card, color);
+                        pauseAfterCardPlayed(game);
                         break;
                     }
                 }
@@ -168,6 +193,7 @@ public class SimpleAIPlayer implements AIPlayer {
                 for (PropertyColor color : PropertyColor.values()) {
                     if (canBuildHotel(game, player, color)) {
                         game.finishHotel(card, color);
+                        pauseAfterCardPlayed(game);
                         break;
                     }
                 }
@@ -229,6 +255,7 @@ public class SimpleAIPlayer implements AIPlayer {
                     if (color != null) {
                         boolean useDouble = shouldUseDoubleRent(player);
                         game.finishMultipleColorRent(card, target, color, useDouble);
+                        pauseAfterCardPlayed(game);
                         if (game.isPaymentSelecting()) {
                             return;
                         }
@@ -261,6 +288,7 @@ public class SimpleAIPlayer implements AIPlayer {
                 if (chosen != null) {
                     boolean useDouble = shouldUseDoubleRent(player);
                     game.finishTwoColorRent(card, chosen, useDouble);
+                    pauseAfterCardPlayed(game);
                     if (game.isPaymentSelecting()) {
                         return;
                     }
@@ -302,6 +330,7 @@ public class SimpleAIPlayer implements AIPlayer {
         for (ActionCards card : collectActionCards(player)) {
             if (card.getActionCardType() == ActionCardType.BIRTHDAY) {
                 game.finishBirthday(card);
+                pauseAfterCardPlayed(game);
                 if (game.isPaymentSelecting()) {
                     return;
                 }
@@ -319,6 +348,7 @@ public class SimpleAIPlayer implements AIPlayer {
         for (ActionCards card : collectActionCards(player)) {
             if (card.getActionCardType() == ActionCardType.PASS_GO) {
                 game.finishPassGo(card);
+                pauseAfterCardPlayed(game);
                 if (player.getUseCardTimes() >= 3) {
                     return;
                 }
@@ -338,6 +368,7 @@ public class SimpleAIPlayer implements AIPlayer {
                     Player target = findOwner(game, steal);
                     if (target != null) {
                         game.finishSlyDeal(card, target, steal);
+                        pauseAfterCardPlayed(game);
                         if (player.getUseCardTimes() >= 3) {
                             return;
                         }
@@ -349,6 +380,7 @@ public class SimpleAIPlayer implements AIPlayer {
                     Player target = findOwner(game, stealSet.get(0));
                     if (target != null) {
                         game.finishDealBreaker(card, target, new ArrayList<>(stealSet));
+                        pauseAfterCardPlayed(game);
                         if (player.getUseCardTimes() >= 3) {
                             return;
                         }
@@ -358,6 +390,7 @@ public class SimpleAIPlayer implements AIPlayer {
                 ForcedDealPair deal = findBestForcedDealTarget(game, player);
                 if (deal != null) {
                     game.finishForcedDeal(card, deal.target, deal.myCard, deal.theirCard);
+                    pauseAfterCardPlayed(game);
                     if (player.getUseCardTimes() >= 3) {
                         return;
                     }
@@ -366,6 +399,7 @@ public class SimpleAIPlayer implements AIPlayer {
                 Player target = selectDebtCollectorTarget(game, player);
                 if (target != null) {
                     game.finishDebtCollector(card, target);
+                    pauseAfterCardPlayed(game);
                     if (game.isPaymentSelecting()) {
                         return;
                     }
@@ -528,8 +562,8 @@ public class SimpleAIPlayer implements AIPlayer {
             }
         }
         for (Card card : toPlay) {
-            if (player.getUseCardTimes() < 3) {
-                game.playCard(card);
+            if (player.getUseCardTimes() < 3 && game.playCard(card)) {
+                pauseAfterCardPlayed(game);
             }
         }
     }
@@ -545,8 +579,8 @@ public class SimpleAIPlayer implements AIPlayer {
             }
         }
         for (Card card : toPlay) {
-            if (player.getUseCardTimes() < 3) {
-                game.playCard(card);
+            if (player.getUseCardTimes() < 3 && game.playCard(card)) {
+                pauseAfterCardPlayed(game);
             }
         }
     }
@@ -565,8 +599,8 @@ public class SimpleAIPlayer implements AIPlayer {
             }
         }
         for (ActionCards card : toPlay) {
-            if (player.getUseCardTimes() < 3) {
-                game.playActionCardAsMoney(card);
+            if (player.getUseCardTimes() < 3 && game.playActionCardAsMoney(card)) {
+                pauseAfterCardPlayed(game);
             }
         }
     }

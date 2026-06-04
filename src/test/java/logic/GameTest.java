@@ -244,7 +244,7 @@ public class GameTest {
         for (int i = 0; i < 10; i++) {
             aiPlayer.getHandCards().add(new MoneyCards(1));
         }
-        game.registerAI(aiPlayer, new SimpleAIPlayer());
+        game.registerAI(aiPlayer, new SimpleAIPlayer(0));
 
         game.guiEndTurn();
         waitUntilCurrentPlayerIndex(game, 0);
@@ -278,7 +278,7 @@ public class GameTest {
         game.startGame();
         Player human = game.getPlayers().get(0);
         Player aiPlayer = game.getPlayers().get(1);
-        game.registerAI(aiPlayer, new SimpleAIPlayer());
+        game.registerAI(aiPlayer, new SimpleAIPlayer(0));
 
         PropertiesCards propertyWithBuildings = new PropertiesCards(PropertiesCardsType.BROWN);
         propertyWithBuildings.setHasHouse(true);

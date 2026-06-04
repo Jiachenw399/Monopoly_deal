@@ -142,4 +142,8 @@ public interface GameFacade {
 
     // Restarts the game with the same player count and names.
     void restartGame();
+
+    // Refreshes the UI after an AI plays a card (no-op by default).
+    default void refreshAiUi() {
+    }
 }

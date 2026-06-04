@@ -620,6 +620,15 @@ public class Game implements GameFacade {
         this.aiTurnCallback = callback;
     }
 
+    // Refreshes observers and the AI UI hook after each card is played.
+    @Override
+    public void refreshAiUi() {
+        notifyObservers();
+        if (aiTurnCallback != null) {
+            aiTurnCallback.run();
+        }
+    }
+
     // Checks whether the given player is an AI.
     public boolean isAI(Player player) {
         return aiPlayers.containsKey(player);
