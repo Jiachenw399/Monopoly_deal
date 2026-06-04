@@ -518,31 +518,54 @@ public class BackGroundScreen {
 
         GraphicsContext gc = canvas.getGraphicsContext2D();
         ScreenDrawHelper.drawOverlay(gc);
-        ScreenDrawHelper.drawPanel(gc, 275, 190, 485, 185);
 
-        gc.setFill(ScreenDrawHelper.ACCENT);
-        gc.setFont(Font.font("Arial", 42));
-        gc.setTextAlign(TextAlignment.CENTER);
-        gc.setTextBaseline(VPos.CENTER);
+        double panelWidth = 500;
+        double panelHeight = 290;
+        double panelX = (Game.SCREEN_WIDTH - panelWidth) / 2;
+        double panelY = 205;
+
+        ScreenDrawHelper.drawPanel(gc, panelX, panelY, panelWidth, panelHeight);
+
+        double centerX = Game.SCREEN_WIDTH / 2;
+
         int winnerIndex = game.getWinnerIndex();
         if (winnerIndex < 0) {
             winnerIndex = game.getCurrentPlayerIndex();
         }
-        gc.fillText(getPlayerDisplayName(winnerIndex) + " Wins!", Game.SCREEN_WIDTH / 2, 255);
+        gc.setFill(ScreenDrawHelper.ACCENT);
+        gc.setFont(Font.font("Arial", 48));
+        gc.setTextAlign(TextAlignment.CENTER);
+        gc.setTextBaseline(VPos.CENTER);
+        gc.fillText(getPlayerDisplayName(winnerIndex) + " Wins!", centerX, panelY + 85);
 
         gc.setFill(ScreenDrawHelper.MUTED_TEXT);
-        gc.setFont(Font.font("Arial", 17));
+        gc.setFont(Font.font("Arial", 20));
         gc.setTextBaseline(VPos.CENTER);
-        gc.fillText("Congratulations!", Game.SCREEN_WIDTH / 2, 305);
+        gc.fillText("Congratulations!", centerX, panelY + 140);
 
-        ScreenDrawHelper.drawButton(gc, 427.5, 335, 180, 40, "Play Again");
+        double btnWidth = 200;
+        double btnHeight = 48;
+        double btnX = centerX - btnWidth / 2;
+        double btnY = panelY + 195;
+        ScreenDrawHelper.drawButton(gc, btnX, btnY, btnWidth, btnHeight, "Play Again");
 
         gc.setTextBaseline(VPos.TOP);
     }
 
     // Checks whether the play again button was clicked.
     public boolean isPlayAgainClicked(double mouseX, double mouseY) {
-        return game.isWin() && ScreenDrawHelper.isInside(mouseX, mouseY, 427.5, 335, 180, 40);
+        if (!game.isWin()) {
+            return false;
+        }
+        double panelWidth = 500;
+        double panelHeight = 290;
+        double panelX = (Game.SCREEN_WIDTH - panelWidth) / 2;
+        double panelY = 205;
+        double btnWidth = 200;
+        double btnHeight = 48;
+        double btnX = Game.SCREEN_WIDTH / 2 - btnWidth / 2;
+        double btnY = panelY + 195;
+        return ScreenDrawHelper.isInside(mouseX, mouseY, btnX, btnY, btnWidth, btnHeight);
     }
 
     // Handles page button click.

@@ -35,7 +35,6 @@ public class GameScreen implements GameObserver {
     private MusicPlayer musicPlayer;
     private boolean shuffleAnimating;
     private long shuffleStartNanos;
-    private boolean endTurnEnabled = true;
 
     private double cardWidth = 82;
     private double cardHeight = 112;
@@ -87,7 +86,6 @@ public class GameScreen implements GameObserver {
 
     // Sets whether End Turn is currently clickable.
     public void setEndTurnEnabled(boolean endTurnEnabled) {
-        this.endTurnEnabled = endTurnEnabled;
         backGroundScreen.setEndTurnEnabled(endTurnEnabled);
     }
 
@@ -352,7 +350,9 @@ public class GameScreen implements GameObserver {
 
     // Checks whether End Turn can currently be used.
     public boolean isEndTurnEnabled() {
-        return endTurnEnabled && !game.getCurrentPlayer().isAI();
+        return !game.isWin()
+                && !game.isPaymentSelecting()
+                && !game.getCurrentPlayer().isAI();
     }
 
     // Checks whether back menu clicked.

@@ -34,6 +34,14 @@ public class GameTest {
         @Override
         public void onTurnStart(GameFacade game, Player player, Runnable onDone) {
             turnCount.incrementAndGet();
+            while (player.getHandCards().size() > 7) {
+                if (game.isDiscard() && !player.getHandCards().isEmpty()) {
+                    game.discard(player.getHandCards().get(0));
+                } else {
+                    game.forceAdvanceTurnForAbsentPlayer();
+                    break;
+                }
+            }
             onDone.run();
         }
 

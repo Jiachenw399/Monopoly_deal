@@ -39,6 +39,7 @@ public class Game implements GameFacade {
     private Runnable aiTurnCallback;
     private Player activeAIPlayer;
     private int aiOpponentCount;
+    private boolean turnAdvancedByDiscard;
 
     private boolean isWin;
     private int winnerIndex = -1;
@@ -187,12 +188,17 @@ public class Game implements GameFacade {
         }
 
         turnManager.forceAdvanceTurnForAbsentPlayer();
+        turnAdvancedByDiscard = true;
         notifyObservers();
     }
 
     // Discards this operation.
     public boolean discard(Card card) {
-        return finishAction(turnManager.discard(card));
+        boolean result = finishAction(turnManager.discard(card));
+        if (result) {
+            turnAdvancedByDiscard = true;
+        }
+        return result;
     }
 
     // Plays card.
@@ -340,6 +346,16 @@ public class Game implements GameFacade {
 
     // Finishes current payment.
     public boolean finishCurrentPayment(ArrayList<Card> selectedCards) {
+        if (selectedCards == null || selectedCards.isEmpty()) {
+            paymentManager.skipCurrentPayment();
+            notifyObservers();
+            if (isPaymentSelecting()) {
+                triggerAIPaymentIfNeeded();
+            } else {
+                triggerAITurnIfNeeded();
+            }
+            return false;
+        }
         boolean result = finishAction(paymentManager.finishCurrentPayment(selectedCards));
         if (result && isPaymentSelecting()) {
             triggerAIPaymentIfNeeded();
@@ -624,20 +640,23 @@ public class Game implements GameFacade {
         if (activeAIPlayer == current) {
             return true;
         }
-        if (isDiscard()) {
-            forceAdvanceTurnForAbsentPlayer();
-            triggerAITurnIfNeeded();
-            return true;
-        }
         activeAIPlayer = current;
+        turnAdvancedByDiscard = false;
         ai.onTurnStart(this, current, () -> {
             activeAIPlayer = null;
-            if (!isWin() && getCurrentPlayer() == current && !isPaymentSelecting()) {
-                guiEndTurn();
-            } else {
-                notifyObservers();
-                if (!isWin() && !isPaymentSelecting()) {
-                    triggerAITurnIfNeeded();
+            notifyObservers();
+            if (!isWin() && !isPaymentSelecting()) {
+                if (turnAdvancedByDiscard) {
+                    if (!triggerAITurnIfNeeded()) {
+                        notifyObservers();
+                    }
+                } else if (isDiscard()) {
+                    forceAdvanceTurnForAbsentPlayer();
+                    if (!triggerAITurnIfNeeded()) {
+                        notifyObservers();
+                    }
+                } else {
+                    guiEndTurn();
                 }
             }
             if (aiTurnCallback != null) {
@@ -666,6 +685,8 @@ public class Game implements GameFacade {
             return false;
         }
         ai.onPaymentRequested(this, payer, request, () -> {
+            activeAIPlayer = null;
+            notifyObservers();
             if (aiTurnCallback != null) {
                 aiTurnCallback.run();
             }

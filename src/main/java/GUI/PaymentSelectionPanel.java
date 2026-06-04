@@ -347,7 +347,8 @@ public class PaymentSelectionPanel {
         if (request.isJustSayNoPending()) {
             ScreenDrawHelper.drawButton(gc, 330, 555, 220, 40, "ACCEPT JUST SAY NO");
 
-            if (game.canCurrentPaymentUseJustSayNo()) {
+            Player responder = request.getJustSayNoResponder();
+            if (responder != null && responder.hasActionCard(ActionCardType.JUST_SAY_NO)) {
                 ScreenDrawHelper.drawButton(gc, 570, 555, 220, 40, "COUNTER JUST SAY NO");
             }
 

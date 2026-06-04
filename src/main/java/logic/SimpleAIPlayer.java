@@ -17,7 +17,7 @@ public class SimpleAIPlayer implements AIPlayer {
         Thread.ofVirtual().start(() -> {
             try {
                 if (game.isDiscard()) {
-                    discardDownToLimit(game, player);
+                    game.forceAdvanceTurnForAbsentPlayer();
                     return;
                 }
 
@@ -26,10 +26,7 @@ public class SimpleAIPlayer implements AIPlayer {
                 executeTurn(game, player);
                 if (!game.isPaymentSelecting() && player.getHandCards().size() > 7) {
                     game.forceAdvanceTurnForAbsentPlayer();
-                    return;
                 }
-
-                TimeUnit.MILLISECONDS.sleep(THINK_TIME_MS / 2);
             } catch (InterruptedException ignored) {
                 Thread.currentThread().interrupt();
             } catch (RuntimeException e) {
@@ -55,6 +52,8 @@ public class SimpleAIPlayer implements AIPlayer {
 
                 if (selected != null && !selected.isEmpty()) {
                     game.finishCurrentPayment(new ArrayList<>(selected));
+                } else {
+                    game.finishCurrentPayment(new ArrayList<>());
                 }
             } catch (InterruptedException ignored) {
                 Thread.currentThread().interrupt();
@@ -691,9 +690,7 @@ public class SimpleAIPlayer implements AIPlayer {
         Thread.ofVirtual().start(() -> {
             try {
                 TimeUnit.MILLISECONDS.sleep(THINK_TIME_MS);
-
-                discardDownToLimit(game, player);
-
+                game.forceAdvanceTurnForAbsentPlayer();
                 TimeUnit.MILLISECONDS.sleep(THINK_TIME_MS / 2);
             } catch (InterruptedException ignored) {
                 Thread.currentThread().interrupt();
@@ -706,37 +703,10 @@ public class SimpleAIPlayer implements AIPlayer {
         });
     }
 
-    private void discardDownToLimit(GameFacade game, Player player) {
-        while (game.isDiscard() && player.getHandCards().size() > 7) {
-            Card toDiscard = selectCardToDiscard(player);
-            if (toDiscard == null || !game.discard(toDiscard)) {
-                game.forceAdvanceTurnForAbsentPlayer();
-                return;
-            }
-        }
-    }
-
     private String getPlayerLabel(Player player) {
         if (player == null || player.getName() == null) {
             return "AI player";
         }
         return player.getName();
-    }
-
-    private Card selectCardToDiscard(Player player) {
-        List<Card> hand = player.getHandCards();
-        if (hand.isEmpty()) {
-            return null;
-        }
-
-        Card lowestValue = hand.get(0);
-        int lowest = lowestValue.getValue();
-        for (Card card : hand) {
-            if (card.getValue() < lowest) {
-                lowest = card.getValue();
-                lowestValue = card;
-            }
-        }
-        return lowestValue;
     }
 }

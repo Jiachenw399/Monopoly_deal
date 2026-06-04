@@ -379,4 +379,13 @@ public class PaymentManager {
             startNextPaymentRequest();
         }
     }
+
+    // Skips the current payment (payer has no valid cards to pay).
+    public void skipCurrentPayment() {
+        if (currentPaymentRequest == null) {
+            return;
+        }
+        currentPaymentRequest = null;
+        startNextPaymentRequest();
+    }
 }

@@ -44,6 +44,11 @@ public class TurnManager {
         moveToNextPlayer();
     }
 
+    // Runs end turn without checking the discard condition.
+    public void endTurnWithoutDiscardCheck() {
+        moveToNextPlayer();
+    }
+
     // Forces advance turn for absent player.
     public void forceAdvanceTurnForAbsentPlayer() {
         Player currentPlayer = getCurrentPlayer();
