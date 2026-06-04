@@ -454,7 +454,7 @@ public class GameServer {
     }
 
     // Parses payment cards.
-    private ArrayList<Card> parsePaymentCards(Player payer, String paymentText) {
+    ArrayList<Card> parsePaymentCards(Player payer, String paymentText) {
         ArrayList<Card> selectedCards = new ArrayList<>();
         String[] tokens = paymentText.trim().split("[,\\s]+");
 
@@ -1083,6 +1083,55 @@ public class GameServer {
         }
 
         return sanitized.length() > 16 ? sanitized.substring(0, 16) : sanitized;
+    }
+
+    // Binds an in-memory game for symmetric protocol tests (no network I/O).
+    void bindGameForTest(Game game) {
+        this.game = game;
+        this.gameStarted = true;
+    }
+
+    // Resolves a one-based hand index for symmetric command tests.
+    Card resolveHandCardForTest(int playerId, String handNumberText) {
+        int index = parseOneBasedCardIndex(handNumberText);
+
+        if (index < 0 || game == null || playerId < 1 || playerId > game.getPlayers().size()) {
+            return null;
+        }
+
+        Player player = game.getPlayers().get(playerId - 1);
+
+        if (index >= player.getHandCards().size()) {
+            return null;
+        }
+
+        return player.getHandCards().get(index);
+    }
+
+    // Resolves a one-based player index for symmetric command tests.
+    Player resolvePlayerForTest(String playerNumberText) {
+        int index = parseOneBasedCardIndex(playerNumberText);
+
+        if (index < 0 || game == null || index >= game.getPlayers().size()) {
+            return null;
+        }
+
+        return game.getPlayers().get(index);
+    }
+
+    // Resolves a one-based property index for symmetric command tests.
+    PropertiesCards resolvePropertyForTest(Player player, String propertyNumberText) {
+        if (player == null) {
+            return null;
+        }
+
+        int index = parseOneBasedCardIndex(propertyNumberText);
+
+        if (index < 0 || index >= player.getPropertyCards().size()) {
+            return null;
+        }
+
+        return player.getPropertyCards().get(index);
     }
 
     @FunctionalInterface

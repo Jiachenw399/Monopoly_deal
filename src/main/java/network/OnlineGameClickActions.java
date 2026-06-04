@@ -259,17 +259,17 @@ public class OnlineGameClickActions extends GameClickActionAdapter {
     }
 
     // Runs hand number.
-    private String handNumber(Card card) {
+    String handNumber(Card card) {
         return Integer.toString(myPlayer().getHandCards().indexOf(card) + 1);
     }
 
     // Plays er number.
-    private int playerNumber(Player player) {
+    int playerNumber(Player player) {
         return game.getPlayers().indexOf(player) + 1;
     }
 
     // Runs property number.
-    private int propertyNumber(Player player, PropertiesCards card) {
+    int propertyNumber(Player player, PropertiesCards card) {
         return player.getPropertyCards().indexOf(card) + 1;
     }
 
@@ -289,7 +289,7 @@ public class OnlineGameClickActions extends GameClickActionAdapter {
     }
 
     // Processes ment body.
-    private String paymentBody(ArrayList<Card> selectedCards) {
+    String paymentBody(ArrayList<Card> selectedCards) {
         Game.PaymentRequest request = game.getCurrentPaymentRequest();
         Player payer = request.getPayer();
         ArrayList<String> tokens = new ArrayList<>();
