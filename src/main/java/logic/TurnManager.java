@@ -49,8 +49,7 @@ public class TurnManager {
         Player currentPlayer = getCurrentPlayer();
 
         while (currentPlayer.getHandCards().size() > 7) {
-            int lastIndex = currentPlayer.getHandCards().size() - 1;
-            Card card = currentPlayer.getHandCards().get(lastIndex);
+            Card card = selectLowestValueCard(currentPlayer);
             currentPlayer.discardCardFromHand(card);
         }
 
@@ -118,6 +117,19 @@ public class TurnManager {
         return isDiscard
                 && card != null
                 && currentPlayer.getHandCards().contains(card);
+    }
+
+    // Finds a low-value card to remove during automatic cleanup.
+    private Card selectLowestValueCard(Player currentPlayer) {
+        Card lowestValue = currentPlayer.getHandCards().get(0);
+        int lowest = lowestValue.getValue();
+        for (Card card : currentPlayer.getHandCards()) {
+            if (card.getValue() < lowest) {
+                lowest = card.getValue();
+                lowestValue = card;
+            }
+        }
+        return lowestValue;
     }
 
     // Moves to next player.

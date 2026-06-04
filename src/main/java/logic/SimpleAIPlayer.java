@@ -15,24 +15,29 @@ public class SimpleAIPlayer implements AIPlayer {
     @Override
     public void onTurnStart(GameFacade game, Player player, Runnable onDone) {
         Thread.ofVirtual().start(() -> {
-            if (game.isDiscard()) {
-                onDiscardPhaseStarted(game, player, onDone);
-                return;
-            }
-
             try {
+                if (game.isDiscard()) {
+                    discardDownToLimit(game, player);
+                    return;
+                }
+
                 TimeUnit.MILLISECONDS.sleep(THINK_TIME_MS);
-            } catch (InterruptedException ignored) {
-            }
 
-            executeTurn(game, player);
+                executeTurn(game, player);
+                if (!game.isPaymentSelecting() && player.getHandCards().size() > 7) {
+                    game.forceAdvanceTurnForAbsentPlayer();
+                    return;
+                }
 
-            try {
                 TimeUnit.MILLISECONDS.sleep(THINK_TIME_MS / 2);
             } catch (InterruptedException ignored) {
+                Thread.currentThread().interrupt();
+            } catch (RuntimeException e) {
+                System.out.println("AI turn error for " + getPlayerLabel(player) + ": " + e.getMessage());
+                e.printStackTrace();
+            } finally {
+                onDone.run();
             }
-
-            onDone.run();
         });
     }
 
@@ -43,32 +48,58 @@ public class SimpleAIPlayer implements AIPlayer {
         Thread.ofVirtual().start(() -> {
             try {
                 TimeUnit.MILLISECONDS.sleep(THINK_TIME_MS);
-            } catch (InterruptedException ignored) {
-            }
 
-            List<Card> selected = selectPaymentCards(game, player, request.getAmount());
+                List<Card> selected = selectPaymentCards(game, player, request.getAmount());
 
-            try {
                 TimeUnit.MILLISECONDS.sleep(THINK_TIME_MS / 2);
-            } catch (InterruptedException ignored) {
-            }
 
-            if (selected != null && !selected.isEmpty()) {
-                game.finishCurrentPayment(new ArrayList<>(selected));
+                if (selected != null && !selected.isEmpty()) {
+                    game.finishCurrentPayment(new ArrayList<>(selected));
+                }
+            } catch (InterruptedException ignored) {
+                Thread.currentThread().interrupt();
+            } catch (RuntimeException e) {
+                System.out.println("AI payment error for " + getPlayerLabel(player) + ": " + e.getMessage());
+                e.printStackTrace();
+            } finally {
+                onPaymentDone.run();
             }
-            onPaymentDone.run();
         });
     }
 
     private void executeTurn(GameFacade game, Player player) {
         setWildCardColors(game, player);
+        if (game.isPaymentSelecting()) {
+            return;
+        }
         buildHousesAndHotels(game, player);
+        if (game.isPaymentSelecting()) {
+            return;
+        }
         playRentCards(game, player);
+        if (game.isPaymentSelecting()) {
+            return;
+        }
         playBirthday(game, player);
+        if (game.isPaymentSelecting()) {
+            return;
+        }
         playPassGo(game, player);
+        if (game.isPaymentSelecting()) {
+            return;
+        }
         playStealCards(game, player);
+        if (game.isPaymentSelecting()) {
+            return;
+        }
         playPropertyCards(game, player);
+        if (game.isPaymentSelecting()) {
+            return;
+        }
         playMoneyCards(game, player);
+        if (game.isPaymentSelecting()) {
+            return;
+        }
         playActionCardsAsMoney(game, player);
     }
 
@@ -199,6 +230,9 @@ public class SimpleAIPlayer implements AIPlayer {
                     if (color != null) {
                         boolean useDouble = shouldUseDoubleRent(player);
                         game.finishMultipleColorRent(card, target, color, useDouble);
+                        if (game.isPaymentSelecting()) {
+                            return;
+                        }
                         if (player.getUseCardTimes() >= 3) {
                             return;
                         }
@@ -228,6 +262,9 @@ public class SimpleAIPlayer implements AIPlayer {
                 if (chosen != null) {
                     boolean useDouble = shouldUseDoubleRent(player);
                     game.finishTwoColorRent(card, chosen, useDouble);
+                    if (game.isPaymentSelecting()) {
+                        return;
+                    }
                     if (player.getUseCardTimes() >= 3) {
                         return;
                     }
@@ -266,6 +303,9 @@ public class SimpleAIPlayer implements AIPlayer {
         for (ActionCards card : collectActionCards(player)) {
             if (card.getActionCardType() == ActionCardType.BIRTHDAY) {
                 game.finishBirthday(card);
+                if (game.isPaymentSelecting()) {
+                    return;
+                }
                 if (player.getUseCardTimes() >= 3) {
                     return;
                 }
@@ -327,6 +367,9 @@ public class SimpleAIPlayer implements AIPlayer {
                 Player target = selectDebtCollectorTarget(game, player);
                 if (target != null) {
                     game.finishDebtCollector(card, target);
+                    if (game.isPaymentSelecting()) {
+                        return;
+                    }
                     if (player.getUseCardTimes() >= 3) {
                         return;
                     }
@@ -587,23 +630,36 @@ public class SimpleAIPlayer implements AIPlayer {
         Thread.ofVirtual().start(() -> {
             try {
                 TimeUnit.MILLISECONDS.sleep(THINK_TIME_MS);
-            } catch (InterruptedException ignored) {
-            }
 
-            while (game.isDiscard() && player.getHandCards().size() > 7) {
-                Card toDiscard = selectCardToDiscard(player);
-                if (toDiscard != null) {
-                    game.discard(toDiscard);
-                }
-            }
+                discardDownToLimit(game, player);
 
-            try {
                 TimeUnit.MILLISECONDS.sleep(THINK_TIME_MS / 2);
             } catch (InterruptedException ignored) {
+                Thread.currentThread().interrupt();
+            } catch (RuntimeException e) {
+                System.out.println("AI discard error for " + getPlayerLabel(player) + ": " + e.getMessage());
+                e.printStackTrace();
+            } finally {
+                onDone.run();
             }
-
-            onDone.run();
         });
+    }
+
+    private void discardDownToLimit(GameFacade game, Player player) {
+        while (game.isDiscard() && player.getHandCards().size() > 7) {
+            Card toDiscard = selectCardToDiscard(player);
+            if (toDiscard == null || !game.discard(toDiscard)) {
+                game.forceAdvanceTurnForAbsentPlayer();
+                return;
+            }
+        }
+    }
+
+    private String getPlayerLabel(Player player) {
+        if (player == null || player.getName() == null) {
+            return "AI player";
+        }
+        return player.getName();
     }
 
     private Card selectCardToDiscard(Player player) {

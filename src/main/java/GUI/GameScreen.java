@@ -99,6 +99,7 @@ public class GameScreen implements GameObserver {
     public void paint() {
         GuiScale.prepare(canvas.getGraphicsContext2D());
         syncViewedPlayerWithCurrentTurn();
+        backGroundScreen.setEndTurnEnabled(isEndTurnEnabled());
         if (lockViewToCurrentTurn) {
             backGroundScreen.drawAllBackground(canvas, wildCardSelectionPanel.getSelectedWildCard());
         } else {
@@ -351,7 +352,7 @@ public class GameScreen implements GameObserver {
 
     // Checks whether End Turn can currently be used.
     public boolean isEndTurnEnabled() {
-        return endTurnEnabled;
+        return endTurnEnabled && !game.getCurrentPlayer().isAI();
     }
 
     // Checks whether back menu clicked.

@@ -73,8 +73,7 @@ public class BackGroundScreen {
                                    int displayPlayerIndex, boolean showViewingPlayer) {
         Player displayPlayer = getDisplayPlayer(displayPlayerIndex);
         int currentPlayerIndex = game.getCurrentPlayerIndex();
-        boolean isOtherPlayer = displayPlayerIndex != currentPlayerIndex;
-        boolean showFaceDown = isOtherPlayer && displayPlayer.isAI();
+        boolean showFaceDown = displayPlayer.isAI();
 
         resetPageWhenPlayerChanged(displayPlayerIndex);
         drawBackground(canvas);
@@ -525,7 +524,11 @@ public class BackGroundScreen {
         gc.setFont(Font.font("Arial", 42));
         gc.setTextAlign(TextAlignment.CENTER);
         gc.setTextBaseline(VPos.CENTER);
-        gc.fillText(getPlayerDisplayName(game.getCurrentPlayerIndex()) + " Wins!", Game.SCREEN_WIDTH / 2, 255);
+        int winnerIndex = game.getWinnerIndex();
+        if (winnerIndex < 0) {
+            winnerIndex = game.getCurrentPlayerIndex();
+        }
+        gc.fillText(getPlayerDisplayName(winnerIndex) + " Wins!", Game.SCREEN_WIDTH / 2, 255);
 
         gc.setFill(ScreenDrawHelper.MUTED_TEXT);
         gc.setFont(Font.font("Arial", 17));

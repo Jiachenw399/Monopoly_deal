@@ -37,8 +37,11 @@ public class Game implements GameFacade {
     private List<String> playerNames;
     private Map<Player, AIPlayer> aiPlayers;
     private Runnable aiTurnCallback;
+    private Player activeAIPlayer;
+    private int aiOpponentCount;
 
     private boolean isWin;
+    private int winnerIndex = -1;
 
     // Creates a Game instance.
     public Game() {
@@ -66,6 +69,7 @@ public class Game implements GameFacade {
         setupNewPlayers();
 
         isWin = false;
+        winnerIndex = -1;
     }
 
     // Normalizes player count.
@@ -83,6 +87,7 @@ public class Game implements GameFacade {
 
     // Starts game.
     public void startGame() {
+        aiOpponentCount = 0;
         resetGame();
         setupNewPlayers();
         turnManager.startFirstTurn();
@@ -104,6 +109,7 @@ public class Game implements GameFacade {
 
     // Starts game with a prepared draw pile.
     public void startGame(int playerCount, DrawPileAndDiscardPile preparedDrawCards) {
+        aiOpponentCount = 0;
         this.playerCount = normalizePlayerCount(playerCount);
         resetGame(Objects.requireNonNull(preparedDrawCards));
         setupNewPlayers();
@@ -113,14 +119,20 @@ public class Game implements GameFacade {
 
     // Runs reset game.
     private void resetGame() {
+        aiPlayers.clear();
+        activeAIPlayer = null;
         initializeGameObjects();
         isWin = false;
+        winnerIndex = -1;
     }
 
     // Runs reset game.
     private void resetGame(DrawPileAndDiscardPile preparedDrawCards) {
+        aiPlayers.clear();
+        activeAIPlayer = null;
         initializeGameObjects(preparedDrawCards);
         isWin = false;
+        winnerIndex = -1;
     }
 
     // Initializes game objects.
@@ -331,6 +343,8 @@ public class Game implements GameFacade {
         boolean result = finishAction(paymentManager.finishCurrentPayment(selectedCards));
         if (result && isPaymentSelecting()) {
             triggerAIPaymentIfNeeded();
+        } else if (result) {
+            triggerAITurnIfNeeded();
         }
         return result;
     }
@@ -406,9 +420,11 @@ public class Game implements GameFacade {
 
     // Runs check any player win.
     private boolean checkAnyPlayerWin() {
-        for (Player player : players) {
+        for (int i = 0; i < players.size(); i++) {
+            Player player = players.get(i);
             if (player.checkIfWin()) {
                 isWin = true;
+                winnerIndex = i;
                 return true;
             }
         }
@@ -445,7 +461,17 @@ public class Game implements GameFacade {
         turnManager.applyOnlineState(currentPlayerIndex, discard);
         paymentManager.applyOnlineState(paymentRequest);
         isWin = win;
+        if (!win) {
+            winnerIndex = -1;
+        } else if (winnerIndex < 0) {
+            winnerIndex = getCurrentPlayerIndex();
+        }
         notifyObservers();
+    }
+
+    // Finds winner index, or -1 if the game has not been won.
+    public int getWinnerIndex() {
+        return winnerIndex;
     }
 
     public DrawPileAndDiscardPile getDrawCards() {
@@ -469,11 +495,23 @@ public class Game implements GameFacade {
 
     // Restarts the game.
     public void restartGame() {
+        int aiCountToRestore = aiOpponentCount;
         if (playerNames != null && !playerNames.isEmpty()) {
-            startGame(playerCount, playerNames);
+            this.playerCount = normalizePlayerCount(playerCount);
+            this.playerNames = playerNames;
+            resetGame();
+            setupNewPlayers();
+            turnManager.startFirstTurn();
+            notifyObservers();
         } else {
-            startGame(playerCount);
+            this.playerCount = normalizePlayerCount(playerCount);
+            resetGame();
+            setupNewPlayers();
+            turnManager.startFirstTurn();
+            notifyObservers();
         }
+        restoreAIPlayers(aiCountToRestore);
+        triggerAITurnIfNeeded();
     }
 
     // Adds observer.
@@ -552,7 +590,12 @@ public class Game implements GameFacade {
     // Registers an AI player for the given player.
     public void registerAI(Player player, AIPlayer ai) {
         if (player != null && ai != null) {
+            player.setAI(true);
             aiPlayers.put(player, ai);
+            int index = players.indexOf(player);
+            if (index > 0) {
+                aiOpponentCount = Math.max(aiOpponentCount, index);
+            }
         }
     }
 
@@ -571,10 +614,27 @@ public class Game implements GameFacade {
     public boolean triggerAITurnIfNeeded() {
         Player current = getCurrentPlayer();
         AIPlayer ai = aiPlayers.get(current);
+        if (ai == null && current.isAI()) {
+            ai = new SimpleAIPlayer();
+            aiPlayers.put(current, ai);
+        }
         if (ai == null) {
             return false;
         }
+        if (activeAIPlayer == current) {
+            return true;
+        }
+        activeAIPlayer = current;
         ai.onTurnStart(this, current, () -> {
+            activeAIPlayer = null;
+            if (!isWin() && getCurrentPlayer() == current && !isPaymentSelecting()) {
+                guiEndTurn();
+            } else {
+                notifyObservers();
+                if (!isWin() && !isPaymentSelecting()) {
+                    triggerAITurnIfNeeded();
+                }
+            }
             if (aiTurnCallback != null) {
                 aiTurnCallback.run();
             }
@@ -602,5 +662,14 @@ public class Game implements GameFacade {
             }
         });
         return true;
+    }
+
+    // Restores AI opponents after a restart.
+    private void restoreAIPlayers(int aiCountToRestore) {
+        aiOpponentCount = aiCountToRestore;
+        int maxAIIndex = Math.min(aiCountToRestore, players.size() - 1);
+        for (int i = 1; i <= maxAIIndex; i++) {
+            registerAI(players.get(i), new SimpleAIPlayer());
+        }
     }
 }

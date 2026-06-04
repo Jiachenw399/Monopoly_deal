@@ -1,6 +1,7 @@
 package GUI;
 
 import logic.GameFacade;
+import logic.Game;
 import model.ActionCards;
 import model.Card;
 import model.Player;
@@ -46,6 +47,15 @@ public class GameClickHandler {
         }
 
         if (gameScreen.handleBackgroundPageButtonClick(x, y)) {
+            return;
+        }
+
+        if (isAIControlledTurnBlockingHumanInput()) {
+            if (gameScreen.isBackMenuClicked(x, y)) {
+                gameScreen.clearSelectedWildCard();
+                gameScreen.closeActionCardChoice();
+                actions.returnToMenu();
+            }
             return;
         }
 
@@ -749,5 +759,19 @@ public class GameClickHandler {
 
         actions.playHandCard(selectedCard);
         actions.recordWinIfNeeded();
+    }
+
+    // Blocks human gameplay clicks while an AI player owns the current turn.
+    private boolean isAIControlledTurnBlockingHumanInput() {
+        if (!game.getCurrentPlayer().isAI()) {
+            return false;
+        }
+
+        if (!game.isPaymentSelecting()) {
+            return true;
+        }
+
+        Game.PaymentRequest request = game.getCurrentPaymentRequest();
+        return request == null || request.getPayer().isAI();
     }
 }

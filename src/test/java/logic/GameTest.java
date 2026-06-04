@@ -7,10 +7,12 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import model.ActionCardType;
 import model.ActionCards;
 import model.Card;
+import model.MoneyCards;
 import model.Player;
 import model.PropertiesCards;
 import model.PropertiesCardsType;
@@ -23,6 +25,29 @@ public class GameTest {
         @Override
         public void onGameStateChanged() {
             notificationCount++;
+        }
+    }
+
+    private static class ImmediateAI implements AIPlayer {
+        private final AtomicInteger turnCount = new AtomicInteger();
+
+        @Override
+        public void onTurnStart(GameFacade game, Player player, Runnable onDone) {
+            turnCount.incrementAndGet();
+            onDone.run();
+        }
+
+        @Override
+        public void onPaymentRequested(GameFacade game,
+                                       Player player,
+                                       Game.PaymentRequest request,
+                                       Runnable onPaymentDone) {
+            onPaymentDone.run();
+        }
+
+        @Override
+        public void onDiscardPhaseStarted(GameFacade game, Player player, Runnable onDone) {
+            onDone.run();
         }
     }
 
@@ -160,6 +185,77 @@ public class GameTest {
         assertTrue(game.finishCurrentPayment(selectedCards));
 
         assertTrue(game.isWin());
+        assertEquals(0, game.getWinnerIndex());
+    }
+
+    @Test
+    public void testAIEndCallbackAutomaticallyAdvancesTurnBackToHuman() {
+        Game game = new Game(2);
+        game.startGame();
+        Player aiPlayer = game.getPlayers().get(1);
+        ImmediateAI ai = new ImmediateAI();
+        game.registerAI(aiPlayer, ai);
+
+        game.guiEndTurn();
+
+        assertEquals(1, ai.turnCount.get());
+        assertEquals(0, game.getCurrentPlayerIndex());
+    }
+
+    @Test
+    public void testRestartGameRestoresRegisteredAIOpponents() {
+        Game game = new Game(2);
+        game.startGame();
+        game.registerAI(game.getPlayers().get(1), new ImmediateAI());
+
+        game.restartGame();
+
+        assertTrue(game.getPlayers().get(1).isAI());
+        assertTrue(game.isAI(game.getPlayers().get(1)));
+    }
+
+    @Test
+    public void testAIFlaggedPlayerStillRunsIfRegistrationWasMissing() {
+        Game game = new Game(2);
+        game.startGame();
+        game.getPlayers().get(1).setAI(true);
+
+        game.guiEndTurn();
+        waitUntilCurrentPlayerIndex(game, 0);
+
+        assertEquals(0, game.getCurrentPlayerIndex());
+        assertTrue(game.isAI(game.getPlayers().get(1)));
+    }
+
+    @Test
+    public void testAIDiscardsExcessCardsAndAdvancesTurn() {
+        Game game = new Game(2);
+        game.startGame();
+        Player aiPlayer = game.getPlayers().get(1);
+        aiPlayer.getHandCards().clear();
+        for (int i = 0; i < 10; i++) {
+            aiPlayer.getHandCards().add(new MoneyCards(1));
+        }
+        game.registerAI(aiPlayer, new SimpleAIPlayer());
+
+        game.guiEndTurn();
+        waitUntilCurrentPlayerIndex(game, 0);
+
+        assertEquals(0, game.getCurrentPlayerIndex());
+        assertFalse(game.isDiscard());
+        assertTrue(aiPlayer.getHandCards().size() <= 7);
+    }
+
+    private void waitUntilCurrentPlayerIndex(Game game, int expectedIndex) {
+        long deadline = System.currentTimeMillis() + 2_000;
+        while (System.currentTimeMillis() < deadline && game.getCurrentPlayerIndex() != expectedIndex) {
+            try {
+                Thread.sleep(20);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                return;
+            }
+        }
     }
 
     private void addCompleteBrownSet(Player player) {
