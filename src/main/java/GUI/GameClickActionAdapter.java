@@ -3,6 +3,7 @@ package GUI;
 import logic.GameFacade;
 import model.ActionCardType;
 import model.ActionCards;
+import model.Player;
 
 import java.util.EnumMap;
 import java.util.Map;
@@ -50,6 +51,26 @@ public abstract class GameClickActionAdapter implements GameClickActions {
         }
 
         return flows;
+    }
+
+    @Override
+    public void onMultipleColorRentTargetPicked(Player target) {
+        gameScreen.showMultipleColorRentTargetDetail(target);
+    }
+
+    @Override
+    public void onForcedDealTargetPicked(Player target) {
+        gameScreen.showForcedDealTargetDetail(target);
+    }
+
+    @Override
+    public void onDebtCollectorTargetPicked(ActionCards card, Player target) {
+        gameScreen.setSelectedDebtCollectorTarget(target);
+    }
+
+    @Override
+    public void onDealBreakerSetPicked(GameScreen.DealBreakerChoice choice) {
+        gameScreen.showDealBreakerDetailChoice(choice);
     }
 
     protected abstract void finishImmediateAction(ActionCards actionCard);

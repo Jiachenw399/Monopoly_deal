@@ -72,24 +72,6 @@ public class LocalGameClickActions extends GameClickActionAdapter {
         game.finishMultipleColorRent(card, target, color, useDoubleRent);
     }
 
-    // Runs on multiple color rent target picked.
-    @Override
-    public void onMultipleColorRentTargetPicked(Player target) {
-        gameScreen.showMultipleColorRentTargetDetail(target);
-    }
-
-    // Runs on forced deal target picked.
-    @Override
-    public void onForcedDealTargetPicked(Player target) {
-        gameScreen.showForcedDealTargetDetail(target);
-    }
-
-    // Runs on debt collector target picked.
-    @Override
-    public void onDebtCollectorTargetPicked(ActionCards card, Player target) {
-        gameScreen.setSelectedDebtCollectorTarget(target);
-    }
-
     // Finishes debt collector.
     @Override
     public void finishDebtCollector(ActionCards card, Player target) {
@@ -100,12 +82,6 @@ public class LocalGameClickActions extends GameClickActionAdapter {
     @Override
     public void finishDealBreaker(ActionCards card, Player target, ArrayList<PropertiesCards> selectedSet) {
         game.finishDealBreaker(card, target, selectedSet);
-    }
-
-    // Runs on deal breaker set picked.
-    @Override
-    public void onDealBreakerSetPicked(GameScreen.DealBreakerChoice choice) {
-        gameScreen.showDealBreakerDetailChoice(choice);
     }
 
     // Finishes two color rent.
