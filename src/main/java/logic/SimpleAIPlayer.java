@@ -597,6 +597,7 @@ public class SimpleAIPlayer implements AIPlayer {
         List<Card> result = new ArrayList<>();
         int totalAssets = game.getTotalAssetsValue(player);
         if (totalAssets <= amount) {
+            result.addAll(buildingPaymentCards(player));
             result.addAll(player.getBankCards());
             result.addAll(new ArrayList<>(player.getPropertyCards()));
             return result;
@@ -612,9 +613,9 @@ public class SimpleAIPlayer implements AIPlayer {
             currentValue += card.getValue();
         }
         if (currentValue < amount) {
-            List<Card> props = new ArrayList<>(player.getPropertyCards());
-            props.sort((a, b) -> Integer.compare(b.getValue(), a.getValue()));
-            for (Card card : props) {
+            List<Card> buildings = buildingPaymentCards(player);
+            buildings.sort((a, b) -> Integer.compare(b.getValue(), a.getValue()));
+            for (Card card : buildings) {
                 if (currentValue >= amount) {
                     break;
                 }
@@ -622,7 +623,67 @@ public class SimpleAIPlayer implements AIPlayer {
                 currentValue += card.getValue();
             }
         }
+        if (currentValue < amount) {
+            List<Card> props = new ArrayList<>(player.getPropertyCards());
+            props.sort((a, b) -> Integer.compare(b.getValue(), a.getValue()));
+            for (Card card : props) {
+                if (currentValue >= amount) {
+                    break;
+                }
+                if (card instanceof PropertiesCards propertyCard) {
+                    currentValue += addRequiredBuildingsForProperty(result, player, propertyCard);
+                }
+                result.add(card);
+                currentValue += card.getValue();
+            }
+        }
         return result;
+    }
+
+    private List<Card> buildingPaymentCards(Player player) {
+        List<Card> result = new ArrayList<>();
+        for (PropertyColor color : PropertyColor.values()) {
+            if (PlayerInfoHelper.hasHotel(player, color)) {
+                result.add(new BuildingPaymentCard(ActionCardType.HOTEL, color));
+            }
+            if (PlayerInfoHelper.hasHouse(player, color)) {
+                result.add(new BuildingPaymentCard(ActionCardType.HOUSE, color));
+            }
+        }
+        return result;
+    }
+
+    private int addRequiredBuildingsForProperty(List<Card> result, Player player, PropertiesCards propertyCard) {
+        PropertyColor color = propertyCard.getCurrentColor();
+        if (color == null) {
+            return 0;
+        }
+
+        int added = 0;
+        if (PlayerInfoHelper.hasHotel(player, color)
+                && !hasBuildingPayment(result, color, ActionCardType.HOTEL)) {
+            Card hotel = new BuildingPaymentCard(ActionCardType.HOTEL, color);
+            result.add(hotel);
+            added += hotel.getValue();
+        }
+        if (PlayerInfoHelper.hasHouse(player, color)
+                && !hasBuildingPayment(result, color, ActionCardType.HOUSE)) {
+            Card house = new BuildingPaymentCard(ActionCardType.HOUSE, color);
+            result.add(house);
+            added += house.getValue();
+        }
+        return added;
+    }
+
+    private boolean hasBuildingPayment(List<Card> cards, PropertyColor color, ActionCardType type) {
+        for (Card card : cards) {
+            if (card instanceof BuildingPaymentCard buildingCard
+                    && buildingCard.getColor() == color
+                    && buildingCard.getActionCardType() == type) {
+                return true;
+            }
+        }
+        return false;
     }
 
     @Override

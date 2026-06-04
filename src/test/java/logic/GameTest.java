@@ -246,9 +246,64 @@ public class GameTest {
         assertTrue(aiPlayer.getHandCards().size() <= 7);
     }
 
+    @Test
+    public void testGameClearsAIDiscardPhaseEvenIfAIOnlyEndsTurn() {
+        Game game = new Game(2);
+        game.startGame();
+        Player aiPlayer = game.getPlayers().get(1);
+        aiPlayer.getHandCards().clear();
+        for (int i = 0; i < 10; i++) {
+            aiPlayer.getHandCards().add(new MoneyCards(1));
+        }
+        game.registerAI(aiPlayer, new ImmediateAI());
+
+        game.guiEndTurn();
+
+        assertEquals(0, game.getCurrentPlayerIndex());
+        assertFalse(game.isDiscard());
+        assertTrue(aiPlayer.getHandCards().size() <= 7);
+    }
+
+    @Test
+    public void testAIPaymentIncludesBuildingsSoPaymentDoesNotStall() {
+        Game game = new Game(2);
+        game.startGame();
+        Player human = game.getPlayers().get(0);
+        Player aiPlayer = game.getPlayers().get(1);
+        game.registerAI(aiPlayer, new SimpleAIPlayer());
+
+        PropertiesCards propertyWithBuildings = new PropertiesCards(PropertiesCardsType.BROWN);
+        propertyWithBuildings.setHasHouse(true);
+        propertyWithBuildings.setHasHotel(true);
+        aiPlayer.getPropertyCards().add(propertyWithBuildings);
+        aiPlayer.getPropertyCards().add(new PropertiesCards(PropertiesCardsType.BROWN));
+        ActionCards debtCollector = new ActionCards(ActionCardType.DEBT_COLLECTOR);
+        human.getHandCards().add(debtCollector);
+
+        assertTrue(game.finishDebtCollector(debtCollector, aiPlayer));
+        waitUntilPaymentSelectionEnds(game);
+
+        assertFalse(game.isPaymentSelecting());
+        assertFalse(propertyWithBuildings.hasHouse());
+        assertFalse(propertyWithBuildings.hasHotel());
+        assertTrue(PlayerInfoHelper.getBankTotal(human) >= 7);
+    }
+
     private void waitUntilCurrentPlayerIndex(Game game, int expectedIndex) {
         long deadline = System.currentTimeMillis() + 2_000;
         while (System.currentTimeMillis() < deadline && game.getCurrentPlayerIndex() != expectedIndex) {
+            try {
+                Thread.sleep(20);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                return;
+            }
+        }
+    }
+
+    private void waitUntilPaymentSelectionEnds(Game game) {
+        long deadline = System.currentTimeMillis() + 2_000;
+        while (System.currentTimeMillis() < deadline && game.isPaymentSelecting()) {
             try {
                 Thread.sleep(20);
             } catch (InterruptedException e) {

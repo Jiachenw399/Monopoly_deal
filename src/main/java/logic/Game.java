@@ -624,6 +624,11 @@ public class Game implements GameFacade {
         if (activeAIPlayer == current) {
             return true;
         }
+        if (isDiscard()) {
+            forceAdvanceTurnForAbsentPlayer();
+            triggerAITurnIfNeeded();
+            return true;
+        }
         activeAIPlayer = current;
         ai.onTurnStart(this, current, () -> {
             activeAIPlayer = null;
@@ -653,6 +658,10 @@ public class Game implements GameFacade {
         }
         Player payer = request.getPayer();
         AIPlayer ai = aiPlayers.get(payer);
+        if (ai == null && payer.isAI()) {
+            ai = new SimpleAIPlayer();
+            aiPlayers.put(payer, ai);
+        }
         if (ai == null) {
             return false;
         }
