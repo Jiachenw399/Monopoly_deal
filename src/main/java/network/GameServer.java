@@ -14,6 +14,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
+import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
@@ -24,7 +25,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 
 public class GameServer {
@@ -33,7 +33,6 @@ public class GameServer {
     private static final int MAX_PLAYERS = 5;
     private static final int TURN_SECONDS = 120;
 
-    private final AtomicInteger nextPlayerId = new AtomicInteger(1);
     private final List<ClientHandler> clients = new ArrayList<>();
     private final Map<String, ActionCommand> actionCommands = createActionCommands();
     private final ScheduledExecutorService turnTimer = Executors.newSingleThreadScheduledExecutor();
@@ -51,7 +50,9 @@ public class GameServer {
     public void start() {
         System.out.println("Server starting on port " + PORT + "...");
 
-        try (ServerSocket serverSocket = new ServerSocket(PORT)) {
+        try (ServerSocket serverSocket = new ServerSocket()) {
+            serverSocket.setReuseAddress(true);
+            serverSocket.bind(new InetSocketAddress(PORT));
             System.out.println("Server is ready. Waiting for clients...");
 
             while (true) {
@@ -62,7 +63,7 @@ public class GameServer {
                     continue;
                 }
 
-                ClientHandler clientHandler = new ClientHandler(clientSocket, nextPlayerId.getAndIncrement());
+                ClientHandler clientHandler = new ClientHandler(clientSocket, clients.size() + 1);
                 addClient(clientHandler);
                 clientHandler.start();
             }
@@ -103,6 +104,7 @@ public class GameServer {
         clients.remove(clientHandler);
         System.out.println("Player " + disconnectedPlayerId + " disconnected. Players: " + clients.size());
         handleDisconnectedPlayerDuringGame(disconnectedPlayerId);
+        reassignLobbyPlayerIds();
     }
 
     // Handles disconnected player during game.
@@ -144,6 +146,18 @@ public class GameServer {
         }
 
         return builder.toString();
+    }
+
+    // Keeps lobby player ids contiguous after pre-game disconnects.
+    private synchronized void reassignLobbyPlayerIds() {
+        if (gameStarted) {
+            return;
+        }
+
+        for (int i = 0; i < clients.size(); i++) {
+            clients.get(i).setPlayerId(i + 1);
+            clients.get(i).sendWelcome();
+        }
     }
 
     // Broadcasts this operation.
@@ -938,7 +952,7 @@ public class GameServer {
 
     private class ClientHandler extends Thread {
         private final Socket socket;
-        private final int playerId;
+        private int playerId;
         private final Map<String, Consumer<NetworkMessage>> messageHandlers;
         private String playerName;
         private boolean nameAnnounced;
@@ -956,6 +970,10 @@ public class GameServer {
             return playerId;
         }
 
+        public void setPlayerId(int playerId) {
+            this.playerId = playerId;
+        }
+
         public String getPlayerName() {
             return playerName;
         }
@@ -969,14 +987,14 @@ public class GameServer {
                     PrintWriter writer = new PrintWriter(socket.getOutputStream(), true)
             ) {
                 out = writer;
-                send(new NetworkMessage("WELCOME", "PLAYER " + playerId).encode());
+                sendWelcome();
 
                 String line;
 
                 while ((line = in.readLine()) != null) {
                     NetworkMessage message = NetworkMessage.decode(line);
                     System.out.println("From Player " + playerId + ": " + message.getType() + " " + message.getBody());
-                    handleMessage(message);
+                    handleMessageSafely(message);
                 }
             } catch (IOException e) {
                 System.out.println("Connection error for Player " + playerId + ": " + e.getMessage());
@@ -988,6 +1006,22 @@ public class GameServer {
                 removeClient(this);
                 broadcast(new NetworkMessage("BROADCAST", playerName + " left the game"));
                 broadcast(new NetworkMessage("PLAYER_LIST", getPlayerListText()));
+            }
+        }
+
+        // Sends this client's current server-assigned player id.
+        private void sendWelcome() {
+            send(new NetworkMessage("WELCOME", "PLAYER " + playerId).encode());
+        }
+
+        // Handles one message without closing the socket for recoverable command errors.
+        private void handleMessageSafely(NetworkMessage message) {
+            try {
+                handleMessage(message);
+            } catch (RuntimeException e) {
+                System.out.println("Message error for Player " + playerId + ": " + e.getMessage());
+                e.printStackTrace();
+                send(new NetworkMessage("SERVER", "Command failed: " + e.getMessage()).encode());
             }
         }
 

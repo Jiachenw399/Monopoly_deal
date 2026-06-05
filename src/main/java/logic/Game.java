@@ -640,7 +640,7 @@ public class Game implements GameFacade {
         Player current = getCurrentPlayer();
         AIPlayer ai = aiPlayers.get(current);
         if (ai == null && current.isAI()) {
-            ai = new SimpleAIPlayer();
+            ai = new SimpleAIPlayer(0);
             aiPlayers.put(current, ai);
         }
         if (ai == null) {
@@ -687,7 +687,7 @@ public class Game implements GameFacade {
         Player payer = request.getPayer();
         AIPlayer ai = aiPlayers.get(payer);
         if (ai == null && payer.isAI()) {
-            ai = new SimpleAIPlayer();
+            ai = new SimpleAIPlayer(0);
             aiPlayers.put(payer, ai);
         }
         if (ai == null) {
