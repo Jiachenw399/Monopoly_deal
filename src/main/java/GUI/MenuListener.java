@@ -227,6 +227,7 @@ public class MenuListener {
                     aiPlayer.setAI(true);
                     concreteGame.registerAI(aiPlayer, new SimpleAIPlayer());
                 }
+                gameScreen.lockViewedPlayer(0);
                 concreteGame.triggerAITurnIfNeeded();
             }
         });

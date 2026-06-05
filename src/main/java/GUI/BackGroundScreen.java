@@ -19,7 +19,6 @@ import java.util.ArrayList;
 
 public class BackGroundScreen {
     private final Game game;
-    private static final model.HiddenCard HIDDEN_CARD_BACK = new model.HiddenCard();
 
     private final double smallCardWidth = 60;
     private final double smallCardHeight = 85;
@@ -72,15 +71,13 @@ public class BackGroundScreen {
     private void drawAllBackground(Canvas canvas, PropertiesCards selectedWildCard,
                                    int displayPlayerIndex, boolean showViewingPlayer) {
         Player displayPlayer = getDisplayPlayer(displayPlayerIndex);
-        int currentPlayerIndex = game.getCurrentPlayerIndex();
-        boolean showFaceDown = displayPlayer.isAI();
 
         resetPageWhenPlayerChanged(displayPlayerIndex);
         drawBackground(canvas);
         drawCurrentPlayer(canvas, displayPlayer, displayPlayerIndex, showViewingPlayer);
         drawBankCards(canvas, displayPlayer);
         drawPropertyCards(canvas, displayPlayer, selectedWildCard);
-        drawHandCards(canvas, displayPlayer, showFaceDown);
+        drawHandCards(canvas, displayPlayer);
         drawButtons(canvas);
         drawWinMessage(canvas);
     }
@@ -366,7 +363,7 @@ public class BackGroundScreen {
     }
 
     // Draws hand cards.
-    private void drawHandCards(Canvas canvas, Player displayPlayer, boolean showFaceDown) {
+    private void drawHandCards(Canvas canvas, Player displayPlayer) {
         GraphicsContext gc = canvas.getGraphicsContext2D();
         ArrayList<Card> handCards = displayPlayer.getHandCards();
 
@@ -387,7 +384,7 @@ public class BackGroundScreen {
             double y = Game.SCREEN_HEIGHT - 150;
 
             Card card = handCards.get(i);
-            drawHandCard(gc, card, x, y, i + 1, showFaceDown);
+            drawHandCard(gc, card, x, y, i + 1);
         }
     }
 
@@ -409,15 +406,8 @@ public class BackGroundScreen {
     }
 
     // Draws hand card.
-    private void drawHandCard(GraphicsContext gc, Card card, double x, double y, int number, boolean showFaceDown) {
+    private void drawHandCard(GraphicsContext gc, Card card, double x, double y, int number) {
         double cardHeight = 112;
-
-        if (showFaceDown) {
-            if (!CardImageHelper.drawCardImage(gc, HIDDEN_CARD_BACK, x, y, cardWidth, cardHeight)) {
-                drawCardBack(gc, x, y, cardWidth, cardHeight);
-            }
-            return;
-        }
 
         if (CardImageHelper.drawCardImage(gc, card, x, y, cardWidth, cardHeight)) {
             return;
@@ -463,33 +453,6 @@ public class BackGroundScreen {
 
         gc.setFont(Font.font("Arial", 10));
         ScreenDrawHelper.drawWrappedText(gc, name, x + 6, y + 70, cardWidth - 12, 12);
-    }
-
-    // Draws card back.
-    private void drawCardBack(GraphicsContext gc, double x, double y, double width, double height) {
-        gc.setFill(Color.DARKBLUE);
-        gc.fillRect(x, y, width, height);
-
-        gc.setStroke(Color.CORNFLOWERBLUE);
-        gc.setLineWidth(2);
-        gc.strokeRect(x + 3, y + 3, width - 6, height - 6);
-
-        double innerPad = 6;
-        gc.strokeRect(x + innerPad, y + innerPad, width - innerPad * 2, height - innerPad * 2);
-
-        double spacing = 8;
-        int rows = 3;
-        int cols = 3;
-        double starW = 8;
-        double starH = 8;
-        for (int r = 0; r < rows; r++) {
-            for (int c = 0; c < cols; c++) {
-                double sx = x + width / 2 - cols * starW / 2 + c * starW;
-                double sy = y + height / 2 - rows * starH / 2 + r * starH;
-                gc.setFill(Color.CORNFLOWERBLUE);
-                gc.fillRect(sx, sy, starW - 2, starH - 2);
-            }
-        }
     }
 
     // Draws buttons.

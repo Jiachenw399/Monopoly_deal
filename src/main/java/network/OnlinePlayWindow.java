@@ -244,14 +244,9 @@ public class OnlinePlayWindow extends Stage {
         }
     }
 
-    // Chooses the online view so everyone watches the active player while keeping private hands hidden.
+    // Keeps the online view locked to this player's own hand and play area.
     private void updateViewedPlayer(GameStateCodec.Snapshot snapshot) {
-        if (snapshot.currentPlayerIndex + 1 == myPlayerId) {
-            session.getGameScreen().lockViewedPlayer(myPlayerId - 1);
-            return;
-        }
-
-        session.getGameScreen().lockViewedPlayer(snapshot.currentPlayerIndex);
+        session.getGameScreen().lockViewedPlayer(myPlayerId - 1);
     }
 
     // Updates the local countdown deadline from the latest server state.
