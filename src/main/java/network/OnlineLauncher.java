@@ -36,7 +36,7 @@ public final class OnlineLauncher {
 
         ChoiceDialog<String> choice = new ChoiceDialog<>("Join", "Join", "Host");
         choice.setTitle("LAN / OnlinePlayWindow");
-        choice.setHeaderText("Host starts a server on this PC (port 5555). Join connects to the host's IP.");
+        choice.setHeaderText("Host must open the room first. Join connects to the host's current IPv4 address.");
         choice.setContentText("Choose role:");
 
         Optional<String> result = choice.showAndWait();
@@ -85,7 +85,8 @@ public final class OnlineLauncher {
         alert.setTitle("LAN host");
         alert.setHeaderText("Server is starting (or already running) on port 5555.");
         alert.setContentText("This computer will automatically join as Player 1 after you close this dialog.\n\n"
-                + "Other computers: main menu -> L -> Join -> enter this computer's IPv4 address.\n\n"
+                + "Other computers should join only after this lobby window is open.\n"
+                + "They must enter this computer's current IPv4 address, not their own IP.\n\n"
                 + "Detected IPv4 addresses:\n"
                 + ips
                 + "\n\n"
@@ -115,7 +116,7 @@ public final class OnlineLauncher {
         TextInputDialog dialog = new TextInputDialog("127.0.0.1");
         dialog.initOwner(owner);
         dialog.setTitle("Join LAN game");
-        dialog.setHeaderText("Enter the host computer's IP address (or 127.0.0.1 on the same PC).");
+        dialog.setHeaderText("Enter the host computer's current IPv4 address. The host must open Host first.");
         dialog.setContentText("Host IP:");
 
         Optional<String> ip = dialog.showAndWait();

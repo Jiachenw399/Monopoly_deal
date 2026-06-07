@@ -30,6 +30,8 @@ import java.util.ArrayList;
 public class OnlinePlayWindow extends Stage {
     private static final int PORT = 5555;
     private static final int CONNECT_TIMEOUT_MS = 5000;
+    private static final int CONNECT_ATTEMPTS = 5;
+    private static final int RETRY_DELAY_MS = 800;
 
     private final String host;
     private final String playerName;
@@ -47,6 +49,8 @@ public class OnlinePlayWindow extends Stage {
     private int myPlayerId;
     private long turnDeadlineMillis = -1;
     private String connectionText = "Connecting...";
+    private String closeStatusText;
+    private String closeLogText;
     private String playerListText = "Waiting for players...";
 
     // Creates a OnlinePlayWindow instance.
@@ -155,8 +159,7 @@ public class OnlinePlayWindow extends Stage {
     // Runs run connection.
     private void runConnection() {
         try {
-            Socket s = new Socket();
-            s.connect(new InetSocketAddress(host, PORT), CONNECT_TIMEOUT_MS);
+            Socket s = connectWithRetry();
             synchronized (this) {
                 if (closed) {
                     s.close();
@@ -166,11 +169,9 @@ public class OnlinePlayWindow extends Stage {
             }
             BufferedReader in = new BufferedReader(new InputStreamReader(s.getInputStream()));
             out = new PrintWriter(s.getOutputStream(), true);
-            send("NAME", playerName);
-            send("PLAYERS", "");
             Platform.runLater(() -> {
-                connectionText = "Connected";
-                appendLog("Connected.");
+                connectionText = "Waiting for server";
+                appendLog("Socket connected. Waiting for WELCOME...");
             });
             String line;
             while (!closed && (line = in.readLine()) != null) {
@@ -180,8 +181,8 @@ public class OnlinePlayWindow extends Stage {
             }
             if (!closed) {
                 Platform.runLater(() -> {
-                    connectionText = "Disconnected";
-                    appendLog("Server closed the connection.");
+                    connectionText = closeStatusText == null ? "Disconnected" : closeStatusText;
+                    appendLog(closeLogText == null ? "Server closed the connection." : closeLogText);
                 });
             }
         } catch (IOException e) {
@@ -199,6 +200,40 @@ public class OnlinePlayWindow extends Stage {
                     appendLog("Client socket error: " + e.getMessage());
                 });
             }
+        }
+    }
+
+    // Attempts to connect for a short grace period while the host server starts.
+    private Socket connectWithRetry() throws IOException {
+        IOException lastError = null;
+        for (int attempt = 1; attempt <= CONNECT_ATTEMPTS && !closed; attempt++) {
+            try {
+                Socket s = new Socket();
+                s.connect(new InetSocketAddress(host, PORT), CONNECT_TIMEOUT_MS);
+                return s;
+            } catch (IOException e) {
+                lastError = e;
+                int attemptsLeft = CONNECT_ATTEMPTS - attempt;
+                Platform.runLater(() -> {
+                    connectionText = "Connecting...";
+                    appendLog("Connect failed; retrying " + attemptsLeft + " more time(s).");
+                });
+                if (attemptsLeft > 0) {
+                    sleepBeforeRetry();
+                }
+            }
+        }
+
+        throw lastError == null ? new IOException("Could not connect to host") : lastError;
+    }
+
+    // Sleeps before the next connect attempt.
+    private void sleepBeforeRetry() throws IOException {
+        try {
+            Thread.sleep(RETRY_DELAY_MS);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new IOException("Connection interrupted", e);
         }
     }
 
@@ -221,8 +256,17 @@ public class OnlinePlayWindow extends Stage {
             case "WELCOME" -> {
                 myPlayerId = parseInt(message.getBody().replace("PLAYER", "").trim());
                 clickActions.setMyPlayerId(myPlayerId);
+                connectionText = "Connected";
+                appendLog("Joined as Player " + myPlayerId + ".");
+                send("NAME", playerName);
+                send("PLAYERS", "");
             }
-            case "FULL" -> connectionText = "Rejected";
+            case "FULL" -> {
+                connectionText = "Rejected";
+                closeStatusText = "Rejected";
+                closeLogText = "Rejected: " + message.getBody();
+                appendLog(closeLogText);
+            }
             case "PLAYER_LIST" -> playerListText = message.getBody();
             case "GAME_STARTED" -> send("STATE", "");
             case "GAME_STATE" -> {
