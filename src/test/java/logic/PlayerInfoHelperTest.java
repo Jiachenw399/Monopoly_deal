@@ -36,6 +36,8 @@ public class PlayerInfoHelperTest {
         ArrayList<PropertiesCards> completeSet =
                 PlayerInfoHelper.getCompleteSetByColor(player, PropertyColor.BROWN);
 
+        assertTrue(PlayerInfoHelper.isCompleteSet(player, PropertyColor.BROWN));
+        assertFalse(PlayerInfoHelper.isCompleteSet(player, PropertyColor.DARK_BLUE));
         assertEquals(1, PlayerInfoHelper.getCompletedSetCount(player));
         assertEquals(2, completeSet.size());
     }

@@ -312,9 +312,6 @@ public class SimpleAIPlayer implements AIPlayer {
     }
 
     private boolean shouldUseDoubleRent(Player player) {
-        if (player.getUseCardTimes() >= 2) {
-            return false;
-        }
         for (Card card : player.getHandCards()) {
             if (card instanceof ActionCards ac && ac.getActionCardType() == ActionCardType.DOUBLE_THE_RENT) {
                 return true;

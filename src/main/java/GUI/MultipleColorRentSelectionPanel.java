@@ -154,7 +154,7 @@ public class MultipleColorRentSelectionPanel {
         return isSelecting()
                 && detailTarget == null
                 && game.hasDoubleTheRentCard(game.getCurrentPlayer())
-                && game.getCurrentPlayer().getUseCardTimes() <= 1
+                && game.getCurrentPlayer().getUseCardTimes() < 3
                 && ScreenDrawHelper.handleButtonClick(mouseX, mouseY, 370, 450, 280, 35);
     }
 
@@ -448,7 +448,7 @@ public class MultipleColorRentSelectionPanel {
     // Draws double rent option.
     private void drawDoubleRentOption(GraphicsContext gc) {
         if (!game.hasDoubleTheRentCard(game.getCurrentPlayer())
-                || game.getCurrentPlayer().getUseCardTimes() > 1) {
+                || game.getCurrentPlayer().getUseCardTimes() >= 3) {
             return;
         }
 

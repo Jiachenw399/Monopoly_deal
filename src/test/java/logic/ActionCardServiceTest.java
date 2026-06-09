@@ -141,7 +141,7 @@ public class ActionCardServiceTest {
     }
 
     @Test
-    public void testRentWithDoubleRentCreatesPaymentAndUsesTwoCards() {
+    public void testRentWithDoubleRentCreatesPaymentAndUsesOneCardUse() {
         TestContext context = new TestContext();
         Player currentPlayer = context.players.get(0);
         Player targetPlayer = context.players.get(1);
@@ -155,7 +155,26 @@ public class ActionCardServiceTest {
         assertSame(targetPlayer, context.paymentManager.getCurrentPaymentRequest().getPayer());
         assertEquals(4, context.paymentManager.getCurrentPaymentRequest().getAmount());
         assertFalse(currentPlayer.getHandCards().contains(doubleRent));
-        assertEquals(2, currentPlayer.getUseCardTimes());
+        assertEquals(1, currentPlayer.getUseCardTimes());
+    }
+
+    @Test
+    public void testDoubleRentCanBeUsedAfterTwoCardUses() {
+        TestContext context = new TestContext();
+        Player currentPlayer = context.players.get(0);
+        Player targetPlayer = context.players.get(1);
+        addBrownSet(currentPlayer);
+        targetPlayer.getBankCards().add(new MoneyCards(10));
+        ActionCards rent = addActionCardToHand(currentPlayer, ActionCardType.RENT_WITH_BROWN_AND_LIGHT_BLUE);
+        ActionCards doubleRent = addActionCardToHand(currentPlayer, ActionCardType.DOUBLE_THE_RENT);
+        currentPlayer.setUseCardTimes(2);
+
+        assertTrue(context.service.finishTwoColorRent(currentPlayer, rent, PropertyColor.BROWN, true));
+
+        assertSame(targetPlayer, context.paymentManager.getCurrentPaymentRequest().getPayer());
+        assertEquals(4, context.paymentManager.getCurrentPaymentRequest().getAmount());
+        assertFalse(currentPlayer.getHandCards().contains(doubleRent));
+        assertEquals(3, currentPlayer.getUseCardTimes());
     }
 
     @Test

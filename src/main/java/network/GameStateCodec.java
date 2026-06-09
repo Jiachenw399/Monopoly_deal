@@ -18,9 +18,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
 
-/**
- * Encodes/decodes {@code GAME_STATE} payloads shared by {@link GameServer} and {@link OnlinePlayWindow}.
- */
 public final class GameStateCodec {
     // Creates a GameStateCodec instance.
     private GameStateCodec() {

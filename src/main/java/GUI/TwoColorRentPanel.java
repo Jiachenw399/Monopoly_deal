@@ -65,7 +65,7 @@ public class TwoColorRentPanel {
     public boolean isDoubleRentClicked(double mouseX, double mouseY) {
         return isSelecting()
                 && game.hasDoubleTheRentCard(game.getCurrentPlayer())
-                && game.getCurrentPlayer().getUseCardTimes() <= 1
+                && game.getCurrentPlayer().getUseCardTimes() < 3
                 && ScreenDrawHelper.handleButtonClick(mouseX, mouseY, 370, 410, 280, 35);
     }
 
@@ -200,7 +200,7 @@ public class TwoColorRentPanel {
     // Draws the optional Double the Rent checkbox.
     private void drawDoubleRentOption(GraphicsContext gc, double x, double y) {
         if (!game.hasDoubleTheRentCard(game.getCurrentPlayer())
-                || game.getCurrentPlayer().getUseCardTimes() > 1) {
+                || game.getCurrentPlayer().getUseCardTimes() >= 3) {
             return;
         }
 

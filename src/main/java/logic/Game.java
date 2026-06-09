@@ -1,6 +1,7 @@
 package logic;
 
 import model.ActionCards;
+import model.ActionCardType;
 import model.Card;
 import model.DeckCardFactory;
 import model.DrawPileAndDiscardPile;
@@ -304,7 +305,7 @@ public class Game implements GameFacade {
 
     // Checks whether this has double the rent card.
     public boolean hasDoubleTheRentCard(Player player) {
-        return actionCardService.hasDoubleTheRentCard(player);
+        return player != null && player.hasActionCard(ActionCardType.DOUBLE_THE_RENT);
     }
 
     // Checks whether payment selecting.

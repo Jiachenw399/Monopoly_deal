@@ -1,10 +1,6 @@
 package logic;
 
-import model.*;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.function.Consumer;
+import model.Player;
 
 public interface AIPlayer {
 
@@ -13,4 +9,9 @@ public interface AIPlayer {
     void onPaymentRequested(GameFacade game, Player player,
                              Game.PaymentRequest request,
                              Runnable onPaymentDone);
+
+    // Handles the discard phase for AI players.
+    default void onDiscardPhaseStarted(GameFacade game, Player player, Runnable onDone) {
+        onDone.run();
+    }
 }

@@ -278,21 +278,6 @@ public class ActionCardServiceGuardTest {
     }
 
     @Test
-    public void testHasDoubleTheRentCardReturnsFalseForNull() {
-        TestContext ctx = new TestContext();
-        assertFalse(ctx.service.hasDoubleTheRentCard(null));
-    }
-
-    @Test
-    public void testHasDoubleTheRentCardReturnsFalseWhenNotOwned() {
-        TestContext ctx = new TestContext();
-        Player player = ctx.players.get(0);
-        player.getHandCards().add(new MoneyCards(5));
-
-        assertFalse(ctx.service.hasDoubleTheRentCard(player));
-    }
-
-    @Test
     public void testPassGoDrawsTwoCards() {
         TestContext ctx = new TestContext();
         Player current = ctx.players.get(0);

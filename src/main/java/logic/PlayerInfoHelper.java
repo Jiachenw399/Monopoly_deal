@@ -66,6 +66,15 @@ public class PlayerInfoHelper {
         return getPropertyCountByCurrentColor(player, color) > 0;
     }
 
+    // Checks whether this has a complete property set.
+    public static boolean isCompleteSet(Player player, PropertyColor color) {
+        if (color == null) {
+            return false;
+        }
+
+        return getPropertyCountByCurrentColor(player, color) >= color.getAmountToCompleteSet();
+    }
+
     // Checks whether this has house.
     public static boolean hasHouse(Player player, PropertyColor color) {
         return hasBuilding(player, color, true);

@@ -15,9 +15,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-/**
- * Entry from the main menu: host the embedded {@link GameServer} or open {@link OnlinePlayWindow}.
- */
 public final class OnlineLauncher {
 
     private static final Object SERVER_LOCK = new Object();

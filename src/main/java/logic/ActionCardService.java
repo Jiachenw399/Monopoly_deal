@@ -25,7 +25,7 @@ public class ActionCardService {
 
     // Finishes pass go.
     public boolean finishPassGo(Player currentPlayer, ActionCards passGoCard) {
-        if (canFinishActionCard(currentPlayer, passGoCard, ActionCardType.PASS_GO)) {
+        if (!canFinishActionCard(currentPlayer, passGoCard, ActionCardType.PASS_GO)) {
             return false;
         }
 
@@ -37,7 +37,7 @@ public class ActionCardService {
 
     // Finishes birthday.
     public boolean finishBirthday(Player currentPlayer, ActionCards birthdayCard) {
-        if (canFinishActionCard(currentPlayer, birthdayCard, ActionCardType.BIRTHDAY)) {
+        if (!canFinishActionCard(currentPlayer, birthdayCard, ActionCardType.BIRTHDAY)) {
             return false;
         }
 
@@ -158,22 +158,6 @@ public class ActionCardService {
         return finishBuilding(currentPlayer, hotelCard, selectedColor, ActionCardType.HOTEL);
     }
 
-    // Checks whether this has double the rent card.
-    public boolean hasDoubleTheRentCard(Player player) {
-        if (player == null) {
-            return false;
-        }
-
-        for (Card card : player.getHandCards()) {
-            if (card instanceof ActionCards actionCard
-                    && actionCard.getActionCardType() == ActionCardType.DOUBLE_THE_RENT) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
     // Finishes rent.
     private boolean finishRent(Player currentPlayer,
                                ActionCards rentCard,
@@ -182,10 +166,6 @@ public class ActionCardService {
                                boolean allPlayers,
                                boolean useDoubleRent) {
         boolean canUseDoubleRent = canUseDoubleRent(currentPlayer, useDoubleRent);
-
-        if (canUseDoubleRent && currentPlayer.getUseCardTimes() > 1) {
-            return false;
-        }
 
         int rent = getFinalRent(currentPlayer, selectedColor, canUseDoubleRent);
 
@@ -199,7 +179,7 @@ public class ActionCardService {
         }
 
         paymentManager.startNextPaymentRequest();
-        increaseRentUseTimes(currentPlayer, canUseDoubleRent);
+        increaseUseCardTimes(currentPlayer);
         return true;
     }
 
@@ -244,11 +224,11 @@ public class ActionCardService {
                                       ActionCards card,
                                       PropertyColor selectedColor,
                                       ActionCardType buildingType) {
-        if (canFinishActionCard(currentPlayer, card, buildingType) || selectedColor == null) {
+        if (!canFinishActionCard(currentPlayer, card, buildingType) || selectedColor == null) {
             return false;
         }
 
-        if (!isCompleteSet(currentPlayer, selectedColor)) {
+        if (!PlayerInfoHelper.isCompleteSet(currentPlayer, selectedColor)) {
             return false;
         }
 
@@ -267,7 +247,7 @@ public class ActionCardService {
                                      ActionCards card,
                                      Player targetPlayer,
                                      PropertiesCards stolenCard) {
-        if (canFinishActionCard(currentPlayer, card, ActionCardType.SLY_DEAL)) {
+        if (!canFinishActionCard(currentPlayer, card, ActionCardType.SLY_DEAL)) {
             return false;
         }
 
@@ -285,7 +265,7 @@ public class ActionCardService {
                                         Player targetPlayer,
                                         PropertiesCards currentPlayerCard,
                                         PropertiesCards targetPlayerCard) {
-        if (canFinishActionCard(currentPlayer, card, ActionCardType.FORCED_DEAL)) {
+        if (!canFinishActionCard(currentPlayer, card, ActionCardType.FORCED_DEAL)) {
             return false;
         }
 
@@ -317,7 +297,7 @@ public class ActionCardService {
                                          ActionCards card,
                                          Player targetPlayer,
                                          ArrayList<PropertiesCards> selectedSet) {
-        if (canFinishActionCard(currentPlayer, card, ActionCardType.DEAL_BREAKER)) {
+        if (!canFinishActionCard(currentPlayer, card, ActionCardType.DEAL_BREAKER)) {
             return false;
         }
 
@@ -343,7 +323,7 @@ public class ActionCardService {
 
     // Checks whether this can finish debt collector.
     private boolean canFinishDebtCollector(Player currentPlayer, ActionCards card, Player targetPlayer) {
-        if (canFinishActionCard(currentPlayer, card, ActionCardType.DEBT_COLLECTOR)) {
+        if (!canFinishActionCard(currentPlayer, card, ActionCardType.DEBT_COLLECTOR)) {
             return false;
         }
 
@@ -358,7 +338,7 @@ public class ActionCardService {
             return false;
         }
 
-        if (canPlayCard(currentPlayer, card)) {
+        if (!canPlayCard(currentPlayer, card)) {
             return false;
         }
 
@@ -374,7 +354,7 @@ public class ActionCardService {
                                                ActionCards card,
                                                Player targetPlayer,
                                                PropertyColor selectedColor) {
-        if (canFinishActionCard(currentPlayer, card, ActionCardType.RENT_WITH_MULTIPLE_COLOR)) {
+        if (!canFinishActionCard(currentPlayer, card, ActionCardType.RENT_WITH_MULTIPLE_COLOR)) {
             return false;
         }
 
@@ -388,7 +368,7 @@ public class ActionCardService {
     // Checks whether this can finish action card.
     private boolean canFinishActionCard(Player currentPlayer, ActionCards card, ActionCardType expectedType) {
         if (card == null || card.getActionCardType() != expectedType) {
-            return true;
+            return false;
         }
 
         return canPlayCard(currentPlayer, card);
@@ -397,33 +377,24 @@ public class ActionCardService {
     // Checks whether this can play card.
     private boolean canPlayCard(Player currentPlayer, Card card) {
         if (currentPlayer == null || card == null) {
-            return true;
+            return false;
         }
 
         if (currentPlayer.getUseCardTimes() >= 3) {
-            return true;
+            return false;
         }
 
-        return !currentPlayer.getHandCards().contains(card);
+        return currentPlayer.getHandCards().contains(card);
     }
 
     // Checks whether this can use double rent.
     private boolean canUseDoubleRent(Player player, boolean useDoubleRent) {
-        return useDoubleRent && hasDoubleTheRentCard(player);
+        return useDoubleRent && player != null && player.hasActionCard(ActionCardType.DOUBLE_THE_RENT);
     }
 
     // Finds final rent.
     private int getFinalRent(Player player, PropertyColor selectedColor, boolean canUseDoubleRent) {
         return rentCalculator.calculateRent(player, selectedColor, canUseDoubleRent);
-    }
-
-    // Runs increase rent use times.
-    private void increaseRentUseTimes(Player player, boolean canUseDoubleRent) {
-        increaseUseCardTimes(player);
-
-        if (canUseDoubleRent) {
-            increaseUseCardTimes(player);
-        }
     }
 
     // Discards double the rent if used.
@@ -447,12 +418,6 @@ public class ActionCardService {
     // Runs increase use card times.
     private void increaseUseCardTimes(Player player) {
         player.setUseCardTimes(player.getUseCardTimes() + 1);
-    }
-
-    // Checks whether complete set.
-    private boolean isCompleteSet(Player player, PropertyColor color) {
-        int count = PlayerInfoHelper.getPropertyCountByCurrentColor(player, color);
-        return count >= color.getAmountToCompleteSet();
     }
 
     // Runs find first property by color.
