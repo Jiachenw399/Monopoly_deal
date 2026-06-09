@@ -131,9 +131,6 @@ public interface GameFacade {
     // Checks whether the game has a winner.
     boolean isWin();
 
-    // Updates the win state.
-    void setWin(boolean win);
-
     // Checks whether the game is in discard phase.
     boolean isDiscard();
 

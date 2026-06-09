@@ -118,14 +118,6 @@ public class LocalGameClickActions extends GameClickActionAdapter {
         game.discard(card);
     }
 
-    // Runs record win if needed.
-    @Override
-    public void recordWinIfNeeded() {
-        if (game.getCurrentPlayer().checkIfWin()) {
-            game.setWin(true);
-        }
-    }
-
     // Runs end turn.
     @Override
     public void endTurn() {

@@ -2,7 +2,6 @@ package model;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 public class Player {
@@ -246,87 +245,6 @@ public class Player {
     // Removes property card.
     public void removePropertyCard(PropertiesCards card) {
         propertyCards.remove(card);
-    }
-
-    // Takes money.
-    public void takeMoney(int amount, Player payer) {
-        if (payer == null || amount <= 0) {
-            return;
-        }
-
-        int payerTotalValue = getTotalValue(payer.getBankCards()) + getTotalValue(payer.getPropertyCards());
-
-        if (payerTotalValue <= amount) {
-            bankCards.addAll(payer.getBankCards());
-            propertyCards.addAll(payer.getPropertyCards());
-            payer.getBankCards().clear();
-            payer.getPropertyCards().clear();
-            return;
-        }
-
-        int payerBankValue = getTotalValue(payer.getBankCards());
-
-        if (payerBankValue >= amount) {
-            ArrayList<Card> paymentCards = findSmallestPaymentCombination(payer.getBankCards(), amount);
-            bankCards.addAll(paymentCards);
-            payer.getBankCards().removeAll(paymentCards);
-            return;
-        }
-
-        bankCards.addAll(payer.getBankCards());
-        payer.getBankCards().clear();
-
-        int remainingAmount = amount - payerBankValue;
-        ArrayList<Card> propertyPaymentCards = findSmallestPaymentCombination(payer.getPropertyCards(), remainingAmount);
-
-        for (Card card : propertyPaymentCards) {
-            if (card instanceof PropertiesCards propertyCard) {
-                propertyCards.add(propertyCard);
-                payer.getPropertyCards().remove(propertyCard);
-            }
-        }
-    }
-
-    // Finds total value.
-    private int getTotalValue(List<? extends Card> cards) {
-        int total = 0;
-
-        for (Card card : cards) {
-            total += card.getValue();
-        }
-
-        return total;
-    }
-
-    // Runs find smallest payment combination.
-    private ArrayList<Card> findSmallestPaymentCombination(List<? extends Card> cards, int amount) {
-        ArrayList<Card> bestCombination = new ArrayList<>();
-        int bestSum = Integer.MAX_VALUE;
-        int cardCount = cards.size();
-
-        if (cardCount >= 63) {
-            return new ArrayList<>(cards);
-        }
-
-        for (long mask = 1; mask < (1L << cardCount); mask++) {
-            ArrayList<Card> currentCombination = new ArrayList<>();
-            int currentSum = 0;
-
-            for (int i = 0; i < cardCount; i++) {
-                if ((mask & (1L << i)) != 0) {
-                    Card card = cards.get(i);
-                    currentCombination.add(card);
-                    currentSum += card.getValue();
-                }
-            }
-
-            if (currentSum >= amount && currentSum < bestSum) {
-                bestSum = currentSum;
-                bestCombination = currentCombination;
-            }
-        }
-
-        return bestCombination;
     }
 
     // Runs check if win.

@@ -88,21 +88,6 @@ public class PlayerTest {
         assertTrue(player.checkIfWin());
     }
 
-    @Test
-    public void testTakeMoneyUsesSmallestValidBankCombination() {
-        Player receiver = new Player(new DrawPileAndDiscardPile());
-        Player payer = new Player(new DrawPileAndDiscardPile());
-        payer.getBankCards().add(new MoneyCards(5));
-        payer.getBankCards().add(new MoneyCards(3));
-        payer.getBankCards().add(new MoneyCards(2));
-
-        receiver.takeMoney(5, payer);
-
-        assertEquals(1, receiver.getBankCards().size());
-        assertEquals(5, receiver.getBankCards().get(0).getValue());
-        assertEquals(5, payer.getBankCards().stream().mapToInt(Card::getValue).sum());
-    }
-
     private void addProperties(Player player, PropertiesCardsType type, int amount) {
         for (int i = 0; i < amount; i++) {
             player.getPropertyCards().add(new PropertiesCards(type));

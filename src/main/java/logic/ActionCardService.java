@@ -25,7 +25,7 @@ public class ActionCardService {
 
     // Finishes pass go.
     public boolean finishPassGo(Player currentPlayer, ActionCards passGoCard) {
-        if (!canFinishActionCard(currentPlayer, passGoCard, ActionCardType.PASS_GO)) {
+        if (canFinishActionCard(currentPlayer, passGoCard, ActionCardType.PASS_GO)) {
             return false;
         }
 
@@ -37,7 +37,7 @@ public class ActionCardService {
 
     // Finishes birthday.
     public boolean finishBirthday(Player currentPlayer, ActionCards birthdayCard) {
-        if (!canFinishActionCard(currentPlayer, birthdayCard, ActionCardType.BIRTHDAY)) {
+        if (canFinishActionCard(currentPlayer, birthdayCard, ActionCardType.BIRTHDAY)) {
             return false;
         }
 
@@ -244,7 +244,7 @@ public class ActionCardService {
                                       ActionCards card,
                                       PropertyColor selectedColor,
                                       ActionCardType buildingType) {
-        if (!canFinishActionCard(currentPlayer, card, buildingType) || selectedColor == null) {
+        if (canFinishActionCard(currentPlayer, card, buildingType) || selectedColor == null) {
             return false;
         }
 
@@ -267,7 +267,7 @@ public class ActionCardService {
                                      ActionCards card,
                                      Player targetPlayer,
                                      PropertiesCards stolenCard) {
-        if (!canFinishActionCard(currentPlayer, card, ActionCardType.SLY_DEAL)) {
+        if (canFinishActionCard(currentPlayer, card, ActionCardType.SLY_DEAL)) {
             return false;
         }
 
@@ -285,7 +285,7 @@ public class ActionCardService {
                                         Player targetPlayer,
                                         PropertiesCards currentPlayerCard,
                                         PropertiesCards targetPlayerCard) {
-        if (!canFinishActionCard(currentPlayer, card, ActionCardType.FORCED_DEAL)) {
+        if (canFinishActionCard(currentPlayer, card, ActionCardType.FORCED_DEAL)) {
             return false;
         }
 
@@ -317,7 +317,7 @@ public class ActionCardService {
                                          ActionCards card,
                                          Player targetPlayer,
                                          ArrayList<PropertiesCards> selectedSet) {
-        if (!canFinishActionCard(currentPlayer, card, ActionCardType.DEAL_BREAKER)) {
+        if (canFinishActionCard(currentPlayer, card, ActionCardType.DEAL_BREAKER)) {
             return false;
         }
 
@@ -325,7 +325,7 @@ public class ActionCardService {
             return false;
         }
 
-        PropertyColor color = selectedSet.get(0).getCurrentColor();
+        PropertyColor color = selectedSet.getFirst().getCurrentColor();
 
         if (color == null) {
             return false;
@@ -343,7 +343,7 @@ public class ActionCardService {
 
     // Checks whether this can finish debt collector.
     private boolean canFinishDebtCollector(Player currentPlayer, ActionCards card, Player targetPlayer) {
-        if (!canFinishActionCard(currentPlayer, card, ActionCardType.DEBT_COLLECTOR)) {
+        if (canFinishActionCard(currentPlayer, card, ActionCardType.DEBT_COLLECTOR)) {
             return false;
         }
 
@@ -358,7 +358,7 @@ public class ActionCardService {
             return false;
         }
 
-        if (!canPlayCard(currentPlayer, card)) {
+        if (canPlayCard(currentPlayer, card)) {
             return false;
         }
 
@@ -374,7 +374,7 @@ public class ActionCardService {
                                                ActionCards card,
                                                Player targetPlayer,
                                                PropertyColor selectedColor) {
-        if (!canFinishActionCard(currentPlayer, card, ActionCardType.RENT_WITH_MULTIPLE_COLOR)) {
+        if (canFinishActionCard(currentPlayer, card, ActionCardType.RENT_WITH_MULTIPLE_COLOR)) {
             return false;
         }
 
@@ -388,7 +388,7 @@ public class ActionCardService {
     // Checks whether this can finish action card.
     private boolean canFinishActionCard(Player currentPlayer, ActionCards card, ActionCardType expectedType) {
         if (card == null || card.getActionCardType() != expectedType) {
-            return false;
+            return true;
         }
 
         return canPlayCard(currentPlayer, card);
@@ -397,14 +397,14 @@ public class ActionCardService {
     // Checks whether this can play card.
     private boolean canPlayCard(Player currentPlayer, Card card) {
         if (currentPlayer == null || card == null) {
-            return false;
+            return true;
         }
 
         if (currentPlayer.getUseCardTimes() >= 3) {
-            return false;
+            return true;
         }
 
-        return currentPlayer.getHandCards().contains(card);
+        return !currentPlayer.getHandCards().contains(card);
     }
 
     // Checks whether this can use double rent.

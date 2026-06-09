@@ -758,7 +758,6 @@ public class GameClickHandler {
         }
 
         actions.playHandCard(selectedCard);
-        actions.recordWinIfNeeded();
     }
 
     // Blocks human gameplay clicks while an AI player owns the current turn.

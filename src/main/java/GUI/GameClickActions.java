@@ -72,9 +72,6 @@ public interface GameClickActions {
     // Discards a hand card.
     void discardHandCard(Card card);
 
-    // Records a win when the current player satisfies the win condition.
-    void recordWinIfNeeded();
-
     // Ends the current turn.
     void endTurn();
 

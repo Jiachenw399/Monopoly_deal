@@ -152,12 +152,6 @@ public class OnlineGameClickActions extends GameClickActionAdapter {
         requireMyTurn(() -> send.accept("DISCARD", handNumber(card)));
     }
 
-    // Runs record win if needed.
-    @Override
-    public void recordWinIfNeeded() {
-        // Server drives win state.
-    }
-
     // Runs end turn.
     @Override
     public void endTurn() {

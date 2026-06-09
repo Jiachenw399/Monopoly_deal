@@ -210,19 +210,6 @@ public class GameTestEdgeCases {
     }
 
     @Test
-    public void testSetWinUpdatesStateAndNotifies() {
-        Game game = new Game();
-        CountingObserver observer = new CountingObserver();
-        game.addObserver(observer);
-        int countBefore = observer.notificationCount;
-
-        game.setWin(true);
-
-        assertTrue(game.isWin());
-        assertEquals(countBefore + 1, observer.notificationCount);
-    }
-
-    @Test
     public void testHasDoubleTheRentCardReturnsTrue() {
         Game game = new Game(2);
         game.startGame();

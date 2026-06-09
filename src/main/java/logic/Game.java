@@ -19,7 +19,7 @@ public class Game implements GameFacade {
     public static final double SCREEN_WIDTH = 1035;
     public static final double SCREEN_HEIGHT = 700;
     private static final int DEFAULT_PLAYER_COUNT = 4;
-    private static final int MIN_PLAYER_COUNT = 1;
+    private static final int MIN_PLAYER_COUNT = 2;
     private static final int MAX_PLAYER_COUNT = 5;
 
     private final ArrayList<Player> players;
@@ -498,12 +498,6 @@ public class Game implements GameFacade {
         return isWin;
     }
 
-    // Runs set win.
-    public void setWin(boolean win) {
-        isWin = win;
-        notifyObservers();
-    }
-
     // Checks whether discard.
     public boolean isDiscard() {
         return turnManager.isDiscard();
@@ -512,20 +506,11 @@ public class Game implements GameFacade {
     // Restarts the game.
     public void restartGame() {
         int aiCountToRestore = aiOpponentCount;
-        if (playerNames != null && !playerNames.isEmpty()) {
-            this.playerCount = normalizePlayerCount(playerCount);
-            this.playerNames = playerNames;
-            resetGame();
-            setupNewPlayers();
-            turnManager.startFirstTurn();
-            notifyObservers();
-        } else {
-            this.playerCount = normalizePlayerCount(playerCount);
-            resetGame();
-            setupNewPlayers();
-            turnManager.startFirstTurn();
-            notifyObservers();
-        }
+        this.playerCount = normalizePlayerCount(playerCount);
+        resetGame();
+        setupNewPlayers();
+        turnManager.startFirstTurn();
+        notifyObservers();
         restoreAIPlayers(aiCountToRestore);
         triggerAITurnIfNeeded();
     }
@@ -676,13 +661,13 @@ public class Game implements GameFacade {
     }
 
     // Triggers the AI to respond to a payment request if the payer is an AI.
-    public boolean triggerAIPaymentIfNeeded() {
+    public void triggerAIPaymentIfNeeded() {
         if (!isPaymentSelecting()) {
-            return false;
+            return;
         }
         Game.PaymentRequest request = getCurrentPaymentRequest();
         if (request == null) {
-            return false;
+            return;
         }
         Player payer = request.getPayer();
         AIPlayer ai = aiPlayers.get(payer);
@@ -691,7 +676,7 @@ public class Game implements GameFacade {
             aiPlayers.put(payer, ai);
         }
         if (ai == null) {
-            return false;
+            return;
         }
         ai.onPaymentRequested(this, payer, request, () -> {
             activeAIPlayer = null;
@@ -700,7 +685,6 @@ public class Game implements GameFacade {
                 aiTurnCallback.run();
             }
         });
-        return true;
     }
 
     // Restores AI opponents after a restart.
