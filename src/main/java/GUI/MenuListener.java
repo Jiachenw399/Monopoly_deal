@@ -25,7 +25,6 @@ public class MenuListener {
     private final Map<KeyCode, Consumer<Scene>> keyHandlers;
     private final Map<KeyCode, Integer> playerCountKeys;
     private final Map<KeyCode, Integer> aiCountKeys;
-    private boolean aiModeActive = false;
 
     // Creates a MenuListener instance.
     public MenuListener(MainMenu menu,
@@ -130,13 +129,6 @@ public class MenuListener {
     private void showRuleScreenIfAvailable() {
         if (menu.isShow() && !menu.isChoosingPlayerCount()) {
             showRuleScreen();
-        }
-    }
-
-    // Shows player count choice if available.
-    private void showPlayerCountChoiceIfAvailable() {
-        if (menu.isShow() && !menu.isChoosingPlayerCount()) {
-            menu.setChoosingPlayerCount(true);
         }
     }
 

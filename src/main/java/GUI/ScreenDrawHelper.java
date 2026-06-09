@@ -9,7 +9,6 @@ import model.PropertyColor;
 
 public class ScreenDrawHelper {
     public static final Color BACKGROUND = Color.rgb(18, 24, 38);
-    public static final Color BACKGROUND_LIGHT = Color.rgb(28, 38, 58);
     public static final Color PANEL = Color.rgb(34, 45, 67, 0.88);
     public static final Color PANEL_LIGHT = Color.rgb(245, 247, 250, 0.93);
     public static final Color BORDER = Color.rgb(255, 255, 255, 0.18);
@@ -17,8 +16,6 @@ public class ScreenDrawHelper {
     public static final Color MUTED_TEXT = Color.rgb(185, 196, 215);
     public static final Color ACCENT = Color.rgb(255, 184, 77);
     public static final Color ACCENT_DARK = Color.rgb(231, 139, 48);
-    public static final Color SUCCESS = Color.rgb(99, 230, 156);
-    public static final Color WARNING = Color.rgb(255, 210, 93);
     public static final Color DANGER = Color.rgb(255, 112, 112);
     private static final long BUTTON_PRESSED_MS = 180;
     private static String pressedButtonKey;
@@ -55,18 +52,6 @@ public class ScreenDrawHelper {
         gc.setFill(PANEL);
         gc.fillRoundRect(x, y, width, height, 20, 20);
         gc.setStroke(BORDER);
-        gc.strokeRoundRect(x, y, width, height, 20, 20);
-    }
-
-    // Draws light panel.
-    public static void drawLightPanel(GraphicsContext gc,
-                                      double x,
-                                      double y,
-                                      double width,
-                                      double height) {
-        gc.setFill(PANEL_LIGHT);
-        gc.fillRoundRect(x, y, width, height, 20, 20);
-        gc.setStroke(Color.rgb(255, 255, 255, 0.85));
         gc.strokeRoundRect(x, y, width, height, 20, 20);
     }
 
@@ -205,52 +190,6 @@ public class ScreenDrawHelper {
         } else {
             drawDisabledButton(gc, nextX, y, width, height, ">");
         }
-    }
-
-    // Draws double rent option.
-    public static void drawDoubleRentOption(GraphicsContext gc,
-                                            double x,
-                                            double y,
-                                            boolean selected) {
-        if (isButtonPressed(x, y, 280, 35)) {
-            gc.setFill(Color.rgb(205, 210, 220));
-            gc.fillRoundRect(x, y, 280, 35, 12, 12);
-            gc.setStroke(Color.rgb(255, 255, 255, 0.25));
-            gc.strokeRoundRect(x, y, 280, 35, 12, 12);
-            gc.setFill(Color.rgb(70, 75, 85));
-            gc.setFont(Font.font("Arial", 14));
-            gc.setTextAlign(TextAlignment.LEFT);
-            gc.setTextBaseline(VPos.CENTER);
-            gc.fillText("Use DOUBLE THE RENT  ×2", x + 42, y + 17.5);
-            gc.setTextBaseline(VPos.TOP);
-            return;
-        }
-
-        gc.setFill(Color.rgb(255, 240, 199));
-        gc.fillRoundRect(x, y, 280, 35, 12, 12);
-
-        gc.setStroke(Color.rgb(255, 255, 255, 0.85));
-        gc.strokeRoundRect(x, y, 280, 35, 12, 12);
-
-        gc.setFill(Color.WHITE);
-        gc.fillRoundRect(x + 12, y + 8, 18, 18, 5, 5);
-        gc.setStroke(Color.rgb(120, 95, 35));
-        gc.strokeRoundRect(x + 12, y + 8, 18, 18, 5, 5);
-
-        if (selected) {
-            gc.setFill(SUCCESS);
-            gc.setFont(Font.font("Arial", 18));
-            gc.setTextAlign(TextAlignment.CENTER);
-            gc.setTextBaseline(VPos.CENTER);
-            gc.fillText("✓", x + 21, y + 17);
-        }
-
-        gc.setFill(Color.rgb(50, 40, 20));
-        gc.setFont(Font.font("Arial", 14));
-        gc.setTextAlign(TextAlignment.LEFT);
-        gc.setTextBaseline(VPos.CENTER);
-        gc.fillText("Use DOUBLE THE RENT  ×2", x + 42, y + 17.5);
-        gc.setTextBaseline(VPos.TOP);
     }
 
     // Draws small card.
