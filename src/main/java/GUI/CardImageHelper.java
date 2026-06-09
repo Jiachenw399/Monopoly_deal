@@ -113,24 +113,4 @@ public class CardImageHelper {
         IMAGE_CACHE.put(path, image);
         return image;
     }
-
-    // Draws hand number badge.
-    public static void drawHandNumberBadge(GraphicsContext gc,
-                                           int number,
-                                           double x,
-                                           double y) {
-        gc.setFill(Color.rgb(255, 255, 255, 0.9));
-        gc.fillOval(x, y, 22, 22);
-
-        gc.setStroke(Color.rgb(30, 35, 48));
-        gc.strokeOval(x, y, 22, 22);
-
-        gc.setFill(Color.rgb(30, 35, 48));
-        gc.setFont(Font.font("Arial", 12));
-        gc.setTextAlign(TextAlignment.CENTER);
-        gc.setTextBaseline(VPos.CENTER);
-        gc.fillText(String.valueOf(number), x + 11, y + 11);
-
-        gc.setTextBaseline(VPos.TOP);
-    }
 }
